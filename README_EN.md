@@ -224,6 +224,10 @@ If this analysis was helpful:
 
 Every star helps more developers discover this deep dive.
 
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=openedclaude/claude-reviews-claude&type=Date)](https://star-history.com/#openedclaude/claude-reviews-claude&Date)
+
 ---
 
 ## 📜 License & Disclaimer
