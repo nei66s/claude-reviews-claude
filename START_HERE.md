@@ -10,7 +10,7 @@ This repository contains **two projects**. Choose which one you want to explore:
 👉 **[Read the Analysis →](README.md)**
 
 **Includes**:
-- 9-part architectural series (QueryEngine, Tools, Coordinator, Plugins, Hooks, Bash, Permissions, Swarms, Sessions)
+- 10-part architectural series (QueryEngine, Tools, Coordinator, Plugins, Hooks, Bash, Permissions, Swarms, Sessions, Context Assembly)
 - Chinese translations available
 - ~50K lines of documentation
 
@@ -36,8 +36,9 @@ npm run dev
 - ✅ **Files**: Preview, edit, copy, rename, delete
 - ✅ **Permissions**: Ask/auto/read_only modes
 - ✅ **Workflows**: Per-chat planning & tracking
-- 🚀 **Permissions Pipeline**: 7-step authorization (Phase 2)
-- 🚀 **Hooks**: 20 event types for extensibility
+- ✅ **Permissions Pipeline**: 7-step authorization
+- ✅ **Hooks**: 20 event types for extensibility
+- ✅ **Coordinator + Swarms + Session Persistence + Context Assembly**
 
 ### Documentation
 - **[Project README](agent-ts/README.md)** — API, tools, configuration
@@ -53,8 +54,8 @@ npm run dev
 | Project | Status | Start | Go To |
 |---------|--------|-------|-------|
 | Claude Reviews Claude | ✅ Complete | Read | [README.md](README.md) |
-| Chocks MVP | ✅ Complete | Try it | [agent-ts/](agent-ts/) |
-| Chocks Phase 2 | 🚀 In progress | Contribute | [agent-ts/](agent-ts/) |
+| Chocks MVP | ✅ Complete | Try it | [agent-ts/chokito/](agent-ts/chokito/) |
+| Chocks Architecture 10/10 | ✅ Complete | Contribute | [agent-ts/chokito/](agent-ts/chokito/) |
 
 ---
 
@@ -102,4 +103,4 @@ npm run dev
 
 ---
 
-**Last Updated**: 3 Apr 2026 | Chocks Phase 1 ✅ | Phase 2 🚀
+**Last Updated**: 3 Apr 2026 | Architecture 10/10 ✅ | Docs Synced ✅

@@ -8,11 +8,11 @@ This repository contains **two distinct projects**:
 **What it is**: A comprehensive architectural analysis where Claude (Anthropic's AI model) reviews and documents the source code of Claude Code (Anthropic's internal coding assistant).
 
 **Contents**:
-- 9-part deep-dive into Claude Code architecture
+- 10-part deep-dive into Claude Code architecture
 - Chinese translation available
-- Analysis of: QueryEngine, Tool System, Coordinator, Plugins, Hooks, Bash Engine, Permission Pipeline, Agent Swarms, Session Persistence
+- Analysis of: QueryEngine, Tool System, Coordinator, Plugins, Hooks, Bash Engine, Permission Pipeline, Agent Swarms, Session Persistence, Context Assembly
 
-**Status**: Complete documentation series (01-09)
+**Status**: Complete documentation series (01-10)
 
 ---
 
@@ -22,9 +22,9 @@ This repository contains **two distinct projects**:
 **What it is**: A production-ready TypeScript server for running Claude 3.5 Sonnet locally with a web UI, designed for small internal teams (2-5 people).
 
 **Status**:
-- ✅ **Fase 1** (MVP): Complete
-- 🚀 **Fase 2** (Permissions + Hooks): In Progress
-- 📋 **Fases 3-6**: Planned
+- ✅ **Architecture 10/10**: Complete
+- ✅ **Core platform features**: Complete
+- 📋 **Optional enhancements**: Ongoing
 
 ### Chocks Features
 
@@ -34,13 +34,15 @@ This repository contains **two distinct projects**:
 | File operations | ✅ | Preview, edit, copy, duplicate, delete, move |
 | Permissions | ✅ | ask/auto/read_only modes per conversation |
 | Workflows | ✅ | Per-chat planning, step tracking, archive |
-| Permission Pipeline | 🚀 | 7-step gauntlet (deny → ask → execute → audit) |
-| Hook System | 🚀 | 20 event types for extensibility |
-| Audit Logging | 🚀 | Track tool executions, denials, approvals |
-| Bash Security | 📋 | AST parsing + sandbox (planned Phase 3) |
-| Plugins | 📋 | Extensible tools (planned Phase 4) |
-| QueryEngine | 📋 | Token budgeting + auto-compaction (Phase 5) |
-| Coordinator | 📋 | Multi-agent orchestration (Phase 6) |
+| Permission Pipeline | ✅ | 7-step gauntlet (deny → ask → execute → audit) |
+| Hook System | ✅ | 20 event types for extensibility |
+| Audit Logging | ✅ | Track tool executions, denials, approvals |
+| Bash Security | ✅ | Sandboxing + fallback strategies |
+| Plugins | ✅ | Extensible plugin runtime |
+| QueryEngine | ✅ | Token budgeting + auto-compaction |
+| Coordinator | ✅ | Multi-agent orchestration |
+| Session Persistence | ✅ | Persistent sessions with recovery |
+| Context Assembly | ✅ | Final prompt/context window composition |
 
 ### Quick Start (Chocks)
 
@@ -100,9 +102,9 @@ npm run dev
 │
 ├── prototype-ts/                  # Archive (legacy code)
 │
-├── architecture/                  # Claude Code analysis (01-09)
+├── architecture/                  # Claude Code analysis (01-10)
 │   ├── 01-query-engine.md
-│   ├── ... files 2-9 ...
+│   ├── ... files 2-10 ...
 │   └── zh-CN/                     # Chinese translations
 │
 ├── docs/
@@ -143,5 +145,5 @@ The original "Claude Reviews Claude" project is complete. Enhancements/correctio
 ---
 
 **Last Updated**: 3 Apr 2026  
-**Chocks Status**: Fase 1 ✅ | Fase 2 🚀  
-**Next Milestone**: 10 Apr 2026 (Phase 2 UI integration)
+**Chocks Status**: Architecture 10/10 ✅  
+**Next Milestone**: Optional enhancement backlog

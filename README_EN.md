@@ -4,7 +4,7 @@
 
 *An AI reading its own source code. Yes, really. Anthropic probably didn't see this coming either.*
 
-*🍿 Season 1 now streaming | 9 episodes out | Claude reverse-engineers itself faster than it writes code.*
+*🍿 Season 1 complete | 10 episodes out | Claude reverse-engineers itself faster than it writes code.*
 
 *Don't miss an episode — Star ⭐ to subscribe.*
 
@@ -37,6 +37,7 @@ This is **not** a source code dump. It's a structured engineering analysis — a
 | 7 | **Permission Pipeline** | Defense-in-depth: config rules → tool checks → OS sandbox (9.5K lines) | [Read →](architecture/07-permission-pipeline.md) |
 | 8 | **Agent Swarms** | Multi-agent team coordination: mailbox IPC, backend detection, permission delegation (6.8K lines) | [Read →](architecture/08-agent-swarms.md) |
 | 9 | **Session Persistence** | Append-only JSONL storage, parent-UUID chains, 64KB lite resume (7.6K lines) | [Read →](architecture/09-session-persistence.md) |
+| 10 | **Context Assembly** | Final prompt/context window assembly: system injections, tool filtering, compaction and truncation | [Read →](architecture/10-context-assembly.md) |
 
 > ⭐ **Enjoy the meta? Star the repo — an AI analyzing itself deserves at least that.**
 
@@ -212,17 +213,17 @@ Permissions are checked at multiple levels: app-level config rules → tool-spec
 - [x] Bash execution engine — sandbox, pipe management (11.5K lines)
 - [x] Permission pipeline — defense-in-depth, sandbox (9.5K lines)
 
-**Architecture Series** (Planned — high value ⭐⭐)
+**Architecture Series** (Completed — final)
 - [x] Swarm agents — multi-agent group coordination (6.8K lines)
 - [x] Session persistence — conversation storage (7.6K lines)
-- [ ] Context assembly — attachments, memory, skills
+- [x] Context assembly — attachments, memory, skills
 - [ ] Compact system — auto-compaction, snip, microcompact
 - [ ] Startup optimization — preloading, lazy imports
 - [ ] Bridge system — IDE bidirectional communication (11.7K lines)
 - [ ] CLAUDE.md parsing — project context files (1.3K lines)
 
 **Localization**
-- [ ] 中文 README
+- [x] 中文 README
 
 ---
 

@@ -29,8 +29,11 @@
 | 3 | **多智能体协调器 (Coordinator)** | Claude Code 如何衍生并行工作线程、分发消息并汇总结果 | [阅读 →](architecture/zh-CN/03-coordinator.md) |
 | 4 | **插件系统 (Plugin System)** | 插件如何加载、验证和集成（1.88万行代码） | [阅读 →](architecture/zh-CN/04-plugin-system.md) |
 | 5 | **钩子系统 (Hook System)** | 涵盖 PreToolUse / PostToolUse / SessionStart 的可扩展性（8千行代码） | [阅读 →](architecture/zh-CN/05-hook-system.md) |
-| 6 | **Bash 执行引擎 (Bash Engine)** | 安全命令执行、沙箱管理、管道流处理（1.15万行代码） | 敬请期待 |
-| 7 | **权限流水线 (Permission)** | 纵深防御：配置规则 → 工具检查 → 操作系统沙箱（9.5千行代码） | 敬请期待 |
+| 6 | **Bash 执行引擎 (Bash Engine)** | 安全命令执行、沙箱管理、管道流处理（1.15万行代码） | [阅读 →](architecture/zh-CN/06-bash-engine.md) |
+| 7 | **权限流水线 (Permission)** | 纵深防御：配置规则 → 工具检查 → 操作系统沙箱（9.5千行代码） | [阅读 →](architecture/zh-CN/07-permission-pipeline.md) |
+| 8 | **Swarm 智能体** | 多智能体团队协作：邮箱 IPC、后端检测、权限委托（6.8千行代码） | [阅读 →](architecture/zh-CN/08-agent-swarms.md) |
+| 9 | **会话持久化 (Session Persistence)** | 仅追加 JSONL 存储、parent-UUID 链、64KB 轻量恢复（7.6千行代码） | [阅读 →](architecture/zh-CN/09-session-persistence.md) |
+| 10 | **上下文装配 (Context Assembly)** | 最终上下文窗口组装：系统注入、工具过滤、压缩与截断 | [阅读 →](architecture/10-context-assembly.md) |
 
 > ⭐ **喜欢这种“套娃”感吗？给这个仓库点个赞吧 —— 一个正在分析自己的 AI 值得拥有这颗星。**
 
@@ -158,13 +161,13 @@ claude-code-deep-dive/
 **架构解析系列** (下一阶段 - 高影响力 ⭐⭐⭐)
 - [x] 插件系统 (Plugin System) —— 加载、市场与安装 (1.88万行)
 - [x] 钩子系统 (Hook System) —— PreToolUse / PostToolUse (8千行)
-- [ ] Bash 执行引擎 —— 沙箱、管道管理 (1.15万行)
-- [ ] 权限流水线 —— 纵深防御、操作系统沙箱 (9.5千行)
+- [x] Bash 执行引擎 —— 沙箱、管道管理 (1.15万行)
+- [x] 权限流水线 —— 纵深防御、操作系统沙箱 (9.5千行)
 
-**架构解析系列** (计划中 - 高价值 ⭐⭐)
-- [ ] Swarm 智能体 —— 多智能体集群协作 (6.8千行)
-- [ ] 会话持久化 —— 对话存储机制 (4.7千行)
-- [ ] 上下文装配 —— 附件、记忆、技能
+**架构解析系列** (已完成 - 最终)
+- [x] Swarm 智能体 —— 多智能体集群协作 (6.8千行)
+- [x] 会话持久化 —— 对话存储机制 (7.6千行)
+- [x] 上下文装配 —— 附件、记忆、技能
 - [ ] 压缩系统 —— 自动压缩与微缩技术
 - [ ] 启动优化 —— 预加载与延迟加载
 - [ ] 桥接系统 (Bridge) —— 与 IDE 的双向通信 (1.17万行)
