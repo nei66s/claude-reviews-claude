@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 
 import type { SessionUser } from "./auth";
@@ -79,8 +80,31 @@ type AppSettings = {
   sandboxWritableRoots: string[];
 };
 
-const DATA_DIR = path.join(process.cwd(), ".chocks-local");
-const APP_SETTINGS_PATH = path.join(DATA_DIR, "app-settings.json");
+const CONFIGURED_DATA_DIR = process.env.CHOCKS_DATA_DIR?.trim();
+const DEFAULT_LOCAL_DATA_DIR = path.join(process.cwd(), ".chocks-local");
+const DEFAULT_SERVERLESS_DATA_DIR = path.join(os.tmpdir(), "chocks-local");
+
+function resolveDataDir() {
+  if (CONFIGURED_DATA_DIR) {
+    return CONFIGURED_DATA_DIR;
+  }
+
+  if (process.env.VERCEL === "1" || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    return DEFAULT_SERVERLESS_DATA_DIR;
+  }
+
+  return DEFAULT_LOCAL_DATA_DIR;
+}
+
+let cachedDataDir: string | null = null;
+
+function getDataDir() {
+  if (!cachedDataDir) {
+    cachedDataDir = resolveDataDir();
+  }
+
+  return cachedDataDir;
+}
 
 const defaultPlugins = (): PluginRecord[] => [
   {
@@ -131,7 +155,21 @@ function defaultAppSettings(): AppSettings {
 }
 
 async function ensureDataDir() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
+  const preferredDir = getDataDir();
+
+  try {
+    await fs.mkdir(preferredDir, { recursive: true });
+    cachedDataDir = preferredDir;
+    return preferredDir;
+  } catch (error) {
+    if (preferredDir === DEFAULT_SERVERLESS_DATA_DIR || CONFIGURED_DATA_DIR) {
+      throw error;
+    }
+
+    await fs.mkdir(DEFAULT_SERVERLESS_DATA_DIR, { recursive: true });
+    cachedDataDir = DEFAULT_SERVERLESS_DATA_DIR;
+    return DEFAULT_SERVERLESS_DATA_DIR;
+  }
 }
 
 async function resolveOwnerId(user: SessionUser) {
@@ -148,7 +186,7 @@ async function resolveOwnerId(user: SessionUser) {
 }
 
 function getStatePath(userId: string) {
-  return path.join(DATA_DIR, `${userId}.json`);
+  return path.join(getDataDir(), `${userId}.json`);
 }
 
 export async function readState(userId: string) {
@@ -174,9 +212,9 @@ export async function writeState(userId: string, state: UserState) {
 }
 
 export async function readAppSettings() {
-  await ensureDataDir();
+  const dataDir = await ensureDataDir();
   try {
-    const raw = await fs.readFile(APP_SETTINGS_PATH, "utf8");
+    const raw = await fs.readFile(path.join(dataDir, "app-settings.json"), "utf8");
     const parsed = JSON.parse(raw) as Partial<AppSettings>;
     return {
       fullAccess: Boolean(parsed.fullAccess),
@@ -198,8 +236,12 @@ export async function readAppSettings() {
 }
 
 export async function writeAppSettings(settings: AppSettings) {
-  await ensureDataDir();
-  await fs.writeFile(APP_SETTINGS_PATH, JSON.stringify(settings, null, 2), "utf8");
+  const dataDir = await ensureDataDir();
+  await fs.writeFile(
+    path.join(dataDir, "app-settings.json"),
+    JSON.stringify(settings, null, 2),
+    "utf8",
+  );
 }
 
 export async function appendLog(
