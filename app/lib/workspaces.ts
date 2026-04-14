@@ -6,6 +6,8 @@ export const workspaceRouteById = {
   monitor: "/monitor",
   swarm: "/swarm",
   audit: "/audit",
+  coordination: "/coordination",
+  "doutora-kitty": "/doutora-kitty",
 } as const;
 
 export type WorkspaceId = keyof typeof workspaceRouteById;

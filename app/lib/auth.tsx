@@ -8,6 +8,7 @@ interface User {
   id: string;
   displayName: string;
   email: string;
+  avatar?: string | null;
 }
 
 interface AuthContextType {
@@ -15,6 +16,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateProfile: (displayName: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -91,8 +93,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
+  const updateProfile = async (displayName: string) => {
+    const data = await requestJson('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ displayName }),
+    });
+
+    if (data?.user) {
+      setUser(data.user);
+      localStorage.setItem('chocks_user', JSON.stringify(data.user));
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateProfile, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

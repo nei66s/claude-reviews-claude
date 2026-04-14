@@ -11,8 +11,15 @@ export function getBearerToken(request: NextRequest) {
   return header.slice(7).trim() || null;
 }
 
+export function getQueryToken(request: NextRequest) {
+  return request.nextUrl.searchParams.get("token") || null;
+}
+
 export function requireUser(request: NextRequest) {
-  const token = getBearerToken(request);
+  let token = getBearerToken(request);
+  if (!token) {
+    token = getQueryToken(request);
+  }
   if (!token) {
     return null;
   }

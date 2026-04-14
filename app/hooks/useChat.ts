@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Attachment, Chat, Message, requestJson, TraceEntry } from "../lib/api";
+import { getAgentProfile, triageAgentFromMessage } from "../lib/familyRouting";
 
 const LOCAL_CHAT_CACHE_KEY = "chocks_conversations_cache_v1";
 
@@ -32,14 +33,50 @@ function writeLocalConversations(conversations: Chat[]) {
 function mergeConversations(primary: Chat[], secondary: Chat[]) {
   const merged = new Map<string, Chat>();
 
-  for (const chat of [...primary, ...secondary]) {
+  for (const chat of secondary) {
     if (!chat?.id) continue;
-    if (!merged.has(chat.id)) {
+    merged.set(chat.id, chat);
+  }
+
+  for (const chat of primary) {
+    if (!chat?.id) continue;
+    const previous = merged.get(chat.id);
+    if (!previous) {
       merged.set(chat.id, chat);
+      continue;
     }
+
+    const mergedMessages = Array.from({
+      length: Math.max(chat.messages?.length || 0, previous.messages?.length || 0),
+    }).map((_, index) => {
+      const primaryMessage = chat.messages?.[index];
+      const secondaryMessage = previous.messages?.[index];
+      if (primaryMessage && secondaryMessage) {
+        return { ...secondaryMessage, ...primaryMessage };
+      }
+      return primaryMessage ?? secondaryMessage;
+    });
+
+    merged.set(chat.id, {
+      ...previous,
+      ...chat,
+      messages: mergedMessages.filter(Boolean) as Message[],
+    });
   }
 
   return Array.from(merged.values());
+}
+
+function getLastAgentId(chat: Chat | null) {
+  const messages = chat?.messages || [];
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (message?.role === "agent") {
+      return message.agentId || "chocks";
+    }
+  }
+
+  return "chocks";
 }
 
 export function useChat(enabled = true) {
@@ -47,6 +84,7 @@ export function useChat(enabled = true) {
   const [conversations, setConversations] = useState<Chat[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const sendLockRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const persistConversation = useCallback(async (chat: Chat) => {
     await requestJson("/conversations", {
@@ -207,6 +245,11 @@ export function useChat(enabled = true) {
     [enabled],
   );
 
+  const cancelMessage = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+  }, []);
+
   const sendMessage = useCallback(
     async (content: string, attachments: Attachment[] = []) => {
       if (!enabled) return;
@@ -236,18 +279,33 @@ export function useChat(enabled = true) {
         }
       }
 
-      const visibleUserContent = trimmedContent || "[arquivo anexado]";
+      const routingSource = [trimmedContent, ...attachments.map((attachment) => attachment.name)].filter(Boolean).join(" ");
+      const previousAgentId = getLastAgentId(chat);
+      const routing = triageAgentFromMessage(routingSource, previousAgentId);
+      const selectedAgent = routing.primaryAgent;
+      const helperAgent = routing.helperAgent;
+      const userVisibleContent = routing.cleanedInput.trim();
+      const visibleUserContent = userVisibleContent || trimmedContent || "[arquivo anexado]";
       const isFirstMessage = (chat.messages?.length || 0) === 0;
       const newTitle = isFirstMessage
-        ? (trimmedContent || attachments[0]?.name || "Nova conversa").substring(0, 30)
+        ? (visibleUserContent || attachments[0]?.name || "Nova conversa").substring(0, 30)
         : chat.title;
+      const showHandoff = selectedAgent.id !== previousAgentId || (isFirstMessage && selectedAgent.id !== "chocks");
 
       const userMsg: Message = {
         role: "user",
         content: visibleUserContent,
         attachments: attachments.map((attachment) => ({ name: attachment.name, content: attachment.content })),
       };
-      const initialAgentMsg: Message = { role: "agent", content: "", streaming: true };
+      const initialAgentMsg: Message = {
+        role: "agent",
+        content: "",
+        streaming: true,
+        agentId: selectedAgent.id,
+        helperAgentId: helperAgent?.id,
+        handoffLabel: showHandoff ? `${selectedAgent.name} assumiu a conversa` : undefined,
+        collaborationLabel: helperAgent ? `${selectedAgent.name} chamou ${helperAgent.name} para ajudar` : undefined,
+      };
       const updatedMessages = [...(chat.messages || []), userMsg, initialAgentMsg];
       const optimisticChat: Chat = { ...chat, title: newTitle, messages: updatedMessages };
 
@@ -257,17 +315,23 @@ export function useChat(enabled = true) {
         ...prev.filter((item) => item.id !== optimisticChat.id),
       ]);
       setIsThinking(true);
+      let fullContent = "";
 
       try {
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
         const token = localStorage.getItem("chocks_token");
         const response = await fetch("/api/chat/stream", {
           method: "POST",
+          signal: abortController.signal,
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             chatId: optimisticChat.id,
+            selectedAgentId: selectedAgent.id,
+            helperAgentId: helperAgent?.id,
             messages: updatedMessages.slice(0, -1).map((message) => {
               if (message.role !== "user" || !Array.isArray(message.attachments) || message.attachments.length === 0) {
                 return message;
@@ -296,7 +360,6 @@ export function useChat(enabled = true) {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let fullContent = "";
         let buffer = "";
 
         while (true) {
@@ -330,6 +393,8 @@ export function useChat(enabled = true) {
                 const msgs = [...prev.messages];
                 const last = msgs[msgs.length - 1];
                 if (last?.role === "agent") {
+                  last.agentId = last.agentId || selectedAgent.id;
+                  last.helperAgentId = last.helperAgentId || helperAgent?.id;
                   last.content = fullContent;
                 }
                 return { ...prev, messages: msgs };
@@ -342,6 +407,8 @@ export function useChat(enabled = true) {
                 const msgs = [...prev.messages];
                 const last = msgs[msgs.length - 1];
                 if (last?.role === "agent") {
+                  last.agentId = last.agentId || selectedAgent.id;
+                  last.helperAgentId = last.helperAgentId || helperAgent?.id;
                   last.trace = [...(last.trace || []), payload as TraceEntry];
                 }
                 return { ...prev, messages: msgs };
@@ -354,6 +421,8 @@ export function useChat(enabled = true) {
                 const msgs = [...prev.messages];
                 const last = msgs[msgs.length - 1];
                 if (last?.role === "agent") {
+                  last.agentId = last.agentId || selectedAgent.id;
+                  last.helperAgentId = last.helperAgentId || helperAgent?.id;
                   last.content = payload.output_text || fullContent;
                   last.streaming = false;
                   if (Array.isArray(payload.trace)) {
@@ -376,22 +445,31 @@ export function useChat(enabled = true) {
           const msgs = [...prev.messages];
           const last = msgs[msgs.length - 1];
           if (last?.role === "agent") {
-            last.content =
-              err instanceof Error && err.message.trim()
+            const fallbackAgent = getAgentProfile(selectedAgent.id);
+            last.agentId = last.agentId || fallbackAgent.id;
+            last.helperAgentId = last.helperAgentId || helperAgent?.id;
+            last.handoffLabel = last.handoffLabel || (showHandoff ? `${fallbackAgent.name} assumiu a conversa` : undefined);
+            last.collaborationLabel = last.collaborationLabel || (helperAgent ? `${fallbackAgent.name} chamou ${helperAgent.name} para ajudar` : undefined);
+            const aborted = err instanceof Error && err.name === "AbortError";
+            last.content = aborted
+              ? fullContent.trim() || "Resposta interrompida por voce."
+              : err instanceof Error && err.message.trim()
                 ? err.message
                 : "Nao foi possivel enviar a mensagem agora.";
             last.streaming = false;
             last.trace = [
               {
                 type: "model",
-                label: "Falha na resposta",
-                state: "error",
-                subtitle: "O streaming foi interrompido com erro.",
+                label: aborted ? "Resposta interrompida" : "Falha na resposta",
+                state: aborted ? "complete" : "error",
+                subtitle: aborted ? "O streaming foi cancelado manualmente." : "O streaming foi interrompido com erro.",
                 payload: {
                   message:
-                    err instanceof Error && err.message.trim()
-                      ? err.message
-                      : "Erro desconhecido",
+                    aborted
+                      ? "Cancelado pelo usuario"
+                      : err instanceof Error && err.message.trim()
+                        ? err.message
+                        : "Erro desconhecido",
                 },
               },
             ];
@@ -399,6 +477,7 @@ export function useChat(enabled = true) {
           return { ...prev, messages: msgs };
         });
       } finally {
+        abortControllerRef.current = null;
         setIsThinking(false);
         sendLockRef.current = false;
       }
@@ -410,6 +489,7 @@ export function useChat(enabled = true) {
     activeChat,
     conversations,
     isThinking,
+    cancelMessage,
     sendMessage,
     createNewChat,
     duplicateChat,

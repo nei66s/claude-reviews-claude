@@ -2,7 +2,7 @@
 
 Minimal agent server with a local-first web UI. **Production-ready for internal team use.**
 
-**Status**: Fase 1 (MVP) completada. Veja [PHASE_1_COMPLETE.md](./PHASE_1_COMPLETE.md) e [IMPLEMENTATION_ROADMAP.md](./IMPLEMENTATION_ROADMAP.md) para roadmap futuro.
+**Status**: Fase 1 (MVP) completada. Veja [PHASE_1_COMPLETE.md](../docs/project/progress/PHASE_1_COMPLETE.md) e [IMPLEMENTATION_ROADMAP.md](../docs/project/IMPLEMENTATION_ROADMAP.md) para roadmap futuro.
 
 Main endpoints:
 

@@ -1,0 +1,82 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - img "Chocks" [ref=e17]
+          - generic [ref=e18]:
+            - generic [ref=e19]: Chocks
+            - generic [ref=e20]: by Pimpotasma
+        - button "Recolher" [ref=e21] [cursor=pointer]:
+          - img [ref=e22]
+      - generic [ref=e25]:
+        - button "Conversas" [ref=e26] [cursor=pointer]:
+          - img [ref=e28]
+          - generic [ref=e30]: Conversas
+        - button "Ferramentas" [ref=e31] [cursor=pointer]:
+          - img [ref=e33]
+          - generic [ref=e36]: Ferramentas
+        - button "Arquivos" [ref=e37] [cursor=pointer]:
+          - img [ref=e39]
+          - generic [ref=e42]: Arquivos
+        - button "Workflow" [ref=e43] [cursor=pointer]:
+          - img [ref=e45]
+          - generic [ref=e47]: Workflow
+        - button "Monitor" [ref=e48] [cursor=pointer]:
+          - img [ref=e50]
+          - generic [ref=e52]: Monitor
+        - button "Audit" [ref=e53] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e57]: Audit
+        - button "Coordination" [ref=e58] [cursor=pointer]:
+          - img [ref=e60]
+          - generic [ref=e64]: Coordination
+        - button "Doutora Kitty" [ref=e65] [cursor=pointer]:
+          - img [ref=e67]
+          - generic [ref=e69]: Doutora Kitty
+      - generic [ref=e71]:
+        - button "Nova conversa" [ref=e72] [cursor=pointer]:
+          - img [ref=e73]
+          - generic [ref=e74]: Nova conversa
+        - textbox "Buscar..." [ref=e75]
+      - generic [ref=e76]:
+        - generic [ref=e77]: Recentes
+        - generic [ref=e79]: Nenhuma conversa
+      - generic [ref=e83]:
+        - img "Chuba" [ref=e85]
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - generic [ref=e88]: Chuba
+            - generic [ref=e89]: 0%
+          - generic [ref=e92]: 😊 Saciado
+          - generic [ref=e93]:
+            - button "🍪 Cuki" [ref=e94]
+            - button "😴 Mimir" [ref=e95]
+    - main [ref=e96]:
+      - generic [ref=e97]:
+        - generic [ref=e98]: Nova conversa
+        - generic [ref=e99]:
+          - generic "Latencia da API" [ref=e100]:
+            - img [ref=e101]
+            - generic [ref=e104]: "--"
+            - generic [ref=e105]: ms
+          - generic "Latencia do Banco de Dados" [ref=e106]:
+            - img [ref=e107]
+            - generic [ref=e112]: "--"
+            - generic [ref=e113]: ms
+        - button "AD Admin" [ref=e114] [cursor=pointer]:
+          - generic [ref=e115]: AD
+          - generic [ref=e116]: Admin
+        - generic [ref=e117]:
+          - 'button "Acesso ao computador inteiro: desligado" [disabled] [ref=e119]':
+            - img [ref=e120]
+          - 'button "Tema: dark" [ref=e123] [cursor=pointer]':
+            - img [ref=e124]
+          - button "Abrir configuracoes" [ref=e130] [cursor=pointer]:
+            - img [ref=e131]
+          - button "Sair" [ref=e134] [cursor=pointer]:
+            - img [ref=e135]
+      - paragraph [ref=e141]: Doutora Kitty está analisando seu perfil... 🧐

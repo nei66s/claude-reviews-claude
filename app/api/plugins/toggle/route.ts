@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireUser } from "@/app/lib/server/request";
-import { togglePlugin } from "@/app/lib/server/store";
+import { requireUser } from "@/lib/server/request";
+import { togglePlugin } from "@/lib/server/store";
 
 export async function POST(request: NextRequest) {
   const user = requireUser(request);
@@ -21,3 +21,4 @@ export async function POST(request: NextRequest) {
     plugin: await togglePlugin(user, id, enabled),
   });
 }
+

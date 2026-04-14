@@ -12,6 +12,7 @@
  */
 
 import type { ToolContext } from '../tools.js'
+import { moderateText } from '../moderation.js'
 
 export interface PermissionContext extends ToolContext {
   approvedRules?: string[]
@@ -40,6 +41,8 @@ export interface AskRule {
 class PermissionPipeline {
   private denyRules: DenyRule[] = []
   private askRules: AskRule[] = []
+  private rateLimitMap: Map<string, { count: number; resetTime: number }> = new Map()
+  private tokenBudgetMap: Map<string, { used: number; limit: number; resetTime: number }> = new Map()
 
   // Step 1: Deny rules (fail-closed)
   async step1_DenyRules(tool: string, context: PermissionContext): Promise<PermissionCheckResult> {
@@ -128,8 +131,70 @@ class PermissionPipeline {
 
   // Step 6: Safety checks (moderation, rate limits)
   async step6_SafetyChecks(tool: string, input: any, context: PermissionContext): Promise<PermissionCheckResult> {
-    // TODO: Add moderation, rate limiting, token budgets
-    // For now, placeholder
+    const chatId = context.chatId || 'unknown'
+    const now = Date.now()
+
+    // Rate limiting: 60 calls per minute per chat
+    const rateLimitKey = `rate_${chatId}`
+    let rateLimit = this.rateLimitMap.get(rateLimitKey)
+    
+    if (!rateLimit || now > rateLimit.resetTime) {
+      rateLimit = { count: 0, resetTime: now + 60000 } // 60-second window
+      this.rateLimitMap.set(rateLimitKey, rateLimit)
+    }
+    
+    rateLimit.count++
+    if (rateLimit.count > 60) {
+      return {
+        allowed: false,
+        reason: 'Rate limit exceeded: 60 calls per minute',
+        step: 6,
+      }
+    }
+
+    // Token budget: 100k tokens per session per hour
+    const budgetKey = `budget_${chatId}`
+    let budget = this.tokenBudgetMap.get(budgetKey)
+    
+    if (!budget || now > budget.resetTime) {
+      budget = { used: 0, limit: 100000, resetTime: now + 3600000 } // 1-hour window
+      this.tokenBudgetMap.set(budgetKey, budget)
+    }
+    
+    // Rough token estimate: input words * 1.3
+    const inputStr = JSON.stringify(input)
+    const estimatedTokens = Math.ceil(inputStr.split(/\s+/).length * 1.3)
+    
+    if (budget.used + estimatedTokens > budget.limit) {
+      return {
+        allowed: false,
+        reason: `Token budget exceeded: ${budget.used}/${budget.limit} tokens used`,
+        step: 6,
+      }
+    }
+    budget.used += estimatedTokens
+
+    // Content moderation: check tool input for harmful content
+    if (input && typeof input === 'object') {
+      for (const [key, value] of Object.entries(input)) {
+        if (typeof value === 'string' && value.length > 0) {
+          try {
+            const modResult = await moderateText(value)
+            if (!modResult.allowed) {
+              return {
+                allowed: false,
+                reason: `Content moderation blocked: ${modResult.reason}`,
+                step: 6,
+              }
+            }
+          } catch (err) {
+            // Moderation error: log but don't block
+            console.error('Moderation check error:', err)
+          }
+        }
+      }
+    }
+
     return { allowed: true }
   }
 

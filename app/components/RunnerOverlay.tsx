@@ -1,35 +1,46 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 const RUNNER_PHRASES = [
-  "To ino ve isso agora",
-  "To correndo pra Betinha naum briga",
-  "Pêra vuxê... pobi do Chokito",
-  "Euuu.. ja volto!",
-  "Tô ficano canxado",
-  "Perai q to ino",
-  "Vou ver o que o vuxê quer pobi"
+  "indo consultar a betinha, segura as pontas ai",
+  "indo consultar o pimpim, ja ja eu volto",
 ];
 
 export default function RunnerOverlay({ active = false }) {
-  const phrase = RUNNER_PHRASES[0];
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    if (!active) return;
+
+    const interval = setInterval(() => {
+      setPhraseIndex((current) => (current + 1) % RUNNER_PHRASES.length);
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [active]);
 
   if (!active) return null;
 
+  const phrase = RUNNER_PHRASES[phraseIndex];
+
   return (
     <div className={`runner-overlay active`}>
-      <div className="runner-oval">
-        <video
-          src="/runner-loop.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          aria-hidden="true"
-        />
-      </div>
-      <div className="runner-text">{phrase}</div>
-      <div className="runner-progress-wrap">
-        <div className="runner-progress-bar"></div>
+      <div className="runner-card">
+        <div className="runner-oval">
+          <video
+            src="/chocks-effort.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            aria-hidden="true"
+          />
+        </div>
+        <div className="runner-copy">
+          <div className="runner-label">Consultando especialista</div>
+          <div className="runner-caption">{phrase}</div>
+        </div>
       </div>
     </div>
   );

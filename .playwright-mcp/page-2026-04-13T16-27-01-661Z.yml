@@ -1,0 +1,911 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic:
+      - link "Ir para o conteúdo principal" [ref=e2] [cursor=pointer]
+      - link "Ajuda sobre acessibilidade" [ref=e3] [cursor=pointer]:
+        - /url: https://support.google.com/websearch/answer/181196?hl=pt-BR
+      - link "Feedback de acessibilidade" [ref=e4] [cursor=pointer]
+  - generic [ref=e9]:
+    - search [ref=e10]:
+      - generic [ref=e12]:
+        - link "Ir para a página inicial do Google" [ref=e14] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=pt-BR&sa=X&ved=0ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQPAgJ
+          - img [ref=e15]
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - combobox "Pesquisar" [ref=e26]: cotação dólar hoje cotação dólar hoje
+            - generic [ref=e27]:
+              - button "Limpar" [ref=e29] [cursor=pointer]:
+                - img [ref=e31]
+              - generic [ref=e34]:
+                - button "Ferramentas de inserção de texto" [ref=e35] [cursor=pointer]:
+                  - img [ref=e37]
+                - button "Pesquisar por voz" [ref=e39] [cursor=pointer]:
+                  - img [ref=e40]
+                - button "Pesquisa por imagem" [ref=e42] [cursor=pointer]:
+                  - img [ref=e43]
+          - button "Pesquisar" [ref=e45] [cursor=pointer]:
+            - img [ref=e48]
+    - generic [ref=e50]:
+      - button "Configurações" [ref=e52] [cursor=pointer]:
+        - img [ref=e55]
+      - generic [ref=e58]:
+        - button "Google Apps" [ref=e60] [cursor=pointer]:
+          - img [ref=e61]
+        - link "Fazer login" [ref=e65] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=pt-BR&passive=true&continue=https://www.google.com/search%3Fq%3Dcota%25C3%25A7%25C3%25A3o%2Bd%25C3%25B3lar%2Bhoje%26sei%3DUxndafHFCdfR1sQPhvDYsQE&ec=futura_srp_og_si_72236_p
+  - generic [ref=e67]:
+    - navigation [ref=e73]:
+      - generic [ref=e77]:
+        - list [ref=e78]:
+          - listitem [ref=e79]:
+            - link "Modo IA" [ref=e82] [cursor=pointer]:
+              - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&udm=50&fbs=ADc_l-acAb_3MMOAUx0zmbUpgBqRilUSyLqn-Fa8ZJV2elvu5F8gS64EDEtbwJro3QUGwOytgTCO0ACl5W-wBRoeHmAV_IoMeukDNEfgLMqMPEi3wRsrKEBfOKyhdS7VH2MW-tiroRtAAyzbsfyc2DiPkokYbNIvViUwHbWs4-nqc9-TIgJTcuOwWUwu-_XJ_MtuuHaFqjnvCzrjUfXyIp203MTJBQKH1AXwVgQdBdTbl2a6vVavPW4&aep=1&ntc=1&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ2J8OegQIERAE
+              - generic [ref=e85]: Modo IA
+          - listitem [ref=e86]:
+            - link "Tudo" [disabled] [ref=e87]:
+              - generic [ref=e89]: Tudo
+          - listitem [ref=e90]:
+            - link "Finanças" [ref=e91] [cursor=pointer]:
+              - /url: /finance?sca_esv=27b04becbc364c98&output=search&q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&source=lnms&fbs=ADc_l-acAb_3MMOAUx0zmbUpgBqRilUSyLqn-Fa8ZJV2elvu5F8gS64EDEtbwJro3QUGwOytgTCO0ACl5W-wBRoeHmAV_IoMeukDNEfgLMqMPEi3wRsrKEBfOKyhdS7VH2MW-tiroRtAAyzbsfyc2DiPkokYbNIvViUwHbWs4-nqc9-TIgJTcuOwWUwu-_XJ_MtuuHaFqjnvCzrjUfXyIp203MTJBQKH1AXwVgQdBdTbl2a6vVavPW4&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ0pQJegQIExAB
+              - generic [ref=e93]: Finanças
+          - listitem [ref=e94]:
+            - link "Notícias" [ref=e95] [cursor=pointer]:
+              - /url: /search?sca_esv=27b04becbc364c98&q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&tbm=nws&source=lnms&fbs=ADc_l-acAb_3MMOAUx0zmbUpgBqRilUSyLqn-Fa8ZJV2elvu5F8gS64EDEtbwJro3QUGwOytgTCO0ACl5W-wBRoeHmAV_IoMeukDNEfgLMqMPEi3wRsrKEBfOKyhdS7VH2MW-tiroRtAAyzbsfyc2DiPkokYbNIvViUwHbWs4-nqc9-TIgJTcuOwWUwu-_XJ_MtuuHaFqjnvCzrjUfXyIp203MTJBQKH1AXwVgQdBdTbl2a6vVavPW4&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ0pQJegQIFBAB
+              - generic [ref=e97]: Notícias
+          - listitem [ref=e98]:
+            - link "Imagens" [ref=e99] [cursor=pointer]:
+              - /url: /search?sca_esv=27b04becbc364c98&udm=2&fbs=ADc_l-acAb_3MMOAUx0zmbUpgBqRilUSyLqn-Fa8ZJV2elvu5F8gS64EDEtbwJro3QUGwOytgTCO0ACl5W-wBRoeHmAV_IoMeukDNEfgLMqMPEi3wRsrKEBfOKyhdS7VH2MW-tiroRtAAyzbsfyc2DiPkokYbNIvViUwHbWs4-nqc9-TIgJTcuOwWUwu-_XJ_MtuuHaFqjnvCzrjUfXyIp203MTJBQKH1AXwVgQdBdTbl2a6vVavPW4&q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQtKgLegQIEhAB
+              - generic [ref=e101]: Imagens
+          - listitem [ref=e102]:
+            - link "Shopping" [ref=e103] [cursor=pointer]:
+              - /url: /search?sca_esv=27b04becbc364c98&udm=28&fbs=ADc_l-acAb_3MMOAUx0zmbUpgBqRilUSyLqn-Fa8ZJV2elvu5F8gS64EDEtbwJro3QUGwOytgTCO0ACl5W-wBRoeHmAV_IoMeukDNEfgLMqMPEi3wRsrKEBfOKyhdS7VH2MW-tiroRtAAyzbsfyc2DiPkokYbNIvViUwHbWs4-nqc9-TIgJTcuOwWUwu-_XJ_MtuuHaFqjnvCzrjUfXyIp203MTJBQKH1AXwVgQdBdTbl2a6vVavPW4&q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&ved=1t:220175&ictx=111
+              - generic [ref=e105]: Shopping
+          - listitem [ref=e106]:
+            - link "Vídeos" [ref=e107] [cursor=pointer]:
+              - /url: /search?sca_esv=27b04becbc364c98&udm=7&fbs=ADc_l-acAb_3MMOAUx0zmbUpgBqRilUSyLqn-Fa8ZJV2elvu5F8gS64EDEtbwJro3QUGwOytgTCO0ACl5W-wBRoeHmAV_IoMeukDNEfgLMqMPEi3wRsrKEBfOKyhdS7VH2MW-tiroRtAAyzbsfyc2DiPkokYbNIvViUwHbWs4-nqc9-TIgJTcuOwWUwu-_XJ_MtuuHaFqjnvCzrjUfXyIp203MTJBQKH1AXwVgQdBdTbl2a6vVavPW4&q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQtKgLegQIFRAB
+              - generic [ref=e109]: Vídeos
+          - listitem [ref=e110]:
+            - button "Mais filtros" [ref=e111] [cursor=pointer]:
+              - generic "Mais filtros" [ref=e112]:
+                - generic [ref=e113]:
+                  - generic [ref=e114]: Mais
+                  - img [ref=e116]
+        - button "Ferramentas" [ref=e119] [cursor=pointer]:
+          - generic [ref=e121]:
+            - generic [ref=e122]: Ferramentas
+            - img [ref=e124]
+    - heading "Resultados da pesquisa" [level=1] [ref=e127]
+    - main [ref=e133]:
+      - generic [ref=e137]:
+        - generic [ref=e151]:
+          - heading "Conversor de moeda" [level=2] [ref=e152]
+          - generic "Conversor de taxa de câmbio" [ref=e156]:
+            - generic [ref=e158]:
+              - generic [ref=e159]:
+                - generic [ref=e160]:
+                  - generic [ref=e161]:
+                    - generic [ref=e163]: 1 Dólar americano igual a
+                    - generic [ref=e164]: 5,02 Real brasileiro
+                  - generic [ref=e165]:
+                    - text: 13 de abr., 16:25 UTC ·
+                    - generic [ref=e166]:
+                      - text: De
+                      - link "Morningstar" [ref=e168] [cursor=pointer]:
+                        - /url: https://www.morningstar.com/
+                      - text: ·
+                    - link "Fontes" [ref=e170] [cursor=pointer]:
+                      - /url: https://www.google.com/intl/pt-BR/googlefinance/disclaimer/
+                  - generic [ref=e172]:
+                    - generic [ref=e173]:
+                      - spinbutton "Campo do montante da moeda" [ref=e174]: "1"
+                      - generic [ref=e175]:
+                        - combobox "Tipo de moeda" [ref=e177]:
+                          - option "AINFT"
+                          - option "Aave"
+                          - option "Aerodrome Finance"
+                          - option "Afegane afegão"
+                          - option "Algorand"
+                          - option "Aptos"
+                          - option "Arbitrum"
+                          - option "Ariary malgaxe"
+                          - option "Artificial Superintelligence Alliance"
+                          - option "Aster"
+                          - option "Avalanche"
+                          - option "Baht tailandês"
+                          - option "Balboa panamenho"
+                          - option "Birr etíope"
+                          - option "BitTorrent [New]"
+                          - option "Bitcoin SV"
+                          - option "Bitget Token"
+                          - option "Bittensor"
+                          - option "Boliviano da Bolívia"
+                          - option "Bolívar soberano"
+                          - option "Bonk"
+                          - option "Canton"
+                          - option "Cedi ganês"
+                          - option "Celestia"
+                          - option "Chiliz"
+                          - option "Colom salvadorenho"
+                          - option "Colón costarriquenho"
+                          - option "Coroa dinamarquesa"
+                          - option "Coroa islandesa"
+                          - option "Coroa norueguesa"
+                          - option "Coroa sueca"
+                          - option "Coroa tcheca"
+                          - option "Cosmos"
+                          - option "Cronos"
+                          - option "Curve DAO Token"
+                          - option "Córdoba nicaraguense"
+                          - option "Dai"
+                          - option "Dalasi gambiano"
+                          - option "Dinar argelino"
+                          - option "Dinar bareinita"
+                          - option "Dinar iraquiano"
+                          - option "Dinar jordaniano"
+                          - option "Dinar kuwaitiano"
+                          - option "Dinar líbio"
+                          - option "Dinar macedônio"
+                          - option "Dinar sérvio"
+                          - option "Dinar tunisiano"
+                          - option "Direitos especiais de saque"
+                          - option "Dirham dos Emirados Árabes Unidos"
+                          - option "Dirham marroquino"
+                          - option "Dong vietnamita"
+                          - option "DoubleZero"
+                          - option "Dram armênio"
+                          - option "Dólar Liberiano"
+                          - option "Dólar americano" [selected]
+                          - option "Dólar australiano"
+                          - option "Dólar bahamense"
+                          - option "Dólar barbadense"
+                          - option "Dólar belizenho"
+                          - option "Dólar bermudense"
+                          - option "Dólar bruneano"
+                          - option "Dólar canadense"
+                          - option "Dólar das Ilhas Cayman"
+                          - option "Dólar das Ilhas Salomão"
+                          - option "Dólar de Hong Kong"
+                          - option "Dólar de Trinidad e Tobago"
+                          - option "Dólar do Caribe Oriental"
+                          - option "Dólar fijiano"
+                          - option "Dólar guianense"
+                          - option "Dólar jamaicano"
+                          - option "Dólar namibiano"
+                          - option "Dólar neozelandês"
+                          - option "Dólar singapuriano"
+                          - option "Dólar surinamês"
+                          - option "EURC"
+                          - option "Escudo cabo-verdiano"
+                          - option "Ethena"
+                          - option "Ethena USDe"
+                          - option "Euro"
+                          - option "FLOKI"
+                          - option "Factom"
+                          - option "Filecoin"
+                          - option "First Digital USD"
+                          - option "Flare"
+                          - option "Florim arubano"
+                          - option "Florim das Antilhas Holandesas"
+                          - option "Florim do Caribe"
+                          - option "Florim húngaro"
+                          - option "Franco CFA Central"
+                          - option "Franco CFA ocidental"
+                          - option "Franco CFP"
+                          - option "Franco burundiano"
+                          - option "Franco comoriano"
+                          - option "Franco congolês"
+                          - option "Franco do Djibouti"
+                          - option "Franco guineano"
+                          - option "Franco ruandês"
+                          - option "Franco suíço"
+                          - option "GateToken"
+                          - option "Global Dollar"
+                          - option "Gourde haitiano"
+                          - option "Guarani paraguaio"
+                          - option "Hedera"
+                          - option "Hryvnia ucraniano"
+                          - option "Humanity Protocol"
+                          - option "Hyperliquid"
+                          - option "IOTA"
+                          - option "Iene japonês"
+                          - option "Immutable"
+                          - option "Injective"
+                          - option "Internet Computer"
+                          - option "JUST"
+                          - option "JasmyCoin"
+                          - option "Jupiter"
+                          - option "Kaia"
+                          - option "Kaspa"
+                          - option "Kina papuásia"
+                          - option "Kip laosiano"
+                          - option "Kite"
+                          - option "KuCoin Token"
+                          - option "Kwacha malauiana"
+                          - option "Kwacha zambiano"
+                          - option "Kwanza angolano"
+                          - option "Lari georgiano"
+                          - option "LayerZero"
+                          - option "Lek albanês"
+                          - option "Lempira hondurenha"
+                          - option "Leu moldávio"
+                          - option "Leu romeno"
+                          - option "Lev búlgaro"
+                          - option "Libra Sudanesa"
+                          - option "Libra de Santa Helena"
+                          - option "Libra egípcia"
+                          - option "Libra esterlina"
+                          - option "Libra libanesa"
+                          - option "Lido DAO"
+                          - option "Lighter"
+                          - option "Lilangeni suazi"
+                          - option "Lira turca"
+                          - option "Loti lesotiano"
+                          - option "MYX Finance"
+                          - option "Manat azeri"
+                          - option "Manat turcomano"
+                          - option "Maple Finance"
+                          - option "Marco conversível da Bósnia e Herzegovina"
+                          - option "Metical moçambicano"
+                          - option "Midnight"
+                          - option "Morpho"
+                          - option "NEAR Protocol"
+                          - option "Naira nigeriana"
+                          - option "Nexo"
+                          - option "Ngultrum butanês"
+                          - option "Novo dólar taiwanês"
+                          - option "Novo shekel israelense"
+                          - option "Novo sol peruano"
+                          - option "OKB"
+                          - option "Ondo"
+                          - option "Optimism"
+                          - option "Ouguiya mauritana"
+                          - option "PAX Gold"
+                          - option "PancakeSwap"
+                          - option "Papiermark"
+                          - option "Pataca"
+                          - option "PayPal USD"
+                          - option "Pepe"
+                          - option "Peso argentino"
+                          - option "Peso chileno"
+                          - option "Peso colombiano"
+                          - option "Peso cubano"
+                          - option "Peso dominicano"
+                          - option "Peso filipino"
+                          - option "Peso mexicano"
+                          - option "Peso uruguaio"
+                          - option "Pi"
+                          - option "Polkadot"
+                          - option "Polygon (prev. MATIC)"
+                          - option "Pudgy Penguins"
+                          - option "Pula botsuanesa"
+                          - option "Pump.fun"
+                          - option "Quant"
+                          - option "Quetzal guatemalteco"
+                          - option "Quiate"
+                          - option "Rand sul-africano"
+                          - option "Real brasileiro"
+                          - option "Render"
+                          - option "Rial catariano"
+                          - option "Rial iemenita"
+                          - option "Rial iraniano"
+                          - option "Rial omanense"
+                          - option "Riel"
+                          - option "Ringgit malaio"
+                          - option "Ripple USD"
+                          - option "River"
+                          - option "Riyal saudita"
+                          - option "Rublo bielorrusso"
+                          - option "Rublo russo"
+                          - option "Rupia Mauriciana"
+                          - option "Rupia cingalesa"
+                          - option "Rupia das Seychelles"
+                          - option "Rupia indiana"
+                          - option "Rupia indonésia"
+                          - option "Rupia maldívia"
+                          - option "Rupia nepalesa"
+                          - option "Rúpia Paquistanesa"
+                          - option "SaluS"
+                          - option "Sei"
+                          - option "Shiba Inu"
+                          - option "Sierra Leonean leone"
+                          - option "Sky"
+                          - option "Som quirguiz"
+                          - option "Som uzbeque"
+                          - option "Somoni"
+                          - option "Stable"
+                          - option "Stacks"
+                          - option "Story"
+                          - option "Sui"
+                          - option "Sun [New]"
+                          - option "Taka bengali"
+                          - option "Telcoin"
+                          - option "Tenge cazaque"
+                          - option "Tether Gold"
+                          - option "Tezos"
+                          - option "The Graph"
+                          - option "Toncoin"
+                          - option "TrueUSD"
+                          - option "Tugrik"
+                          - option "UNUS SED LEO"
+                          - option "USDC"
+                          - option "USDD"
+                          - option "Unidades de Fomento chilenas"
+                          - option "Uniswap"
+                          - option "United Stables"
+                          - option "VeChain"
+                          - option "Virtuals Protocol"
+                          - option "Won sul-coreano"
+                          - option "World Liberty Financial"
+                          - option "World Liberty Financial USD"
+                          - option "Worldcoin"
+                          - option "Xelim Ugandês"
+                          - option "Xelim queniano"
+                          - option "Xelim somali"
+                          - option "Xelim tanzaniano"
+                          - option "Yuan chinês"
+                          - option "Yuan chinês (offshore)"
+                          - option "Zcash"
+                          - option "Zloty polonês"
+                          - option "ether.fi"
+                          - option "pippin"
+                        - generic [ref=e178]: Dólar americano
+                    - generic [ref=e179]:
+                      - spinbutton "Campo do montante da moeda" [ref=e180]: "5.02"
+                      - generic [ref=e181]:
+                        - combobox "Tipo de moeda" [ref=e183]:
+                          - option "AINFT"
+                          - option "Aave"
+                          - option "Aerodrome Finance"
+                          - option "Afegane afegão"
+                          - option "Algorand"
+                          - option "Aptos"
+                          - option "Arbitrum"
+                          - option "Ariary malgaxe"
+                          - option "Artificial Superintelligence Alliance"
+                          - option "Aster"
+                          - option "Avalanche"
+                          - option "Baht tailandês"
+                          - option "Balboa panamenho"
+                          - option "Birr etíope"
+                          - option "BitTorrent [New]"
+                          - option "Bitcoin SV"
+                          - option "Bitget Token"
+                          - option "Bittensor"
+                          - option "Boliviano da Bolívia"
+                          - option "Bolívar soberano"
+                          - option "Bonk"
+                          - option "Canton"
+                          - option "Cedi ganês"
+                          - option "Celestia"
+                          - option "Chiliz"
+                          - option "Colom salvadorenho"
+                          - option "Colón costarriquenho"
+                          - option "Coroa dinamarquesa"
+                          - option "Coroa islandesa"
+                          - option "Coroa norueguesa"
+                          - option "Coroa sueca"
+                          - option "Coroa tcheca"
+                          - option "Cosmos"
+                          - option "Cronos"
+                          - option "Curve DAO Token"
+                          - option "Córdoba nicaraguense"
+                          - option "Dai"
+                          - option "Dalasi gambiano"
+                          - option "Dinar argelino"
+                          - option "Dinar bareinita"
+                          - option "Dinar iraquiano"
+                          - option "Dinar jordaniano"
+                          - option "Dinar kuwaitiano"
+                          - option "Dinar líbio"
+                          - option "Dinar macedônio"
+                          - option "Dinar sérvio"
+                          - option "Dinar tunisiano"
+                          - option "Direitos especiais de saque"
+                          - option "Dirham dos Emirados Árabes Unidos"
+                          - option "Dirham marroquino"
+                          - option "Dong vietnamita"
+                          - option "DoubleZero"
+                          - option "Dram armênio"
+                          - option "Dólar Liberiano"
+                          - option "Dólar americano"
+                          - option "Dólar australiano"
+                          - option "Dólar bahamense"
+                          - option "Dólar barbadense"
+                          - option "Dólar belizenho"
+                          - option "Dólar bermudense"
+                          - option "Dólar bruneano"
+                          - option "Dólar canadense"
+                          - option "Dólar das Ilhas Cayman"
+                          - option "Dólar das Ilhas Salomão"
+                          - option "Dólar de Hong Kong"
+                          - option "Dólar de Trinidad e Tobago"
+                          - option "Dólar do Caribe Oriental"
+                          - option "Dólar fijiano"
+                          - option "Dólar guianense"
+                          - option "Dólar jamaicano"
+                          - option "Dólar namibiano"
+                          - option "Dólar neozelandês"
+                          - option "Dólar singapuriano"
+                          - option "Dólar surinamês"
+                          - option "EURC"
+                          - option "Escudo cabo-verdiano"
+                          - option "Ethena"
+                          - option "Ethena USDe"
+                          - option "Euro"
+                          - option "FLOKI"
+                          - option "Factom"
+                          - option "Filecoin"
+                          - option "First Digital USD"
+                          - option "Flare"
+                          - option "Florim arubano"
+                          - option "Florim das Antilhas Holandesas"
+                          - option "Florim do Caribe"
+                          - option "Florim húngaro"
+                          - option "Franco CFA Central"
+                          - option "Franco CFA ocidental"
+                          - option "Franco CFP"
+                          - option "Franco burundiano"
+                          - option "Franco comoriano"
+                          - option "Franco congolês"
+                          - option "Franco do Djibouti"
+                          - option "Franco guineano"
+                          - option "Franco ruandês"
+                          - option "Franco suíço"
+                          - option "GateToken"
+                          - option "Global Dollar"
+                          - option "Gourde haitiano"
+                          - option "Guarani paraguaio"
+                          - option "Hedera"
+                          - option "Hryvnia ucraniano"
+                          - option "Humanity Protocol"
+                          - option "Hyperliquid"
+                          - option "IOTA"
+                          - option "Iene japonês"
+                          - option "Immutable"
+                          - option "Injective"
+                          - option "Internet Computer"
+                          - option "JUST"
+                          - option "JasmyCoin"
+                          - option "Jupiter"
+                          - option "Kaia"
+                          - option "Kaspa"
+                          - option "Kina papuásia"
+                          - option "Kip laosiano"
+                          - option "Kite"
+                          - option "KuCoin Token"
+                          - option "Kwacha malauiana"
+                          - option "Kwacha zambiano"
+                          - option "Kwanza angolano"
+                          - option "Lari georgiano"
+                          - option "LayerZero"
+                          - option "Lek albanês"
+                          - option "Lempira hondurenha"
+                          - option "Leu moldávio"
+                          - option "Leu romeno"
+                          - option "Lev búlgaro"
+                          - option "Libra Sudanesa"
+                          - option "Libra de Santa Helena"
+                          - option "Libra egípcia"
+                          - option "Libra esterlina"
+                          - option "Libra libanesa"
+                          - option "Lido DAO"
+                          - option "Lighter"
+                          - option "Lilangeni suazi"
+                          - option "Lira turca"
+                          - option "Loti lesotiano"
+                          - option "MYX Finance"
+                          - option "Manat azeri"
+                          - option "Manat turcomano"
+                          - option "Maple Finance"
+                          - option "Marco conversível da Bósnia e Herzegovina"
+                          - option "Metical moçambicano"
+                          - option "Midnight"
+                          - option "Morpho"
+                          - option "NEAR Protocol"
+                          - option "Naira nigeriana"
+                          - option "Nexo"
+                          - option "Ngultrum butanês"
+                          - option "Novo dólar taiwanês"
+                          - option "Novo shekel israelense"
+                          - option "Novo sol peruano"
+                          - option "OKB"
+                          - option "Ondo"
+                          - option "Optimism"
+                          - option "Ouguiya mauritana"
+                          - option "PAX Gold"
+                          - option "PancakeSwap"
+                          - option "Papiermark"
+                          - option "Pataca"
+                          - option "PayPal USD"
+                          - option "Pepe"
+                          - option "Peso argentino"
+                          - option "Peso chileno"
+                          - option "Peso colombiano"
+                          - option "Peso cubano"
+                          - option "Peso dominicano"
+                          - option "Peso filipino"
+                          - option "Peso mexicano"
+                          - option "Peso uruguaio"
+                          - option "Pi"
+                          - option "Polkadot"
+                          - option "Polygon (prev. MATIC)"
+                          - option "Pudgy Penguins"
+                          - option "Pula botsuanesa"
+                          - option "Pump.fun"
+                          - option "Quant"
+                          - option "Quetzal guatemalteco"
+                          - option "Quiate"
+                          - option "Rand sul-africano"
+                          - option "Real brasileiro" [selected]
+                          - option "Render"
+                          - option "Rial catariano"
+                          - option "Rial iemenita"
+                          - option "Rial iraniano"
+                          - option "Rial omanense"
+                          - option "Riel"
+                          - option "Ringgit malaio"
+                          - option "Ripple USD"
+                          - option "River"
+                          - option "Riyal saudita"
+                          - option "Rublo bielorrusso"
+                          - option "Rublo russo"
+                          - option "Rupia Mauriciana"
+                          - option "Rupia cingalesa"
+                          - option "Rupia das Seychelles"
+                          - option "Rupia indiana"
+                          - option "Rupia indonésia"
+                          - option "Rupia maldívia"
+                          - option "Rupia nepalesa"
+                          - option "Rúpia Paquistanesa"
+                          - option "SaluS"
+                          - option "Sei"
+                          - option "Shiba Inu"
+                          - option "Sierra Leonean leone"
+                          - option "Sky"
+                          - option "Som quirguiz"
+                          - option "Som uzbeque"
+                          - option "Somoni"
+                          - option "Stable"
+                          - option "Stacks"
+                          - option "Story"
+                          - option "Sui"
+                          - option "Sun [New]"
+                          - option "Taka bengali"
+                          - option "Telcoin"
+                          - option "Tenge cazaque"
+                          - option "Tether Gold"
+                          - option "Tezos"
+                          - option "The Graph"
+                          - option "Toncoin"
+                          - option "TrueUSD"
+                          - option "Tugrik"
+                          - option "UNUS SED LEO"
+                          - option "USDC"
+                          - option "USDD"
+                          - option "Unidades de Fomento chilenas"
+                          - option "Uniswap"
+                          - option "United Stables"
+                          - option "VeChain"
+                          - option "Virtuals Protocol"
+                          - option "Won sul-coreano"
+                          - option "World Liberty Financial"
+                          - option "World Liberty Financial USD"
+                          - option "Worldcoin"
+                          - option "Xelim Ugandês"
+                          - option "Xelim queniano"
+                          - option "Xelim somali"
+                          - option "Xelim tanzaniano"
+                          - option "Yuan chinês"
+                          - option "Yuan chinês (offshore)"
+                          - option "Zcash"
+                          - option "Zloty polonês"
+                          - option "ether.fi"
+                          - option "pippin"
+                        - generic [ref=e184]: Real brasileiro
+                - generic [ref=e185]:
+                  - button "Compartilhar" [ref=e189]:
+                    - button "Compartilhar" [ref=e191] [cursor=pointer]:
+                      - img [ref=e195]
+                  - generic [ref=e197]:
+                    - group [ref=e199]:
+                      - button [ref=e201] [cursor=pointer]:
+                        - generic [ref=e204]: 1 D
+                      - button [ref=e206] [cursor=pointer]:
+                        - generic [ref=e209]: 5 D
+                      - button [ref=e211] [cursor=pointer]:
+                        - generic [ref=e214]: 1 M
+                      - button [ref=e216] [cursor=pointer]:
+                        - generic [ref=e219]: 1 A
+                      - button [ref=e221] [cursor=pointer]:
+                        - generic [ref=e224]: 5 A
+                      - button [ref=e226] [cursor=pointer]:
+                        - generic [ref=e228]: Máx
+                    - generic [ref=e233]:
+                      - generic [ref=e234]:
+                        - generic [ref=e235]: 5,0
+                        - generic [ref=e236]: 5,1
+                        - generic [ref=e237]: 5,2
+                        - generic [ref=e238]: 5,3
+                        - generic [ref=e239]: 5,4
+                        - img [ref=e240]
+                      - img [ref=e243]
+                      - generic [ref=e247]:
+                        - generic [ref=e248]: 27 de mar.
+                        - generic [ref=e249]: 8 de abr.
+                        - img [ref=e250]
+              - link "Mais sobre USD/BRL" [ref=e254] [cursor=pointer]:
+                - /url: https://www.google.com/finance/quote/USD-BRL?sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQmY0JegQIDRAt
+                - separator [ref=e255]
+                - generic [ref=e256]:
+                  - generic [ref=e257]: Mais sobre USD/BRL
+                  - img [ref=e259]
+              - button "Feedback" [ref=e261] [cursor=pointer]:
+                - generic [ref=e262]: Feedback
+        - generic [ref=e263]:
+          - generic [ref=e267]:
+            - heading "As pessoas também perguntam" [level=2] [ref=e269]
+            - generic [ref=e270]:
+              - button "Quanto está 1 dólar hoje?" [ref=e276] [cursor=pointer]:
+                - generic [ref=e278]: Quanto está 1 dólar hoje?
+                - img [ref=e281]
+              - button "Quanto vale R$ 5.000 em dólares hoje?" [ref=e290] [cursor=pointer]:
+                - generic [ref=e292]: Quanto vale R$ 5.000 em dólares hoje?
+                - img [ref=e295]
+              - button "Qual o preço do dólar hoje para compra?" [ref=e304] [cursor=pointer]:
+                - generic [ref=e306]: Qual o preço do dólar hoje para compra?
+                - img [ref=e309]
+              - button "Qual é a tendência do dólar hoje?" [ref=e318] [cursor=pointer]:
+                - generic [ref=e320]: Qual é a tendência do dólar hoje?
+                - img [ref=e323]
+          - generic [ref=e328]:
+            - heading "Resultados da Web" [level=2] [ref=e329]
+            - generic [ref=e330]:
+              - generic [ref=e333]:
+                - 'link "Dólar Comercial: Cotação de Hoje, Gráficos e tabelas UOL Economia https://economia.uol.com.br › cotacoes › cambio" [ref=e335] [cursor=pointer]':
+                  - /url: https://economia.uol.com.br/cotacoes/cambio/
+                  - 'heading "Dólar Comercial: Cotação de Hoje, Gráficos e tabelas" [level=3] [ref=e336]'
+                  - generic [ref=e341]:
+                    - generic [ref=e343]: UOL Economia
+                    - generic [ref=e345]: https://economia.uol.com.br › cotacoes › cambio
+                - button "Sobre este resultado" [ref=e346] [cursor=pointer]:
+                  - img [ref=e349]
+              - generic [ref=e353]:
+                - emphasis [ref=e354]: Dólar Comercial
+                - text: ": Acompanhe no UOL Economia a cotação de hoje, veja gráficos, tabelas e histórico de cotações. Conheça também o conversor de moedas."
+          - generic [ref=e358]:
+            - generic [ref=e361]:
+              - 'link "Dólar hoje: confira a cotação do dólar comercial Wise https://wise.com › currency-converter › dolar-hoje" [ref=e363] [cursor=pointer]':
+                - /url: https://wise.com/br/currency-converter/dolar-hoje
+                - 'heading "Dólar hoje: confira a cotação do dólar comercial" [level=3] [ref=e364]'
+                - generic [ref=e369]:
+                  - generic [ref=e371]: Wise
+                  - generic [ref=e373]: https://wise.com › currency-converter › dolar-hoje
+              - button "Sobre este resultado" [ref=e374] [cursor=pointer]:
+                - img [ref=e377]
+            - generic [ref=e381]:
+              - emphasis [ref=e382]: A taxa de câmbio do dólar hoje é 5,02 Real Brasileiro
+              - text: . A cotação comercial do dólar é sempre atualizada, para que você possa ficar informado sobre o dólar e ...
+          - generic [ref=e386]:
+            - generic [ref=e389]:
+              - link "Cotações e boletins Banco Central do Brasil https://www.bcb.gov.br › historicocotacoes" [ref=e391] [cursor=pointer]:
+                - /url: https://www.bcb.gov.br/estabilidadefinanceira/historicocotacoes
+                - heading "Cotações e boletins" [level=3] [ref=e392]
+                - generic [ref=e397]:
+                  - generic [ref=e399]: Banco Central do Brasil
+                  - generic [ref=e401]: https://www.bcb.gov.br › historicocotacoes
+              - button "Sobre este resultado" [ref=e402] [cursor=pointer]:
+                - img [ref=e405]
+            - generic [ref=e409]:
+              - emphasis [ref=e410]: Cotações
+              - text: "de fechamento de todas as moedas em uma data. Boletins intermediários de taxas de câmbio em uma data. Informe os parâmetros da pesquisa: Data Inicial."
+          - generic [ref=e414]:
+            - generic [ref=e417]:
+              - 'link "Dólar Hoje: Cotação comercial e turismo. Valor e Preço! Melhor Cambio https://www.melhorcambio.com › dolar-hoje" [ref=e419] [cursor=pointer]':
+                - /url: https://www.melhorcambio.com/dolar-hoje
+                - 'heading "Dólar Hoje: Cotação comercial e turismo. Valor e Preço!" [level=3] [ref=e420]'
+                - generic [ref=e425]:
+                  - generic [ref=e427]: Melhor Cambio
+                  - generic [ref=e429]: https://www.melhorcambio.com › dolar-hoje
+              - button "Sobre este resultado" [ref=e430] [cursor=pointer]:
+                - img [ref=e433]
+            - generic [ref=e437]:
+              - emphasis [ref=e438]: Dólar Hoje
+              - text: . Só aqui você confere a cotação Turismo do Dólar dos Estados Unidos, não só a comercial! Calcule e compare onde comprar melhor num só lugar!
+          - generic [ref=e442]:
+            - generic [ref=e445]:
+              - link "USD/BRL - Cotação Dólar para Real Investing.com Brasil - Finanças, Câmbio e Investimentos https://br.investing.com › currencies › usd-brl" [ref=e447] [cursor=pointer]:
+                - /url: https://br.investing.com/currencies/usd-brl
+                - heading "USD/BRL - Cotação Dólar para Real" [level=3] [ref=e448]
+                - generic [ref=e453]:
+                  - generic [ref=e455]: Investing.com Brasil - Finanças, Câmbio e Investimentos
+                  - generic [ref=e457]: https://br.investing.com › currencies › usd-brl
+              - button "Sobre este resultado" [ref=e458] [cursor=pointer]:
+                - img [ref=e461]
+            - generic [ref=e465]:
+              - text: Cotações ao Vivo · Tabela de Cotações · Índice Dólar Futuros · Câmbio Futuro · Dólar Hoje ...
+              - emphasis [ref=e466]: "Cotação do dólar hoje: 1 dólar = 5,0245 reais"
+              - text: . Câmbio em tempo real ...
+          - generic [ref=e470]:
+            - generic [ref=e473]:
+              - link "cotacoes-dolar - Cotação do Dólar CAIXA http://www.caixa.gov.br › cartoes › credito › Paginas › c..." [ref=e475] [cursor=pointer]:
+                - /url: http://www.caixa.gov.br/voce/cartoes/credito/Paginas/cotacoes-dolar.aspx
+                - heading "cotacoes-dolar - Cotação do Dólar" [level=3] [ref=e476]
+                - generic [ref=e481]:
+                  - generic [ref=e483]: CAIXA
+                  - generic [ref=e485]: http://www.caixa.gov.br › cartoes › credito › Paginas › c...
+              - button "Sobre este resultado" [ref=e486] [cursor=pointer]:
+                - img [ref=e489]
+            - generic [ref=e493]:
+              - text: Os lançamentos serão convertidos pela última
+              - emphasis [ref=e494]: cotação
+              - text: do
+              - emphasis [ref=e495]: dólar
+              - text: do dia (17h de Brasília) e, em caso de dia não útil, pela última
+              - emphasis [ref=e496]: cotação
+              - text: do dia útil anterior.
+          - generic [ref=e500]:
+            - generic [ref=e503]:
+              - 'link "Dólar Hoje: cotação do dólar comercial USD para BRL Nomad Global https://www.nomadglobal.com › cotacoes › dolar" [ref=e505] [cursor=pointer]':
+                - /url: https://www.nomadglobal.com/cotacoes/dolar
+                - 'heading "Dólar Hoje: cotação do dólar comercial USD para BRL" [level=3] [ref=e506]'
+                - generic [ref=e511]:
+                  - generic [ref=e513]: Nomad Global
+                  - generic [ref=e515]: https://www.nomadglobal.com › cotacoes › dolar
+              - button "Sobre este resultado" [ref=e516] [cursor=pointer]:
+                - img [ref=e519]
+            - generic [ref=e523]:
+              - text: A
+              - emphasis [ref=e524]: cotação
+              - text: do
+              - emphasis [ref=e525]: dólar
+              - text: americano
+              - emphasis [ref=e526]: hoje
+              - text: é R$ 5,01. No último fechamento, o
+              - emphasis [ref=e527]: dólar
+              - text: americano estava R$ 5,01, uma diferença de 0%. Nos últimos 30 dias, a
+              - emphasis [ref=e528]: cotação
+              - text: do ...
+          - generic [ref=e532]:
+            - generic [ref=e535]:
+              - link "Fechamento diário do dólar Banco Central do Brasil https://www.bcb.gov.br › estabilidadefinanceira › fecha..." [ref=e537] [cursor=pointer]:
+                - /url: https://www.bcb.gov.br/estabilidadefinanceira/fechamentodolar
+                - heading "Fechamento diário do dólar" [level=3] [ref=e538]
+                - generic [ref=e543]:
+                  - generic [ref=e545]: Banco Central do Brasil
+                  - generic [ref=e547]: https://www.bcb.gov.br › estabilidadefinanceira › fecha...
+              - button "Sobre este resultado" [ref=e548] [cursor=pointer]:
+                - img [ref=e551]
+            - generic [ref=e555]:
+              - text: Conheça a taxa para compra e a taxa para venda do
+              - emphasis [ref=e556]: dólar
+              - text: dos Estados Unidos da América no fechamento diário.
+          - generic [ref=e560]:
+            - generic [ref=e563]:
+              - link "Dólar americano Hoje (USD) | Cotações Remessa Online https://www.remessaonline.com.br › cotacao-dolar" [ref=e565] [cursor=pointer]:
+                - /url: https://www.remessaonline.com.br/cotacao/cotacao-dolar
+                - heading "Dólar americano Hoje (USD) | Cotações" [level=3] [ref=e566]
+                - generic [ref=e571]:
+                  - generic [ref=e573]: Remessa Online
+                  - generic [ref=e575]: https://www.remessaonline.com.br › cotacao-dolar
+              - button "Sobre este resultado" [ref=e576] [cursor=pointer]:
+                - img [ref=e579]
+            - generic [ref=e583]:
+              - emphasis [ref=e584]: A cotação Dólar comercial hoje,13 de abril às 11:12 , está emR$ 5,03na venda
+              - text: ", com uma variação de 0,45% em relação ao dia anterior."
+          - generic [ref=e588]:
+            - generic [ref=e591]:
+              - link "Cotação do Dólar - BTG Banking - BTG Pactual BTG Pactual Banking https://banking.btgpactual.com › cotacao-do-dolar" [ref=e593] [cursor=pointer]:
+                - /url: https://banking.btgpactual.com/cotacao-do-dolar
+                - heading "Cotação do Dólar - BTG Banking - BTG Pactual" [level=3] [ref=e594]
+                - generic [ref=e599]:
+                  - generic [ref=e601]: BTG Pactual Banking
+                  - generic [ref=e603]: https://banking.btgpactual.com › cotacao-do-dolar
+              - button "Sobre este resultado" [ref=e604] [cursor=pointer]:
+                - img [ref=e607]
+            - generic [ref=e611]:
+              - emphasis [ref=e612]: Cotação do dólar no Cartão de Crédito BTG Pactual
+              - text: ; 10/04/2026, R$ 5,3870 ; 09/04/2026, R$ 5,3953 ; 08/04/2026, R$ 5,4723 ; 07/04/2026, R$ 5,4624.
+      - generic [ref=e614]:
+        - generic [ref=e619]:
+          - heading "Outras pessoas pesquisaram" [level=2] [ref=e621]
+          - generic [ref=e623]:
+            - generic [ref=e624]:
+              - link "Dólar hoje real" [ref=e628] [cursor=pointer]:
+                - /url: /search?sca_esv=27b04becbc364c98&q=D%C3%B3lar+hoje+real&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ1QJ6BAhFEAE
+                - generic [ref=e629]:
+                  - generic [ref=e634]: Dólar hoje real
+                  - img [ref=e638]
+              - link "Dólar hoje turismo" [ref=e643] [cursor=pointer]:
+                - /url: /search?sca_esv=27b04becbc364c98&q=D%C3%B3lar+hoje+turismo&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ1QJ6BAhIEAE
+                - generic [ref=e644]:
+                  - generic [ref=e649]: Dólar hoje turismo
+                  - img [ref=e653]
+              - link "Cotação dólar hoje Banco Central" [ref=e658] [cursor=pointer]:
+                - /url: /search?sca_esv=27b04becbc364c98&q=Cota%C3%A7%C3%A3o+d%C3%B3lar+hoje+Banco+Central&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ1QJ6BAhHEAE
+                - generic [ref=e659]:
+                  - generic [ref=e664]: Cotação dólar hoje Banco Central
+                  - img [ref=e668]
+              - link "Euro hoje" [ref=e673] [cursor=pointer]:
+                - /url: /search?sca_esv=27b04becbc364c98&q=Euro+hoje&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ1QJ6BAhCEAE
+                - generic [ref=e674]:
+                  - generic [ref=e679]: Euro hoje
+                  - img [ref=e683]
+            - generic [ref=e685]:
+              - link "Dólar hoje 6 38" [ref=e689] [cursor=pointer]:
+                - /url: /search?sca_esv=27b04becbc364c98&q=D%C3%B3lar+hoje+6+38&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ1QJ6BAhBEAE
+                - generic [ref=e690]:
+                  - generic [ref=e695]: Dólar hoje 6 38
+                  - img [ref=e699]
+              - link "Dólar hoje comercial" [ref=e704] [cursor=pointer]:
+                - /url: /search?sca_esv=27b04becbc364c98&q=D%C3%B3lar+hoje+comercial&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ1QJ6BAhEEAE
+                - generic [ref=e705]:
+                  - generic [ref=e710]: Dólar hoje comercial
+                  - img [ref=e714]
+              - link "Dólar hoje venda" [ref=e719] [cursor=pointer]:
+                - /url: /search?sca_esv=27b04becbc364c98&q=D%C3%B3lar+hoje+venda&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ1QJ6BAhGEAE
+                - generic [ref=e720]:
+                  - generic [ref=e725]: Dólar hoje venda
+                  - img [ref=e729]
+              - link "Dólar hoje compra" [ref=e734] [cursor=pointer]:
+                - /url: /search?sca_esv=27b04becbc364c98&q=D%C3%B3lar+hoje+compra&sa=X&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ1QJ6BAhDEAE
+                - generic [ref=e735]:
+                  - generic [ref=e740]: Dólar hoje compra
+                  - img [ref=e744]
+        - navigation [ref=e746]:
+          - heading "Navegação nas páginas" [level=1] [ref=e747]
+          - text: "1"
+          - link "Page 2" [ref=e750] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=10&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAE
+            - text: "2"
+          - link "Page 3" [ref=e752] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=20&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAG
+            - text: "3"
+          - link "Page 4" [ref=e754] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=30&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAI
+            - text: "4"
+          - link "Page 5" [ref=e756] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=40&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAK
+            - text: "5"
+          - link "Page 6" [ref=e758] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=50&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAM
+            - text: "6"
+          - link "Page 7" [ref=e760] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=60&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAO
+            - text: "7"
+          - link "Page 8" [ref=e762] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=70&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAQ
+            - text: "8"
+          - link "Page 9" [ref=e764] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=80&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAS
+            - text: "9"
+          - link "Page 10" [ref=e766] [cursor=pointer]:
+            - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=90&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8tMDegQIPxAU
+            - text: "10"
+          - heading "Mais" [level=2] [ref=e768]:
+            - link "Mais" [ref=e769] [cursor=pointer]:
+              - /url: /search?q=cota%C3%A7%C3%A3o+d%C3%B3lar+hoje&sca_esv=27b04becbc364c98&ei=UxndacrkF6ew1sQPuPeosQk&start=10&sa=N&sstk=Af77f_fluGhUZa9p8OHOGj22ULad4Iu2rkhEMUm9oDGCIslPTuiEd927ElocChsNpVSDpS3PjlUMlXK4BCCSGvLQtKR7oiNH8MA7LA&ved=2ahUKEwiK2sKdn-uTAxUnmJUCHbg7KpYQ8NMDegQIPxAW
+              - generic [ref=e771]: Mais
+      - navigation
+    - contentinfo [ref=e772]:
+      - heading "Links do rodapé" [level=1] [ref=e773]
+      - generic [ref=e777]:
+        - generic [ref=e779]:
+          - text: Brasil
+          - generic [ref=e781]:
+            - button "13172, Nova Odessa - SP - Do seu endereço IP" [ref=e783] [cursor=pointer]:
+              - generic [ref=e784]: 13172, Nova Odessa - SP
+              - generic [ref=e786]:
+                - text: "-"
+                - generic [ref=e787]: Do seu endereço IP
+            - text: "-"
+            - button "Atualizar local" [ref=e789] [cursor=pointer]: Atualizar local
+        - generic [ref=e792]:
+          - link "Ajuda" [ref=e793] [cursor=pointer]:
+            - /url: https://support.google.com/websearch/?p=ws_results_help&hl=pt-BR&fg=1
+          - link "Enviar feedback" [ref=e794] [cursor=pointer]:
+            - /url: "#"
+          - link "Privacidade" [ref=e795] [cursor=pointer]:
+            - /url: https://policies.google.com/privacy?hl=pt-BR&fg=1
+          - link "Termos" [ref=e796] [cursor=pointer]:
+            - /url: https://policies.google.com/terms?hl=pt-BR&fg=1

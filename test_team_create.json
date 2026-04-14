@@ -1,0 +1,7 @@
+{
+  "name": "Dev Team Alpha",
+  "leaderAgentId": "coordinator-001",
+  "config": {
+    "maxWorkers": 5
+  }
+}

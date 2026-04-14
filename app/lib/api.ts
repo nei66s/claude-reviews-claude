@@ -12,11 +12,17 @@ export interface Attachment {
 }
 
 export interface Message {
+  id?: string; // ID da mensagem para feedback
   role: "user" | "agent";
   content: string;
   streaming?: boolean;
   trace?: TraceEntry[];
   attachments?: Attachment[];
+  feedback?: "like" | "dislike" | null;
+  agentId?: string;
+  helperAgentId?: string;
+  handoffLabel?: string;
+  collaborationLabel?: string;
 }
 
 export interface Chat {

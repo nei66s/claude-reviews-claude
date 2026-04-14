@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { renameConversation } from "@/app/lib/server/store";
-import { requireUser } from "@/app/lib/server/request";
+import { renameConversation } from "@/lib/server/store";
+import { requireUser } from "@/lib/server/request";
 
 export async function PATCH(
   request: NextRequest,

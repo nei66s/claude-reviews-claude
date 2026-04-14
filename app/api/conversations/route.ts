@@ -4,8 +4,8 @@ import {
   createConversation,
   deleteConversation,
   listConversations,
-} from "@/app/lib/server/store";
-import { requireUser } from "@/app/lib/server/request";
+} from "@/lib/server/store";
+import { requireUser } from "@/lib/server/request";
 
 export async function GET(request: NextRequest) {
   const user = requireUser(request);
@@ -13,7 +13,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   }
 
-  return NextResponse.json({ conversations: await listConversations(user) });
+  const response = NextResponse.json({ conversations: await listConversations(user) });
+  
+  // Cache por 30 segundos, com revalidação em background por até 1 minuto
+  response.headers.set(
+    "Cache-Control",
+    "private, max-age=30, stale-while-revalidate=30"
+  );
+  
+  return response;
 }
 
 export async function POST(request: NextRequest) {
@@ -51,3 +59,4 @@ export async function DELETE(request: NextRequest) {
   await deleteConversation(user, id);
   return NextResponse.json({ ok: true });
 }
+

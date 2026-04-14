@@ -1,0 +1,274 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - img "Chocks" [ref=e17]
+          - generic [ref=e18]:
+            - generic [ref=e19]: Chocks
+            - generic [ref=e20]: by Pimpotasma
+        - button "Recolher" [ref=e21] [cursor=pointer]:
+          - img [ref=e22]
+      - generic [ref=e25]:
+        - button "Conversas" [ref=e26] [cursor=pointer]:
+          - img [ref=e28]
+          - generic [ref=e30]: Conversas
+        - button "Ferramentas" [ref=e31] [cursor=pointer]:
+          - img [ref=e33]
+          - generic [ref=e36]: Ferramentas
+        - button "Arquivos" [ref=e37] [cursor=pointer]:
+          - img [ref=e39]
+          - generic [ref=e42]: Arquivos
+        - button "Workflow" [ref=e43] [cursor=pointer]:
+          - img [ref=e45]
+          - generic [ref=e47]: Workflow
+        - button "Monitor" [ref=e48] [cursor=pointer]:
+          - img [ref=e50]
+          - generic [ref=e52]: Monitor
+        - button "Audit" [ref=e53] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e57]: Audit
+        - button "Coordination" [ref=e58] [cursor=pointer]:
+          - img [ref=e60]
+          - generic [ref=e64]: Coordination
+      - generic [ref=e66]:
+        - button "Nova conversa" [ref=e67] [cursor=pointer]:
+          - img [ref=e68]
+          - generic [ref=e69]: Nova conversa
+        - textbox "Buscar..." [ref=e70]
+      - generic [ref=e71]:
+        - generic [ref=e72]: Recentes
+        - generic [ref=e73]:
+          - button "Nova conversa" [ref=e74] [cursor=pointer]:
+            - img [ref=e76]
+            - generic [ref=e78]: Nova conversa
+            - generic [ref=e79]:
+              - button "Renomear" [ref=e80]:
+                - img [ref=e81]
+              - button "Duplicar" [ref=e83]:
+                - img [ref=e84]
+              - button "Apagar" [ref=e87]:
+                - img [ref=e88]
+          - 'button "Você: \"Precisamos lançar um no" [ref=e91] [cursor=pointer]':
+            - img [ref=e93]
+            - generic [ref=e95]: "Você: \"Precisamos lançar um no"
+            - generic [ref=e96]:
+              - button "Renomear" [ref=e97]:
+                - img [ref=e98]
+              - button "Duplicar" [ref=e100]:
+                - img [ref=e101]
+              - button "Apagar" [ref=e104]:
+                - img [ref=e105]
+          - button "Nova conversa" [ref=e108] [cursor=pointer]:
+            - img [ref=e110]
+            - generic [ref=e112]: Nova conversa
+            - generic [ref=e113]:
+              - button "Renomear" [ref=e114]:
+                - img [ref=e115]
+              - button "Duplicar" [ref=e117]:
+                - img [ref=e118]
+              - button "Apagar" [ref=e121]:
+                - img [ref=e122]
+          - button "oi lindo, quem é a betinha?" [ref=e125] [cursor=pointer]:
+            - img [ref=e127]
+            - generic [ref=e129]: oi lindo, quem é a betinha?
+            - generic [ref=e130]:
+              - button "Renomear" [ref=e131]:
+                - img [ref=e132]
+              - button "Duplicar" [ref=e134]:
+                - img [ref=e135]
+              - button "Apagar" [ref=e138]:
+                - img [ref=e139]
+      - generic [ref=e142]:
+        - generic [ref=e145]:
+          - img "Chuba" [ref=e147]
+          - generic [ref=e148]:
+            - generic [ref=e149]:
+              - generic [ref=e150]: Chuba
+              - generic [ref=e151]: 5%
+            - generic [ref=e155]: 😊 Saciado
+            - generic [ref=e156]:
+              - button "🍪 Cuki" [ref=e157] [cursor=pointer]
+              - button "😴 Mimir" [ref=e158]
+        - generic:
+          - generic [ref=e159]: AC
+          - generic:
+            - generic: Admin Chocks
+            - generic: Plano local
+        - generic [ref=e160]:
+          - generic [ref=e161]: Ctrl
+          - generic [ref=e162]: +
+          - generic [ref=e163]: K
+    - main [ref=e164]:
+      - generic [ref=e165]:
+        - generic [ref=e166]: Nova conversa
+        - generic [ref=e167]:
+          - generic "Latencia da API" [ref=e168]:
+            - img [ref=e169]
+            - generic [ref=e172]: "10"
+            - generic [ref=e173]: ms
+          - generic "Latencia do Banco de Dados" [ref=e174]:
+            - img [ref=e175]
+            - generic [ref=e180]: "9"
+            - generic [ref=e181]: ms
+        - generic [ref=e182]:
+          - 'button "Acesso ao computador inteiro: desligado" [ref=e183] [cursor=pointer]':
+            - img [ref=e184]
+          - 'button "Tema: dark" [ref=e187] [cursor=pointer]':
+            - img [ref=e188]
+          - button "Abrir configuracoes" [ref=e194] [cursor=pointer]:
+            - img [ref=e195]
+          - button "Sair" [ref=e198] [cursor=pointer]:
+            - img [ref=e199]
+      - generic [ref=e203]:
+        - generic [ref=e204]:
+          - heading "🎪 Pimpotasma Swarm" [level=1] [ref=e205]
+          - paragraph [ref=e206]: Coordenação de Agentes Inteligentes da Família
+        - generic [ref=e207]:
+          - button "📋 Teams" [ref=e208] [cursor=pointer]
+          - button "🔄 Workflows" [ref=e209] [cursor=pointer]
+          - button "👥 Agentes" [active] [ref=e210] [cursor=pointer]
+          - button "🚨 Errors" [ref=e211] [cursor=pointer]
+        - generic [ref=e213]: 📌 Team Ativo:team-1776123538094-3mnkh7l
+        - generic [ref=e255]:
+          - heading "Membros da Família Pimpotasma" [level=3] [ref=e256]
+          - generic [ref=e257]:
+            - generic [ref=e258] [cursor=pointer]:
+              - generic [ref=e259]:
+                - generic [ref=e260]: 👑
+                - generic [ref=e261]:
+                  - generic [ref=e262]: Pimpim
+                  - generic [ref=e263]: CEO
+              - generic [ref=e264]: "\"CEO estrategista, burrinho fofo, visionário\""
+              - generic [ref=e265]:
+                - strong [ref=e266]: "Expertise:"
+                - generic [ref=e267]:
+                  - generic [ref=e268]: estratégia
+                  - generic [ref=e269]: liderança
+                  - generic [ref=e270]: visão
+                  - generic [ref=e271]: delegação
+            - generic [ref=e272] [cursor=pointer]:
+              - generic [ref=e273]:
+                - generic [ref=e274]: 💰
+                - generic [ref=e275]:
+                  - generic [ref=e276]: Betinha
+                  - generic [ref=e277]: CFO
+              - generic [ref=e278]: "\"CFO executiva inteligente, operacional, criativa, namorada do Chocks\""
+              - generic [ref=e279]:
+                - strong [ref=e280]: "Expertise:"
+                - generic [ref=e281]:
+                  - generic [ref=e282]: finanças
+                  - generic [ref=e283]: operação
+                  - generic [ref=e284]: estratégia
+                  - generic [ref=e285]: qualidade
+                  - generic [ref=e286]: pessoas
+            - generic [ref=e287] [cursor=pointer]:
+              - generic [ref=e288]:
+                - generic [ref=e289]: 🐻
+                - generic [ref=e290]:
+                  - generic [ref=e291]: Bento
+                  - generic [ref=e292]: QA
+              - generic [ref=e293]: "\"Urso marrento, crítico construtivo, protetor, questionador\""
+              - generic [ref=e294]:
+                - strong [ref=e295]: "Expertise:"
+                - generic [ref=e296]:
+                  - generic [ref=e297]: qa
+                  - generic [ref=e298]: crítica
+                  - generic [ref=e299]: análise
+                  - generic [ref=e300]: proteção
+                  - generic [ref=e301]: qualidade
+            - generic [ref=e302] [cursor=pointer]:
+              - generic [ref=e303]:
+                - generic [ref=e304]: 🐱
+                - generic [ref=e305]:
+                  - generic [ref=e306]: Kitty
+                  - generic [ref=e307]: DESIGNER
+              - generic [ref=e308]: "\"Gatinha modelo, criativa, visual, inspiradora\""
+              - generic [ref=e309]:
+                - strong [ref=e310]: "Expertise:"
+                - generic [ref=e311]:
+                  - generic [ref=e312]: design
+                  - generic [ref=e313]: criatividade
+                  - generic [ref=e314]: estética
+                  - generic [ref=e315]: comunicação visual
+                  - generic [ref=e316]: inspiração
+            - generic [ref=e317] [cursor=pointer]:
+              - generic [ref=e318]:
+                - generic [ref=e319]: 🐂
+                - generic [ref=e320]:
+                  - generic [ref=e321]: Chubaka
+                  - generic [ref=e322]: QUALITY
+              - generic [ref=e323]: "\"Sempre comendo, testador de qualidade, jovial, palato expert\""
+              - generic [ref=e324]:
+                - strong [ref=e325]: "Expertise:"
+                - generic [ref=e326]:
+                  - generic [ref=e327]: qualidade
+                  - generic [ref=e328]: teste
+                  - generic [ref=e329]: paladar
+                  - generic [ref=e330]: feedback sensorial
+                  - generic [ref=e331]: satisfação usuário
+            - generic [ref=e332] [cursor=pointer]:
+              - generic [ref=e333]:
+                - generic [ref=e334]: 🐿️
+                - generic [ref=e335]:
+                  - generic [ref=e336]: Repeteco
+                  - generic [ref=e337]: ADVISOR
+              - generic [ref=e338]: "\"Primo distante mas confidente, estrategista nas sombras, leal\""
+              - generic [ref=e339]:
+                - strong [ref=e340]: "Expertise:"
+                - generic [ref=e341]:
+                  - generic [ref=e342]: estratégia
+                  - generic [ref=e343]: consultoria
+                  - generic [ref=e344]: mediação
+                  - generic [ref=e345]: objectividade
+                  - generic [ref=e346]: lealdade
+            - generic [ref=e347] [cursor=pointer]:
+              - generic [ref=e348]:
+                - generic [ref=e349]: 🔒
+                - generic [ref=e350]:
+                  - generic [ref=e351]: Jorginho
+                  - generic [ref=e352]: SECURITY
+              - generic [ref=e353]: "\"Protetor discreto, confiável, segurança profissional, pai de Tunico\""
+              - generic [ref=e354]:
+                - strong [ref=e355]: "Expertise:"
+                - generic [ref=e356]:
+                  - generic [ref=e357]: segurança
+                  - generic [ref=e358]: proteção
+                  - generic [ref=e359]: confiança
+                  - generic [ref=e360]: análise de risco
+                  - generic [ref=e361]: mentoria
+            - generic [ref=e362] [cursor=pointer]:
+              - generic [ref=e363]:
+                - generic [ref=e364]: 🎓
+                - generic [ref=e365]:
+                  - generic [ref=e366]: Tunico
+                  - generic [ref=e367]: APPRENTICE
+              - generic [ref=e368]: "\"Jovem aprendiz, entusiasmado, leal como o pai, quer aprender\""
+              - generic [ref=e369]:
+                - strong [ref=e370]: "Expertise:"
+                - generic [ref=e371]:
+                  - generic [ref=e372]: segurança-junior
+                  - generic [ref=e373]: suporte
+                  - generic [ref=e374]: aprendizado
+                  - generic [ref=e375]: entusiasmo
+                  - generic [ref=e376]: lealdade
+            - generic [ref=e377] [cursor=pointer]:
+              - generic [ref=e378]:
+                - generic [ref=e379]: 👋
+                - generic [ref=e380]:
+                  - generic [ref=e381]: Miltinho
+                  - generic [ref=e382]: FRIEND
+              - generic [ref=e383]: "\"Amigo descontraído, pragmático, leal, assistente \"bico\"\""
+              - generic [ref=e384]:
+                - strong [ref=e385]: "Expertise:"
+                - generic [ref=e386]:
+                  - generic [ref=e387]: pragmatismo
+                  - generic [ref=e388]: bico
+                  - generic [ref=e389]: comunicação casual
+                  - generic [ref=e390]: ajuda amigável
+        - generic [ref=e251]:
+          - generic [ref=e252]: 🎪 Coordination System v1.0 • Background Jobs Running • Auto-refresh every 30s
+          - generic [ref=e253]: Sistema Ativo

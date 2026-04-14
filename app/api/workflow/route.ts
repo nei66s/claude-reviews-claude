@@ -2,14 +2,14 @@ import crypto from "node:crypto";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireUser } from "@/app/lib/server/request";
+import { requireUser } from "@/lib/server/request";
 import {
   clearWorkflowState,
   saveWorkflowState,
   type StoredWorkflow,
   type WorkflowStep,
   type WorkflowStepStatus,
-} from "@/app/lib/server/store";
+} from "@/lib/server/store";
 
 function normalizeStep(step: unknown, index: number): WorkflowStep {
   const input = step as Partial<WorkflowStep> | null;
@@ -78,3 +78,4 @@ export async function DELETE(request: NextRequest) {
 
   return NextResponse.json(await clearWorkflowState(user, chatId));
 }
+

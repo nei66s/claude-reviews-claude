@@ -4,6 +4,8 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestJson, TraceEntry } from "../lib/api";
+import FileActionModal from "./FileActionModal";
+import "../styles/file-action-modal.css";
 
 interface FileEntry {
   name?: string;
@@ -139,6 +141,16 @@ export default function FilesView() {
   const [feedback, setFeedback] = useState<string>("");
   const [actionTrace, setActionTrace] = useState<TraceEntry[]>([]);
 
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    title: string;
+    label: string;
+    placeholder: string;
+    defaultValue: string;
+    onConfirm: (value: string) => Promise<void>;
+  } | null>(null);
+
   const loadFiles = useCallback(async (targetPath: string) => {
     setLoading(true);
     try {
@@ -254,41 +266,76 @@ export default function FilesView() {
   };
 
   const createFolder = async () => {
-    const targetPath = window.prompt("Nova pasta:", currentPath === "." ? "nova-pasta" : `${currentPath}/nova-pasta`);
-    if (!targetPath?.trim()) return;
-    await runFileAction("create_dir", { path: targetPath.trim() }, "Pasta criada.");
+    const defaultValue = currentPath === "." ? "nova-pasta" : `${currentPath}/nova-pasta`;
+    setModalConfig({
+      title: "Criar nova pasta",
+      label: "Nome ou caminho:",
+      placeholder: defaultValue,
+      defaultValue,
+      onConfirm: async (targetPath) => {
+        setModalOpen(false);
+        await runFileAction("create_dir", { path: targetPath }, "Pasta criada.");
+      },
+    });
+    setModalOpen(true);
   };
 
   const createFile = async () => {
-    const targetPath = window.prompt("Novo arquivo:", currentPath === "." ? "novo-arquivo.txt" : `${currentPath}/novo-arquivo.txt`);
-    if (!targetPath?.trim()) return;
-    await runFileAction("create_file", { path: targetPath.trim() }, "Arquivo criado.");
+    const defaultValue = currentPath === "." ? "novo-arquivo.txt" : `${currentPath}/novo-arquivo.txt`;
+    setModalConfig({
+      title: "Criar novo arquivo",
+      label: "Nome ou caminho:",
+      placeholder: defaultValue,
+      defaultValue,
+      onConfirm: async (targetPath) => {
+        setModalOpen(false);
+        await runFileAction("create_file", { path: targetPath }, "Arquivo criado.");
+      },
+    });
+    setModalOpen(true);
   };
 
   const renameOrMove = async (entry: FileEntry) => {
-    const targetPath = window.prompt("Novo caminho:", entry.path);
-    if (!targetPath?.trim() || targetPath.trim() === entry.path) return;
-    await runFileAction(
-      "move",
-      { fromPath: entry.path, toPath: targetPath.trim() },
-      "Item movido.",
-    );
-    if (preview.kind !== "idle" && preview.path === entry.path) {
-      setPreview({ kind: "idle" });
-    }
+    setModalConfig({
+      title: "Renomear ou mover",
+      label: "Novo caminho:",
+      placeholder: entry.path,
+      defaultValue: entry.path,
+      onConfirm: async (targetPath) => {
+        setModalOpen(false);
+        if (targetPath === entry.path) return;
+        await runFileAction(
+          "move",
+          { fromPath: entry.path, toPath: targetPath },
+          "Item movido.",
+        );
+        if (preview.kind !== "idle" && preview.path === entry.path) {
+          setPreview({ kind: "idle" });
+        }
+      },
+    });
+    setModalOpen(true);
   };
 
   const duplicateEntry = async (entry: FileEntry) => {
-    const defaultCopyPath = entry.isDir
+    const defaultValue = entry.isDir
       ? `${entry.path}-copia`
       : entry.path.replace(/(\.[^./\\]+)?$/, "-copia$1");
-    const targetPath = window.prompt("Copiar para:", defaultCopyPath);
-    if (!targetPath?.trim()) return;
-    await runFileAction(
-      "copy",
-      { fromPath: entry.path, toPath: targetPath.trim() },
-      "Item copiado.",
-    );
+    setModalConfig({
+      title: "Copiar para",
+      label: "Novo caminho:",
+      placeholder: defaultValue,
+      defaultValue,
+      onConfirm: async (targetPath) => {
+        setModalOpen(false);
+        await runFileAction(
+          "copy",
+          { fromPath: entry.path, toPath: targetPath },
+          "Item copiado.",
+        );
+      },
+    });
+    setModalOpen(true);
   };
 
   const deleteEntry = async (entry: FileEntry) => {
@@ -619,6 +666,23 @@ export default function FilesView() {
           </div>
         )}
       </div>
+
+      {modalConfig && (
+        <FileActionModal
+          isOpen={modalOpen}
+          title={modalConfig.title}
+          label={modalConfig.label}
+          placeholder={modalConfig.placeholder}
+          defaultValue={modalConfig.defaultValue}
+          onConfirm={async (value) => {
+            await modalConfig.onConfirm(value);
+          }}
+          onCancel={() => {
+            setModalOpen(false);
+            setModalConfig(null);
+          }}
+        />
+      )}
     </div>
   );
 }

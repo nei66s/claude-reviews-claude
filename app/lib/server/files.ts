@@ -15,6 +15,67 @@ function normalizePathForClient(value: string) {
   return value.replaceAll("\\", "/");
 }
 
+async function pathExists(value: string) {
+  try {
+    const stat = await fs.stat(value);
+    return stat.isDirectory() || stat.isFile();
+  } catch {
+    return false;
+  }
+}
+
+async function resolveDesktopRoot() {
+  const userProfile = process.env.USERPROFILE?.trim();
+  const homeDrive = process.env.HOMEDRIVE?.trim();
+  const homePath = process.env.HOMEPATH?.trim();
+  const home = userProfile || (homeDrive && homePath ? `${homeDrive}${homePath}` : "");
+
+  const candidates = [
+    userProfile ? path.join(userProfile, "Desktop") : "",
+    userProfile ? path.join(userProfile, "OneDrive", "Desktop") : "",
+    home ? path.join(home, "Desktop") : "",
+    home ? path.join(home, "OneDrive", "Desktop") : "",
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (await pathExists(candidate)) {
+      return candidate;
+    }
+  }
+
+  return candidates[0] || process.cwd();
+}
+
+async function normalizeUserPath(inputPath: string) {
+  const trimmed = String(inputPath || ".").trim().replace(/^"|"$/g, "").replace(/^'|'$/g, "");
+  if (!trimmed) return ".";
+
+  const desktopRoot = await resolveDesktopRoot();
+  const normalizedSeparators = trimmed.replace(/[\\/]+/g, path.sep);
+  const escapedSep = path.sep === '\\' ? '\\\\' : path.sep;
+  const relativeDesktopPattern = new RegExp(
+    `^(?:\\.${escapedSep})?(desktop|area de trabalho|área de trabalho)(?:${escapedSep}(.*))?$`,
+    "i",
+  );
+  const relativeMatch = normalizedSeparators.match(relativeDesktopPattern);
+  if (relativeMatch) {
+    const suffix = (relativeMatch[2] || "").trim();
+    return suffix ? path.join(desktopRoot, suffix) : desktopRoot;
+  }
+
+  let normalized = normalizedSeparators;
+  normalized = normalized.replace(/área de trabalho/gi, "Desktop").replace(/area de trabalho/gi, "Desktop");
+
+  if (/^~[\\/]/.test(normalized)) {
+    const userProfile = process.env.USERPROFILE?.trim();
+    if (userProfile) {
+      return path.join(userProfile, normalized.slice(2));
+    }
+  }
+
+  return normalized;
+}
+
 function isIgnorableStatError(error: unknown) {
   if (!(error instanceof Error) || !("code" in error)) {
     return false;
@@ -75,9 +136,10 @@ export async function resolveFileScope(inputPath: string) {
   const settings = await readAppSettings();
   const workspaceRoot = process.cwd();
   const baseRoot = settings.fullAccess ? getComputerRoot() : workspaceRoot;
-  const target = path.isAbsolute(inputPath)
-    ? path.resolve(inputPath)
-    : path.resolve(baseRoot, inputPath || ".");
+  const normalizedInput = await normalizeUserPath(inputPath);
+  const target = path.isAbsolute(normalizedInput)
+    ? path.resolve(normalizedInput)
+    : path.resolve(baseRoot, normalizedInput || ".");
 
   if (!settings.fullAccess && target !== workspaceRoot && !target.startsWith(`${workspaceRoot}${path.sep}`)) {
     throw new Error("Path outside project");

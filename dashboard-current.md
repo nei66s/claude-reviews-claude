@@ -1,0 +1,151 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - img "Chocks" [ref=e17]
+          - generic [ref=e18]:
+            - generic [ref=e19]: Chocks
+            - generic [ref=e20]: by Pimpotasma
+        - button "Recolher" [ref=e21] [cursor=pointer]:
+          - img [ref=e22]
+      - generic [ref=e25]:
+        - button "Conversas" [ref=e26] [cursor=pointer]:
+          - img [ref=e28]
+          - generic [ref=e30]: Conversas
+        - button "Ferramentas" [ref=e31] [cursor=pointer]:
+          - img [ref=e33]
+          - generic [ref=e36]: Ferramentas
+        - button "Arquivos" [ref=e37] [cursor=pointer]:
+          - img [ref=e39]
+          - generic [ref=e42]: Arquivos
+        - button "Workflow" [ref=e43] [cursor=pointer]:
+          - img [ref=e45]
+          - generic [ref=e47]: Workflow
+        - button "Monitor" [ref=e48] [cursor=pointer]:
+          - img [ref=e50]
+          - generic [ref=e52]: Monitor
+        - button "Audit" [ref=e53] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e57]: Audit
+        - button "Coordination" [ref=e58] [cursor=pointer]:
+          - img [ref=e60]
+          - generic [ref=e64]: Coordination
+        - button "Doutora Kitty" [ref=e65] [cursor=pointer]:
+          - img [ref=e67]
+          - generic [ref=e69]: Doutora Kitty
+      - generic [ref=e71]:
+        - button "Nova conversa" [ref=e72] [cursor=pointer]:
+          - img [ref=e73]
+          - generic [ref=e74]: Nova conversa
+        - textbox "Buscar..." [ref=e75]
+      - generic [ref=e76]:
+        - generic [ref=e77]: Recentes
+        - button "Demo Conversation for Doutora Kitty" [ref=e142] [cursor=pointer]:
+          - img [ref=e144]
+          - generic [ref=e146]: Demo Conversation for Doutora Kitty
+          - generic [ref=e147]:
+            - button "Renomear" [ref=e148]:
+              - img [ref=e149]
+            - button "Duplicar" [ref=e151]:
+              - img [ref=e152]
+            - button "Apagar" [ref=e155]:
+              - img [ref=e156]
+      - generic [ref=e83]:
+        - img "Chuba" [ref=e85]
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - generic [ref=e88]: Chuba
+            - generic [ref=e89]: 0%
+          - generic [ref=e92]: 😊 Saciado
+          - generic [ref=e93]:
+            - button "🍪 Cuki" [ref=e94]
+            - button "😴 Mimir" [ref=e95]
+    - main [ref=e96]:
+      - generic [ref=e97]:
+        - generic [ref=e98]: Demo Conversation for Doutora Kitty
+        - generic [ref=e99]:
+          - generic "Latencia da API" [ref=e100]:
+            - img [ref=e101]
+            - generic [ref=e104]: "78"
+            - generic [ref=e105]: ms
+          - generic "Latencia do Banco de Dados" [ref=e106]:
+            - img [ref=e107]
+            - generic [ref=e112]: "20"
+            - generic [ref=e113]: ms
+        - button "AD Admin" [ref=e114] [cursor=pointer]:
+          - generic [ref=e115]: AD
+          - generic [ref=e116]: Admin
+        - generic [ref=e117]:
+          - 'button "Acesso ao computador inteiro: desligado" [ref=e119] [cursor=pointer]':
+            - img [ref=e120]
+          - button "Compartilhar conversa" [ref=e159] [cursor=pointer]:
+            - img [ref=e160]
+          - button "Limpar conversa" [ref=e166] [cursor=pointer]:
+            - img [ref=e167]
+          - 'button "Tema: dark" [ref=e123] [cursor=pointer]':
+            - img [ref=e124]
+          - button "Abrir configuracoes" [ref=e130] [cursor=pointer]:
+            - img [ref=e131]
+          - button "Sair" [ref=e134] [cursor=pointer]:
+            - img [ref=e135]
+      - generic [ref=e139]:
+        - generic [ref=e140]:
+          - text: 🐱
+          - generic [ref=e170]:
+            - generic [ref=e171]: 🐱
+            - generic [ref=e172]:
+              - heading "Doutora Kitty 🩺" [level=1] [ref=e173]
+              - paragraph [ref=e174]: Analista de Personalidade Digital
+          - paragraph [ref=e176]: 😊 No geral tá indo bem! 14 likes vs 6 dislikes. Tem espaço pra melhorar.
+        - generic [ref=e177]:
+          - generic [ref=e178] [cursor=pointer]:
+            - img [ref=e180]
+            - generic [ref=e182]:
+              - generic [ref=e183]: "14"
+              - generic [ref=e184]: Cuki 💚
+          - generic [ref=e185] [cursor=pointer]:
+            - img [ref=e187]
+            - generic [ref=e189]:
+              - generic [ref=e190]: "6"
+              - generic [ref=e191]: Poderia Melhorar 🤔
+          - generic [ref=e192] [cursor=pointer]:
+            - img [ref=e194]
+            - generic [ref=e197]:
+              - generic [ref=e198]: 70%
+              - generic [ref=e199]: Satisfação
+          - generic [ref=e200] [cursor=pointer]:
+            - img [ref=e202]
+            - generic [ref=e204]:
+              - generic [ref=e205]: 65%
+              - generic [ref=e206]: Confiança de Análise
+        - generic [ref=e207]:
+          - heading "🧠 Seu Perfil Psicológico" [level=2] [ref=e208]
+          - generic [ref=e209]:
+            - paragraph [ref=e211]: 🎨 Adorando um tom descontraído e amigável! Prefere conversas naturais.
+            - paragraph [ref=e213]: 📚 Prefere explicações claras e diretas, sem jargões técnicos.
+            - paragraph [ref=e215]: 🔀 Gosta de misturar formatos conforme necessário.
+            - paragraph [ref=e217]: 🏃 Gosta de ritmo equilibrado.
+            - paragraph [ref=e219]: 🎨 Gosta de misturar código e conceitos.
+            - paragraph [ref=e221]: ✂️ Prefere respostas diretas e curtas.
+        - generic [ref=e222]:
+          - generic [ref=e223]:
+            - heading "📈 Tendência Recente" [level=3] [ref=e224]
+            - generic [ref=e225]: ⚖️ Estável
+          - generic [ref=e226]:
+            - heading "🎯 Consistência" [level=3] [ref=e227]
+            - paragraph [ref=e230]: Variado
+        - generic [ref=e231]:
+          - heading "⭐ Seus Pontos Fortes" [level=2] [ref=e232]
+          - list [ref=e233]:
+            - listitem [ref=e234]: ⭐ Engajado em avaliar qualidade
+        - generic [ref=e235]:
+          - heading "💡 Dicas da Doutora Kitty" [level=2] [ref=e236]
+          - list [ref=e237]:
+            - listitem [ref=e238]: Tudo certo! Continue assim! 💚
+        - generic [ref=e239]:
+          - paragraph [ref=e240]: Feito com 💚 pela Doutora Kitty - Sua psicóloga digital favorita!
+          - paragraph [ref=e241]: Quanto mais você feedback, mais eu entendo você! 🧬

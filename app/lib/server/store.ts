@@ -6,6 +6,39 @@ import path from "node:path";
 import type { SessionUser } from "./auth";
 import { findDbUserByEmail, getDb, hasDatabase } from "./db";
 
+// Cache para conversas com TTL
+type CacheEntry<T> = {
+  data: T;
+  timestamp: number;
+};
+
+const conversationsCache = new Map<string, CacheEntry<StoredConversation[]>>();
+const CACHE_TTL = 1000 * 60; // 60 segundos
+
+function getCachedConversations(userId: string): StoredConversation[] | null {
+  const cached = conversationsCache.get(userId);
+  if (!cached) return null;
+
+  const age = Date.now() - cached.timestamp;
+  if (age > CACHE_TTL) {
+    conversationsCache.delete(userId);
+    return null;
+  }
+
+  return cached.data;
+}
+
+function setCachedConversations(userId: string, data: StoredConversation[]): void {
+  conversationsCache.set(userId, {
+    data,
+    timestamp: Date.now(),
+  });
+}
+
+function invalidateConversationsCache(userId: string): void {
+  conversationsCache.delete(userId);
+}
+
 export type ChatMessage = {
   role: "user" | "agent";
   content: string;
@@ -37,6 +70,7 @@ type PluginRecord = {
   name: string;
   description: string;
   enabled: boolean;
+  status: "active" | "development" | "beta" | "experimental";
   capabilities: PluginCapability[];
 };
 
@@ -75,6 +109,7 @@ type UserState = {
 type AppSettings = {
   fullAccess: boolean;
   permissionMode: "ask" | "auto" | "read_only";
+  memoryMode: "off" | "explicit" | "smart";
   approvedTools: string[];
   sandboxEnabled: boolean;
   sandboxWritableRoots: string[];
@@ -108,20 +143,194 @@ function getDataDir() {
 
 const defaultPlugins = (): PluginRecord[] => [
   {
-    id: "vercel",
-    name: "Vercel",
-    description: "Integração local simulada para restaurar a interface.",
+    id: "openai",
+    name: "OpenAI Integration",
+    description: "Integração com APIs OpenAI para processamento avançado de linguagem natural.",
     enabled: true,
+    status: "active",
     capabilities: [
       {
-        type: "skill",
-        name: "Deployments",
-        description: "Mostra o plugin como habilitado no painel.",
+        type: "network",
+        name: "GPT Models",
+        description: "Acesso aos modelos GPT-4, GPT-3.5 Turbo e variantes.",
       },
       {
-        type: "mcp",
+        type: "api",
+        name: "Embeddings",
+        description: "Geração de embeddings para busca semântica.",
+      },
+      {
+        type: "skill",
+        name: "Moderation",
+        description: "Moderation API para conteúdo apropriado.",
+      },
+    ],
+  },
+  {
+    id: "github",
+    name: "GitHub Integration",
+    description: "Controle total de repositorios, PRs, issues e workflows.",
+    enabled: true,
+    status: "development",
+    capabilities: [
+      {
+        type: "vcs",
+        name: "Repository Ops",
+        description: "Clone, push, pull, e gerenciamento de branches.",
+      },
+      {
+        type: "api",
+        name: "GitHub API",
+        description: "Acesso à API REST e GraphQL do GitHub.",
+      },
+      {
+        type: "autom",
+        name: "Workflows",
+        description: "Controle de GitHub Actions e CI/CD.",
+      },
+    ],
+  },
+  {
+    id: "obsidian-sync",
+    name: "Obsidian Sync",
+    description: "Sincronização bidirecional com vault do Obsidian.",
+    enabled: true,
+    status: "beta",
+    capabilities: [
+      {
+        type: "storage",
+        name: "Vault Sync",
+        description: "Sincroniza notas entre Obsidian e o sistema.",
+      },
+      {
+        type: "search",
+        name: "Full-Text Search",
+        description: "Busca avançada em todas as notas.",
+      },
+      {
+        type: "skill",
+        name: "Knowledge Graph",
+        description: "Visualiza relações entre notas e tags.",
+      },
+    ],
+  },
+  {
+    id: "database-tools",
+    name: "Database Tools",
+    description: "Suporte para PostgreSQL, MongoDB, SQLite e Redis.",
+    enabled: true,
+    status: "development",
+    capabilities: [
+      {
+        type: "database",
+        name: "Query Builder",
+        description: "Interface amigável para queries SQL e NoSQL.",
+      },
+      {
+        type: "autom",
+        name: "Migrations",
+        description: "Versionamento e controle de schema.",
+      },
+      {
+        type: "monitoring",
+        name: "Metrics",
+        description: "Performance e health checks em tempo real.",
+      },
+    ],
+  },
+  {
+    id: "docker-integration",
+    name: "Docker & Containers",
+    description: "Gerenciamento completo de containers e orquestração.",
+    enabled: false,
+    status: "experimental",
+    capabilities: [
+      {
+        type: "deployment",
+        name: "Container Ops",
+        description: "Build, deploy e manage Docker containers.",
+      },
+      {
+        type: "monitoring",
+        name: "Docker Compose",
+        description: "Orquestração multi-container.",
+      },
+      {
+        type: "skill",
+        name: "Kubernetes",
+        description: "Suporte a K8s clusters e manifests.",
+      },
+    ],
+  },
+  {
+    id: "analytics",
+    name: "Analytics & Monitoring",
+    description: "Rastreamento de métricas, logs e performance.",
+    enabled: true,
+    status: "development",
+    capabilities: [
+      {
+        type: "monitoring",
+        name: "Real-time Metrics",
+        description: "Dashboard de performance e estatísticas.",
+      },
+      {
+        type: "logging",
+        name: "Log Aggregation",
+        description: "Centralização de logs com busca avançada.",
+      },
+      {
+        type: "notification",
+        name: "Alerting",
+        description: "Alertas automáticos para anomalias.",
+      },
+    ],
+  },
+  {
+    id: "slack-notifications",
+    name: "Slack Integration",
+    description: "Notificações e integração bidirecional com Slack.",
+    enabled: false,
+    status: "experimental",
+    capabilities: [
+      {
+        type: "notification",
+        name: "Bot Commands",
+        description: "Bot responde comandos no Slack.",
+      },
+      {
+        type: "autom",
+        name: "Smart Notifications",
+        description: "Alertas contextualizados em canais.",
+      },
+      {
+        type: "integration",
+        name: "Slash Commands",
+        description: "Comandos customizados com /chocks.",
+      },
+    ],
+  },
+  {
+    id: "vercel",
+    name: "Vercel Deployment",
+    description: "Integração local simulada para restaurar a interface.",
+    enabled: true,
+    status: "beta",
+    capabilities: [
+      {
+        type: "deployment",
+        name: "Deployments",
+        description: "Deploy automático e preview URLs.",
+      },
+      {
+        type: "monitoring",
         name: "Toolbar",
         description: "Exibe recursos de integração disponíveis.",
+      },
+      {
+        type: "analytics",
+        name: "Edge Analytics",
+        description: "Analytics globais distribuído.",
       },
     ],
   },
@@ -130,6 +339,11 @@ const defaultPlugins = (): PluginRecord[] => [
 const defaultTools = (): ToolRecord[] => [
   { name: "file_read", enabled: true, category: "filesystem" },
   { name: "file_write", enabled: false, category: "filesystem", reason: "Modo seguro local" },
+  { name: "memory_search", enabled: true, category: "memory" },
+  { name: "memory_read", enabled: true, category: "memory" },
+  { name: "memory_capture", enabled: false, category: "memory", reason: "Modo seguro local" },
+  { name: "memory_upsert", enabled: false, category: "memory", reason: "Modo seguro local" },
+  { name: "memory_append", enabled: false, category: "memory", reason: "Modo seguro local" },
   { name: "grep", enabled: true, category: "search" },
   { name: "web_fetch", enabled: true, category: "network" },
 ];
@@ -148,6 +362,7 @@ function defaultAppSettings(): AppSettings {
   return {
     fullAccess: false,
     permissionMode: "ask",
+    memoryMode: "explicit",
     approvedTools: [],
     sandboxEnabled: true,
     sandboxWritableRoots: [],
@@ -222,6 +437,10 @@ export async function readAppSettings() {
         parsed.permissionMode === "auto" || parsed.permissionMode === "read_only"
           ? parsed.permissionMode
           : "ask",
+      memoryMode:
+        parsed.memoryMode === "off" || parsed.memoryMode === "explicit" || parsed.memoryMode === "smart"
+          ? parsed.memoryMode
+          : "explicit",
       approvedTools: Array.isArray(parsed.approvedTools)
         ? parsed.approvedTools.map((item) => String(item || "").trim()).filter(Boolean)
         : [],
@@ -266,6 +485,13 @@ export async function listConversations(user: SessionUser) {
   if (hasDatabase()) {
     const db = getDb();
     const ownerId = await resolveOwnerId(user);
+
+    // Verificar cache primeiro
+    const cached = getCachedConversations(ownerId);
+    if (cached) {
+      return cached;
+    }
+
     const conversationResult = await db.query<
       Pick<StoredConversation, "id" | "title">
     >(
@@ -280,6 +506,7 @@ export async function listConversations(user: SessionUser) {
       (row: Pick<StoredConversation, "id" | "title">) => row.id,
     );
     if (ids.length === 0) {
+      setCachedConversations(ownerId, []);
       return [];
     }
 
@@ -304,13 +531,17 @@ export async function listConversations(user: SessionUser) {
       messagesByConversation.set(row.conversation_id, list);
     }
 
-    return conversationResult.rows.map(
+    const result = conversationResult.rows.map(
       (conversation: Pick<StoredConversation, "id" | "title">) => ({
         id: conversation.id,
         title: conversation.title,
         messages: messagesByConversation.get(conversation.id) ?? [],
       }),
     );
+
+    // Armazenar em cache
+    setCachedConversations(ownerId, result);
+    return result;
   }
 
   const state = await readState(user.id);
@@ -332,6 +563,7 @@ export async function createConversation(
        do update set title = excluded.title, owner_id = excluded.owner_id, updated_at = now()`,
       [input.id, title, ownerId],
     );
+    invalidateConversationsCache(ownerId);
     await appendLog(user, "info", "Conversa criada", { id: input.id });
     return {
       id: input.id,
@@ -408,6 +640,7 @@ export async function deleteConversation(user: SessionUser, conversationId: stri
       [conversationId, ownerId],
     );
 
+    invalidateConversationsCache(ownerId);
     await appendLog(user, "info", "Conversa removida", { id: conversationId });
     return;
   }
@@ -435,6 +668,7 @@ export async function renameConversation(
        where id = $1 and owner_id = $3`,
       [conversationId, trimmedTitle, ownerId],
     );
+    invalidateConversationsCache(ownerId);
     await appendLog(user, "info", "Conversa renomeada", { id: conversationId, title: trimmedTitle });
     return { id: conversationId, title: trimmedTitle };
   }
@@ -640,6 +874,18 @@ export async function setPermissionMode(
   await writeAppSettings(settings);
 
   await appendLog(user, "info", "Modo de permissao atualizado", { permissionMode });
+  return settings;
+}
+
+export async function setMemoryMode(
+  user: SessionUser,
+  memoryMode: "off" | "explicit" | "smart",
+) {
+  const settings = await readAppSettings();
+  settings.memoryMode = memoryMode;
+  await writeAppSettings(settings);
+
+  await appendLog(user, "info", "Modo de memoria atualizado", { memoryMode });
   return settings;
 }
 

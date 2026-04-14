@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireUser } from "@/app/lib/server/request";
+import { requireUser } from "@/lib/server/request";
 import {
   setFullAccess,
+  setMemoryMode,
   setPermissionMode,
   setSandboxSettings,
   setToolApproval,
   toggleTool,
-} from "@/app/lib/server/store";
+} from "@/lib/server/store";
 
 export async function POST(request: NextRequest) {
   const user = requireUser(request);
@@ -39,6 +40,16 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  if (name === "memory_mode") {
+    const memoryMode =
+      body?.memoryMode === "off" || body?.memoryMode === "explicit" || body?.memoryMode === "smart"
+        ? body.memoryMode
+        : "smart";
+    return NextResponse.json({
+      settings: await setMemoryMode(user, memoryMode),
+    });
+  }
+
   if (name === "tool_approval") {
     const toolName = typeof body?.toolName === "string" ? body.toolName.trim() : "";
     if (!toolName) {
@@ -65,3 +76,4 @@ export async function POST(request: NextRequest) {
     tool: await toggleTool(user, name, enabled),
   });
 }
+

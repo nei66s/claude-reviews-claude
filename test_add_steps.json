@@ -1,0 +1,16 @@
+{
+  "steps": [
+    {
+      "stepId": "step-001",
+      "text": "Extract and validate input data"
+    },
+    {
+      "stepId": "step-002", 
+      "text": "Process the data through pipeline"
+    },
+    {
+      "stepId": "step-003",
+      "text": "Generate final report"
+    }
+  ]
+}

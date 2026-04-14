@@ -1,0 +1,5 @@
+{
+  "conversationId": "test-conv-001",
+  "goal": "Process user data and generate report",
+  "initiatedBy": "coordinator-001"
+}

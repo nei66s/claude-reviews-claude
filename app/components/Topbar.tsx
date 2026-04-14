@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import PingMonitor from "./PingMonitor";
 import { useAuth } from "../lib/auth";
+import { useTheme } from "../lib/useTheme";
 import { requestJson } from "../lib/api";
 
 interface TopbarProps {
@@ -9,6 +11,8 @@ interface TopbarProps {
   onClearChat: () => void;
   onShareChat: () => void;
   onOpenSettings: () => void;
+  userName?: string;
+  userAvatar?: string | null;
 }
 
 export default function Topbar({
@@ -17,10 +21,14 @@ export default function Topbar({
   onClearChat,
   onShareChat,
   onOpenSettings,
+  userName,
+  userAvatar,
 }: TopbarProps) {
+  const router = useRouter();
   const [fullAccess, setFullAccess] = useState(false);
   const [loadingFullAccess, setLoadingFullAccess] = useState(true);
   const { logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -68,11 +76,38 @@ export default function Topbar({
     }
   };
 
+  const getInitials = (name?: string) => {
+    if (!name) return "AD";
+    const parts = name.split(" ");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   return (
     <div className="topbar">
       <div className="topbar-title">{title}</div>
       <PingMonitor />
+      {userName && (
+        <button
+          className="topbar-user"
+          onClick={() => router.push("/profile")}
+          title="Editar perfil"
+          type="button"
+        >
+          <div className="topbar-user-badge" style={userAvatar ? {
+            backgroundImage: `url('${userAvatar}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          } : undefined}>
+            {!userAvatar && getInitials(userName)}
+          </div>
+          <div className="topbar-user-name">{userName}</div>
+        </button>
+      )}
       <div className="topbar-actions">
+        <div className="topbar-actions-separator" />
         <button
           className={`topbar-icon ${fullAccess ? "danger" : ""}`}
           type="button"
@@ -108,6 +143,25 @@ export default function Topbar({
             </svg>
           </button>
         )}
+        <button className="topbar-icon" type="button" title={`Tema: ${theme}`} onClick={toggleTheme}>
+          {theme === 'dark' ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          )}
+        </button>
         <button className="topbar-icon" type="button" title="Abrir configuracoes" onClick={onOpenSettings}>
           <svg viewBox="0 0 24 24">
             <circle cx="12" cy="8" r="3.2"></circle>

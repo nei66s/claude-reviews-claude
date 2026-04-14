@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireUser } from "@/app/lib/server/request";
-import { listPlugins } from "@/app/lib/server/store";
+import { requireUser } from "@/lib/server/request";
+import { listPlugins } from "@/lib/server/store";
 
 export async function GET(request: NextRequest) {
   const user = requireUser(request);
@@ -11,3 +11,4 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({ plugins: await listPlugins(user) });
 }
+

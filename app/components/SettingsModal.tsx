@@ -15,10 +15,13 @@ export default function SettingsModal({
   const [welcomeTitle, setWelcomeTitle] = useState("Bem-vindo");
   const [planLabel, setPlanLabel] = useState("Plano local");
   const [permissionMode, setPermissionMode] = useState("ask");
+  const [memoryMode, setMemoryMode] = useState("explicit");
   const [fullAccess, setFullAccess] = useState(false);
   const [approvedTools, setApprovedTools] = useState<string[]>([]);
   const [sandboxEnabled, setSandboxEnabled] = useState(true);
   const [sandboxWritableRoots, setSandboxWritableRoots] = useState("");
+  const [memorySyncStatus, setMemorySyncStatus] = useState("");
+  const [isSyncingMemory, setIsSyncingMemory] = useState(false);
 
   const approvalTools = [
     { name: "file_write", label: "Salvar arquivo" },
@@ -26,6 +29,7 @@ export default function SettingsModal({
     { name: "file_move", label: "Mover/Renomear" },
     { name: "file_copy", label: "Copiar/Duplicar" },
     { name: "file_delete", label: "Apagar" },
+    { name: "memory_capture", label: "Salvar memoria" },
   ];
 
   useEffect(() => {
@@ -35,6 +39,7 @@ export default function SettingsModal({
       try {
         const data = await requestJson("/tools/status");
         setPermissionMode(typeof data?.permissionMode === "string" ? data.permissionMode : "ask");
+        setMemoryMode(typeof data?.memoryMode === "string" ? data.memoryMode : "explicit");
         setFullAccess(Boolean(data?.fullAccess));
         setApprovedTools(Array.isArray(data?.approvedTools) ? data.approvedTools : []);
         setSandboxEnabled(data?.sandboxEnabled !== false);
@@ -84,6 +89,42 @@ export default function SettingsModal({
               <option value="auto">Automatico</option>
               <option value="read_only">Somente leitura</option>
             </select>
+          </div>
+
+          <div className="field-group settings-field-group">
+            <label>Memoria automatica</label>
+            <select value={memoryMode} onChange={(e) => setMemoryMode(e.target.value)}>
+              <option value="off">Desligada</option>
+              <option value="explicit">So quando eu pedir</option>
+              <option value="smart">Inteligente</option>
+            </select>
+            <div className="panel-card-copy settings-help">
+              Desligada: nao salva automaticamente. So quando eu pedir: salva apenas com comando explicito. Inteligente: salva quando voce pedir ou quando o contexto parecer importante e duradouro.
+            </div>
+            <div className="settings-memory-actions">
+              <button
+                className="btn secondary settings-sync-btn"
+                type="button"
+                disabled={isSyncingMemory}
+                onClick={async () => {
+                  setIsSyncingMemory(true);
+                  setMemorySyncStatus("");
+                  try {
+                    const data = await requestJson("/memory/sync", { method: "POST" });
+                    setMemorySyncStatus(
+                      typeof data?.message === "string" ? data.message : "Memorias sincronizadas para o vault.",
+                    );
+                  } catch (err) {
+                    setMemorySyncStatus(err instanceof Error ? err.message : "Falha ao sincronizar memorias.");
+                  } finally {
+                    setIsSyncingMemory(false);
+                  }
+                }}
+              >
+                {isSyncingMemory ? "Sincronizando..." : "Sincronizar banco -> vault"}
+              </button>
+              {memorySyncStatus && <div className="panel-card-copy settings-help">{memorySyncStatus}</div>}
+            </div>
           </div>
 
           <div className="field-group row settings-field-group settings-inline-toggle">
@@ -162,6 +203,11 @@ export default function SettingsModal({
                 const permissionResponse = await requestJson("/tools/toggle", {
                   method: "POST",
                   body: JSON.stringify({ name: "permission_mode", permissionMode }),
+                });
+
+                await requestJson("/tools/toggle", {
+                  method: "POST",
+                  body: JSON.stringify({ name: "memory_mode", memoryMode }),
                 });
 
                 for (const tool of approvalTools) {

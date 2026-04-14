@@ -1,0 +1,38 @@
+
+> chokito-next@0.1.0 start
+> next start --port 3000
+
+▲ Next.js 16.2.2
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.114:3000
+✓ Ready in 179ms
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+Backend slow/unavailable, using fallback
+[Coordination API] Backend connection failed: [TypeError: fetch failed] {
+  [cause]: AggregateError: 
+      at ignore-listed frames {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireUser } from "@/app/lib/server/request";
-import { appendLog } from "@/app/lib/server/store";
+import { requireUser } from "@/lib/server/request";
+import { appendLog } from "@/lib/server/store";
 import {
   copyFileSystemEntry,
   createDirectory,
@@ -9,7 +9,7 @@ import {
   deleteFileSystemEntry,
   moveFileSystemEntry,
   writeFileContents,
-} from "@/app/lib/server/files";
+} from "@/lib/server/files";
 
 export async function POST(request: NextRequest) {
   const user = requireUser(request);
@@ -146,3 +146,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

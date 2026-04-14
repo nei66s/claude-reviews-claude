@@ -1,0 +1,1319 @@
+[     288ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     312ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    1789ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    1888ms] [LOG] [Fast Refresh] done in 191ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    2534ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    2674ms] [LOG] [Fast Refresh] done in 249ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    2921ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    2940ms] [LOG] [Fast Refresh] done in 120ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3041ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3077ms] [LOG] [Fast Refresh] done in 136ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3181ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3198ms] [LOG] [Fast Refresh] done in 120ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3308ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3314ms] [LOG] [Fast Refresh] done in 115ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3428ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3475ms] [LOG] [Fast Refresh] done in 156ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3589ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    3596ms] [LOG] [Fast Refresh] done in 112ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    4041ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    4048ms] [LOG] [Fast Refresh] done in 111ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    4150ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    4156ms] [LOG] [Fast Refresh] done in 108ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    4268ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    4279ms] [LOG] [Fast Refresh] done in 112ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    4911ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    4940ms] [LOG] [Fast Refresh] done in 130ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    5242ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    5292ms] [LOG] [Fast Refresh] done in 150ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    5807ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    5811ms] [LOG] [Fast Refresh] done in 109ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    5921ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    5998ms] [LOG] [Fast Refresh] done in 178ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    6099ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    6116ms] [LOG] [Fast Refresh] done in 117ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    6398ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    6401ms] [LOG] [Fast Refresh] done in 108ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    7427ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    7429ms] [LOG] [Fast Refresh] done in 110ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   89873ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   89895ms] [LOG] [Fast Refresh] done in 50ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   89961ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   90005ms] [LOG] [Fast Refresh] done in 34ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  150207ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  151416ms] [LOG] [Fast Refresh] done in 1316ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  151528ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  151824ms] [LOG] [Fast Refresh] done in 402ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  151931ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  151942ms] [LOG] [Fast Refresh] done in 118ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  152048ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  152066ms] [LOG] [Fast Refresh] done in 119ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  152271ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  152293ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  152438ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  152471ms] [LOG] [Fast Refresh] done in 143ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  152582ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  152607ms] [LOG] [Fast Refresh] done in 127ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  156773ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  157149ms] [LOG] [Fast Refresh] done in 482ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  157259ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  157294ms] [LOG] [Fast Refresh] done in 134ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  164409ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  165333ms] [ERROR] ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  165429ms] [ERROR] ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  165431ms] [ERROR] ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  165533ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  165758ms] [ERROR] ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  165759ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  165825ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  165864ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/:0
+[  166132ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_react-dom_0bruynb._.js:15305
+[  166202ms] Error: ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/AppShell.tsx:9:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at Object.getCompilationErrors (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\hot-reloader-turbopack.js:1186:59)
+    at DevBundlerService.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\lib\dev-bundler-service.js:44:55)
+    at DevServer.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:719:42)
+    at DevServer.findPageComponents (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:689:43)
+    at async DevServer.renderErrorToResponseImpl (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\base-server.js:1745:26)
+[  166203ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  166208ms] [ERROR] ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  166208ms] [ERROR] ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  166279ms] [ERROR] ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  166318ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  176112ms] [ERROR] ./app/components/AppShell.tsx:9:1
+Module not found: Can't resolve './MessageBubble'
+   7 | ...port Topbar from "./Topbar";
+   8 | ...port RunnerOverlay from "./RunnerOverlay";
+>  9 | ...port MessageBubble from "./MessageBubble";
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 | ...port TaskProgressPanel from "./TaskProgr...
+  11 | ...port TokenCostPanel from "./TokenCostPan...
+  12 | ...port FilesView from "./FilesView";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  176165ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  182480ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  185039ms] [LOG] [Fast Refresh] done in 2660ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  185606ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  185863ms] [LOG] [Fast Refresh] done in 367ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  185963ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  185988ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  211357ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  214082ms] [ERROR] ./app/conversations/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function ConversationsPage() {
+  4 | ...eturn <AppShell initialWorkspace="convers...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214083ms] [ERROR] ./app/page.tsx:1:1
+Module not found: Can't resolve './components/AppShell'
+> 1 | ...port AppShell from "./components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...port default function Home() {
+  4 | ...return <AppShell initialWorkspace="conver...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214083ms] [ERROR] ./app/monitor/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function MonitorPage() {
+  4 | ...eturn <AppShell initialWorkspace="monitor...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214202ms] [ERROR] ./app/conversations/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function ConversationsPage() {
+  4 | ...eturn <AppShell initialWorkspace="convers...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214202ms] [ERROR] ./app/page.tsx:1:1
+Module not found: Can't resolve './components/AppShell'
+> 1 | ...port AppShell from "./components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...port default function Home() {
+  4 | ...return <AppShell initialWorkspace="conver...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214202ms] [ERROR] ./app/monitor/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function MonitorPage() {
+  4 | ...eturn <AppShell initialWorkspace="monitor...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214204ms] [ERROR] ./app/conversations/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function ConversationsPage() {
+  4 | ...eturn <AppShell initialWorkspace="convers...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214204ms] [ERROR] ./app/page.tsx:1:1
+Module not found: Can't resolve './components/AppShell'
+> 1 | ...port AppShell from "./components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...port default function Home() {
+  4 | ...return <AppShell initialWorkspace="conver...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214204ms] [ERROR] ./app/monitor/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function MonitorPage() {
+  4 | ...eturn <AppShell initialWorkspace="monitor...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214241ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  214248ms] [ERROR] ./app/conversations/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function ConversationsPage() {
+  4 | ...eturn <AppShell initialWorkspace="convers...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214248ms] [ERROR] ./app/page.tsx:1:1
+Module not found: Can't resolve './components/AppShell'
+> 1 | ...port AppShell from "./components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...port default function Home() {
+  4 | ...return <AppShell initialWorkspace="conver...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214248ms] [ERROR] ./app/monitor/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function MonitorPage() {
+  4 | ...eturn <AppShell initialWorkspace="monitor...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  214294ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  214332ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/:0
+[  214505ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_react-dom_0bruynb._.js:15305
+[  214553ms] Error: ./app/conversations/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function ConversationsPage() {
+  4 | ...eturn <AppShell initialWorkspace="convers...
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/conversations/page.tsx:1:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at Object.getCompilationErrors (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\hot-reloader-turbopack.js:1186:59)
+    at DevBundlerService.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\lib\dev-bundler-service.js:44:55)
+    at DevServer.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:719:42)
+    at DevServer.findPageComponents (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:689:43)
+    at async DevServer.renderErrorToResponseImpl (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\base-server.js:1745:26)
+[  214533ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  214535ms] [ERROR] ./app/conversations/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function ConversationsPage() {
+  4 | ...eturn <AppShell initialWorkspace="convers...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  214535ms] [ERROR] ./app/page.tsx:1:1
+Module not found: Can't resolve './components/AppShell'
+> 1 | ...port AppShell from "./components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...port default function Home() {
+  4 | ...return <AppShell initialWorkspace="conver...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  214587ms] [ERROR] ./app/conversations/page.tsx:1:1
+Module not found: Can't resolve '../components/AppShell'
+> 1 | ...ort AppShell from "../components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...ort default function ConversationsPage() {
+  4 | ...eturn <AppShell initialWorkspace="convers...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  214587ms] [ERROR] ./app/page.tsx:1:1
+Module not found: Can't resolve './components/AppShell'
+> 1 | ...port AppShell from "./components/AppShell";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 | ...
+  3 | ...port default function Home() {
+  4 | ...return <AppShell initialWorkspace="conver...
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  277070ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  279904ms] [LOG] [Fast Refresh] done in 2865ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  280511ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  280546ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  281131ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  281145ms] [LOG] [Fast Refresh] done in 121ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  295031ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  295063ms] [LOG] [Fast Refresh] done in 25ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  347144ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  347275ms] [LOG] [Fast Refresh] done in 74ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  358951ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  359903ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | interface ChocksDanceVideoProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  359904ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  360011ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | interface ChocksDanceVideoProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  360011ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  360039ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  360083ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  360113ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  360129ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/:0
+[  360233ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_react-dom_0bruynb._.js:15305
+[  360253ms] Error: ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | interface ChocksDanceVideoProps {
+
+
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/ChocksDanceVideo.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at Object.getCompilationErrors (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\hot-reloader-turbopack.js:1186:59)
+    at DevBundlerService.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\lib\dev-bundler-service.js:44:55)
+    at DevServer.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:719:42)
+    at DevServer.findPageComponents (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:689:43)
+    at async DevServer.renderErrorToResponseImpl (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\base-server.js:1745:26)
+[  360256ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  360291ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | interface ChocksDanceVideoProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  360292ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  360292ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | interface ChocksDanceVideoProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  360292ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  360339ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { useEffect, useState } from 'react';
+  5 |
+  6 | interface ChocksDanceVideoProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  360339ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  360370ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  371725ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  372584ms] [LOG] [Fast Refresh] done in 962ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  372712ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  373094ms] [LOG] [Fast Refresh] done in 482ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  373534ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  373559ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  376070ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  376984ms] [ERROR] ./app/components/AppShell.tsx:18:1
+Module not found: Can't resolve './ChocksDanceVideo'
+  16 | ...t PluginsView from "./PluginsView";
+  17 | ...t SettingsModal from "./SettingsModal";
+> 18 | ...t ChocksDanceVideo from "./ChocksDanceVi...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 | ...t ArtifactPanel from "./ArtifactPanel";
+  20 | ...t CommandPalette from "./CommandPalette";
+  21 | ...t ToastViewport from "./ToastViewport";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  377118ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  377153ms] [ERROR] ./app/components/AppShell.tsx:18:1
+Module not found: Can't resolve './ChocksDanceVideo'
+  16 | ...t PluginsView from "./PluginsView";
+  17 | ...t SettingsModal from "./SettingsModal";
+> 18 | ...t ChocksDanceVideo from "./ChocksDanceVi...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 | ...t ArtifactPanel from "./ArtifactPanel";
+  20 | ...t CommandPalette from "./CommandPalette";
+  21 | ...t ToastViewport from "./ToastViewport";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  377155ms] [ERROR] ./app/components/AppShell.tsx:18:1
+Module not found: Can't resolve './ChocksDanceVideo'
+  16 | ...t PluginsView from "./PluginsView";
+  17 | ...t SettingsModal from "./SettingsModal";
+> 18 | ...t ChocksDanceVideo from "./ChocksDanceVi...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 | ...t ArtifactPanel from "./ArtifactPanel";
+  20 | ...t CommandPalette from "./CommandPalette";
+  21 | ...t ToastViewport from "./ToastViewport";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  377192ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  377234ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  377260ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  377281ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/:0
+[  377358ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_react-dom_0bruynb._.js:15305
+[  377371ms] Error: ./app/components/AppShell.tsx:18:1
+Module not found: Can't resolve './ChocksDanceVideo'
+  16 | ...t PluginsView from "./PluginsView";
+  17 | ...t SettingsModal from "./SettingsModal";
+> 18 | ...t ChocksDanceVideo from "./ChocksDanceVi...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 | ...t ArtifactPanel from "./ArtifactPanel";
+  20 | ...t CommandPalette from "./CommandPalette";
+  21 | ...t ToastViewport from "./ToastViewport";
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/AppShell.tsx:18:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at Object.getCompilationErrors (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\hot-reloader-turbopack.js:1186:59)
+    at DevBundlerService.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\lib\dev-bundler-service.js:44:55)
+    at DevServer.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:719:42)
+    at DevServer.findPageComponents (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:689:43)
+    at async DevServer.renderErrorToResponseImpl (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\base-server.js:1745:26)
+[  377373ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  377401ms] [ERROR] ./app/components/AppShell.tsx:18:1
+Module not found: Can't resolve './ChocksDanceVideo'
+  16 | ...t PluginsView from "./PluginsView";
+  17 | ...t SettingsModal from "./SettingsModal";
+> 18 | ...t ChocksDanceVideo from "./ChocksDanceVi...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 | ...t ArtifactPanel from "./ArtifactPanel";
+  20 | ...t CommandPalette from "./CommandPalette";
+  21 | ...t ToastViewport from "./ToastViewport";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  377401ms] [ERROR] ./app/components/AppShell.tsx:18:1
+Module not found: Can't resolve './ChocksDanceVideo'
+  16 | ...t PluginsView from "./PluginsView";
+  17 | ...t SettingsModal from "./SettingsModal";
+> 18 | ...t ChocksDanceVideo from "./ChocksDanceVi...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 | ...t ArtifactPanel from "./ArtifactPanel";
+  20 | ...t CommandPalette from "./CommandPalette";
+  21 | ...t ToastViewport from "./ToastViewport";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  377437ms] [ERROR] ./app/components/AppShell.tsx:18:1
+Module not found: Can't resolve './ChocksDanceVideo'
+  16 | ...t PluginsView from "./PluginsView";
+  17 | ...t SettingsModal from "./SettingsModal";
+> 18 | ...t ChocksDanceVideo from "./ChocksDanceVi...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 | ...t ArtifactPanel from "./ArtifactPanel";
+  20 | ...t CommandPalette from "./CommandPalette";
+  21 | ...t ToastViewport from "./ToastViewport";
+
+Import trace:
+  Server Component:
+    ./app/components/AppShell.tsx
+    ./app/conversations/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  377493ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  383496ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  384386ms] [LOG] [Fast Refresh] done in 989ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  384536ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  384873ms] [LOG] [Fast Refresh] done in 442ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  384979ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  385341ms] [LOG] [Fast Refresh] done in 467ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  385467ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  385495ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  484739ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  484820ms] [LOG] [Fast Refresh] done in 82ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  491174ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  492245ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  492245ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  492351ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  492352ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  492353ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  492354ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  492385ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  492438ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=wnywt:0
+[  492457ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  492479ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/:0
+[  492593ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_react-dom_0bruynb._.js:15305
+[  492618ms] Error: ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/ChocksDanceVideo.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at Object.getCompilationErrors (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\hot-reloader-turbopack.js:1186:59)
+    at DevBundlerService.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\lib\dev-bundler-service.js:44:55)
+    at DevServer.getCompilationError (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:719:42)
+    at DevServer.findPageComponents (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\dev\next-dev-server.js:689:43)
+    at async DevServer.renderErrorToResponseImpl (file://C:\Users\bsilv\OneDrive\Desktop\claude-reviews-claude\node_modules\next\dist\server\base-server.js:1745:26)
+[  492615ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  492618ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  492618ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  492621ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  492621ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  492664ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  492664ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  492694ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  492694ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  492767ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  498836ms] [ERROR] ./app/components/ChocksDanceVideo.tsx:3:1
+Module not found: Can't resolve '../lib/useTheme'
+  1 | 'use client';
+  2 |
+> 3 | import { useTheme } from '../lib/useTheme';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | interface ChocksDanceVideoProps {
+  6 |   hasMessages?: boolean;
+
+Import traces:
+  Client Component Browser:
+    ./app/components/ChocksDanceVideo.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/ChocksDanceVideo.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  498836ms] [ERROR] ./app/components/Topbar.tsx:4:1
+Module not found: Can't resolve '../lib/useTheme'
+  2 | import PingMonitor from "./PingMonitor";
+  3 | import { useAuth } from "../lib/auth";
+> 4 | import { useTheme } from "../lib/useTheme";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { requestJson } from "../lib/api";
+  6 |
+  7 | interface TopbarProps {
+
+Import traces:
+  Client Component Browser:
+    ./app/components/Topbar.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Client Component Browser]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/components/Topbar.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Client Component SSR]
+    ./app/components/AppShell.tsx [Server Component]
+    ./app/conversations/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  498901ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  501294ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  502338ms] [LOG] [Fast Refresh] done in 1129ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  502473ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  503108ms] [LOG] [Fast Refresh] done in 736ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  503292ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  503326ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  560237ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  560398ms] [LOG] [Fast Refresh] done in 271ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  704622ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  704821ms] [LOG] [Fast Refresh] done in 301ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  773838ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  773838ms] [LOG] [Fast Refresh] done in 114ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  781200ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  781263ms] [LOG] [Fast Refresh] done in 167ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  828639ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  828720ms] [LOG] [Fast Refresh] done in 196ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  836122ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[  836351ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[  836601ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  839965ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  843325ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  846666ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  850013ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  851105ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[  851364ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[  857372ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  864738ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  866093ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[  866171ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/tokens/stats/admin-user-id/d87f3fb8-9853-494a-8928-868ecfa9d76c:0
+[  866171ms] [ERROR] Error fetching token stats: TypeError: Failed to fetch
+    at TokenCostPanel.useEffect.fetchData (http://localhost:3000/_next/static/chunks/app_0jq907v._.js:3631:48) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  866174ms] [ERROR] WebSocket is already in CLOSING or CLOSED state. @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2790
+[  866385ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[  868424ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/__nextjs_original-stack-frames:0
+[  872116ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  879483ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  881097ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[  881390ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[  886854ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  894285ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[  896108ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[  896341ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[  901782ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=IUiwVZDPGMxuvngm8UuVp' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 2332643ms] [ERROR] Failed to fetch RSC payload for http://localhost:3000/files. Falling back to browser navigation. Error: Failed to read a RSC payload created by a development version of React on the server while using a production version on the client. Always use matching versions on the server and the client.
+    at http://localhost:3000/_next/static/chunks/0wyz3fzjhpvhl.js:1:17287
+    at t (http://localhost:3000/_next/static/chunks/0wyz3fzjhpvhl.js:1:17785) @ http://localhost:3000/_next/static/chunks/0wyz3fzjhpvhl.js:0
+[ 2332800ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 2332834ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 2360973ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 2360975ms] [LOG] [Fast Refresh] done in 117ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431

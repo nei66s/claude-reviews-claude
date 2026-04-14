@@ -173,9 +173,34 @@ claude-code-deep-dive/
 │   ├── 07-bridge-system.md            # IDE ↔ CLI bridge
 │   └── 08-design-patterns.md          # Reusable agentic patterns
 │
+├── app/                               # 🎪 Pimpotasma Application
+│   ├── components/
+│   │   ├── EasterEggManager.tsx       # 🎮 Global easter egg detector
+│   │   ├── EasterEggModal.tsx         # 🎪 Easter egg modals
+│   │   └── PimpotasmaTeamCard.tsx     # Team card (with interactions)
+│   └── hooks/
+│       └── useEasterEggs.ts           # ⌨️ Keyboard sequence detection
+│
+├── EASTER_EGGS.md                     # 🎪 Complete Easter Eggs Guide
+│
 └── stats/
     └── codebase-metrics.md            # Code statistics
 ```
+
+---
+
+## 🎪 Easter Eggs
+
+This project contains **4 hidden interactive easter eggs** for adventurous explorers:
+
+| # | Easter Egg | Trigger | Content |
+|----|-----------|---------|---------|
+| 1️⃣ | **Konami Code** | Press ↑↑↓↓←→←→BA | 🎪 "PIMPOTASMA UNLEASHED!" modal |
+| 2️⃣ | **Triple-Click Pimpim** | Click Pimpim card 3x | 👑 Random Pimpim wisdom (7 quotes) |
+| 3️⃣ | **Click Chocks Quote** | Click the footer quote | ✨ Chocks attributes gallery (8 items) |
+| 4️⃣ | **Secret Words** | Type "chocks", "pimpim", "betinha" | 🔮 Hidden activation system |
+
+👉 **Full Guide**: [EASTER_EGGS.md](EASTER_EGGS.md)
 
 ---
 

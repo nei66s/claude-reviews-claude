@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireUser } from "@/app/lib/server/request";
-import { listFileEntries } from "@/app/lib/server/files";
+import { requireUser } from "@/lib/server/request";
+import { listFileEntries } from "@/lib/server/files";
 
 export async function GET(request: NextRequest) {
   const user = requireUser(request);
@@ -20,3 +20,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

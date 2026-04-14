@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { authenticate, createToken, isAuthConfigured } from "@/app/lib/server/auth";
-import { appendLog } from "@/app/lib/server/store";
+import { authenticate, createToken, isAuthConfigured } from "@/lib/server/auth";
+import { appendLog } from "@/lib/server/store";
 
 export async function POST(request: NextRequest) {
   if (!isAuthConfigured()) {
@@ -30,3 +30,4 @@ export async function POST(request: NextRequest) {
     user,
   });
 }
+

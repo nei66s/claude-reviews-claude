@@ -1,173 +1,239 @@
-# Chocks — Implementation Roadmap (Full Architecture)
+# 🚀 Chocks - Implementation Roadmap
 
-**Goal**: Implementar tudo da arquitetura do Claude Code, adaptado para uso corporativo com poucas pessoas.
-
----
-
-## Fases de Implementação
-
-### **Fase 1: MVP Funcional + UI Polida** (2-3 semanas)
-*Status atual*: ~60% completo
-
-**Objetivos**:
-- ✅ File preview & editor
-- ✅ File actions (copy, duplicate, create, delete)
-- ✅ Workflow operacional (reset, archive, resume, edit steps)
-- ✅ Permissions UX básica (ask/auto/read_only)
-- ✅ Chat com sugestões funcionais
-- ✅ Build estável + no regressions
-
-**Arquivos-chave a completar**:
-- `src/server.ts` — adicionar `/workflow/update-step` endpoint
-- `src/tools.ts` — file_move, file_rename handlers
-- `public/index.html` — polish final, acessibilidade AA
-
-**Saída**: Chatbot pronto para operação básica com permissões simples.
+Data: April 13, 2026  
+Status: In Development
 
 ---
 
-### **Fase 2: Permission Pipeline + Hook System** (3-4 semanas)
-*Valor*: 10x mais poder de controle
+## 📋 Overview
 
-**Objetivos**:
-- Implementar 7-step permission gauntlet
-- Deny/ask/allow rules por ferramentaou caminho
-- Hook System básico (20 eventos)
-- Content-aware permission checks
-- Audit logging
+Sistema de multi-agent coordination com UI moderna, slash commands e integração com OpenAI API.
 
-**Arquivos novos**:
-- `src/permissions/pipeline.ts` — 7-step gauntlet
-- `src/permissions/rules.ts` — deny/ask/allow rule engine
-- `src/hooks/index.ts` — hook registry + dispatch
-- `src/hooks/events.ts` — 20 event types
-- `src/audit/logger.ts` — audit trail
-
-**Saída**: Controle fino de quem pode fazer o quê, quando e com quais caminhos.
+**Stack**: Next.js 16 + Express (TypeScript) + PostgreSQL + Redis
 
 ---
 
-### **Fase 3: Bash Security (AST + Sandbox)** (2-3 semanas)
-*Valor*: Executar comandos shell com segurança
+## ✅ IMPLEMENTED FEATURES
 
-**Objetivos**:
-- Parse AST de comandos bash (tree-sitter)
-- Classificação de comandos (read-only, destructive, etc)
-- Sandbox com bubblewrap (Linux) / seatbelt (macOS)
-- Safe sed edit preview
-- Command history + replay
+### Phase 1: Core Chat + Tools ✅
+- ✅ Chat streaming com OpenAI
+- ✅ File system tools (read, write, create, delete, move, copy)
+- ✅ Memory management (Obsidian vault integration)
+- ✅ Workflow system (steps, status tracking)
+- ✅ PDF report generation
 
-**Arquivos novos**:
-- `src/bash/ast.ts` — bash AST parsing
-- `src/bash/classifier.ts` — command classification
-- `src/bash/sandbox.ts` — sandbox adapter
-- `src/bash/sedParser.ts` — sed -i simulation
-- `src/bash/engine.ts` — full bash execution
+### Phase 2: Coordination System ✅
+- ✅ Multi-agent teams (coordination/spawner)
+- ✅ Worker agents with roles (researcher, implementer, tester)
+- ✅ Message mailbox system (inter-agent communication)
+- ✅ Team CRUD endpoints
+- ✅ Coordination Dashboard (Teams, Workflows, Errors tabs)
 
-**Saída**: Executar qualquer comando shell com sandbox automático e aprovação granular.
+### Phase 3: Slash Commands ✅
+- ✅ `/create-agents` - Spawn coordination teams
+- ✅ `/create-workflow` - Assign tasks to teams
+- ✅ Command autocomplete menu (↑↓ navigation, filtering)
+- ✅ 8 default commands (create, explain, fix, new, search, plan, test)
 
----
-
-### **Fase 4: Plugin System Simplificado** (3-4 semanas)
-*Valor*: Estender capacidades sem tocar o core
-
-**Objetivos**:
-- Plugin manifest (JSON schema)
-- Plugin loader + hot-reload
-- Plugin types: tools, hooks, skills, agents
-- Dependency resolution
-- Plugin storage (Postgres)
-
-**Arquivos novos**:
-- `src/plugins/manifest.ts` — schema + validation
-- `src/plugins/loader.ts` — dynamic loading
-- `src/plugins/registry.ts` — plugin lifecycle
-- `src/plugins/storage.ts` — DB persistence
-
-**Saída**: Poder adicionar novos agentes, tools, hooks via plugins.
+### Phase 4: Visual Improvements ✅
+- ✅ Coordination Dashboard visual fix (responsive grid)
+- ✅ Dark theme consistency
+- ✅ Command autocomplete dropdown
 
 ---
 
-### **Fase 5: QueryEngine Sofisticado** (2-3 semanas)
-*Valor*: Contexto eficiente, custo otimizado
+## 🔥 HIGH PRIORITY FEATURES (To Implement)
 
-**Objetivos**:
-- Auto-compactação de conversa (resumo inteligente)
-- Token budgeting por conversa/usuário
-- File content caching (LRU)
-- Streaming aprimorado
-- Cost tracking
+### 1. **Artifacts / Inline Output Panels** 🌟
+**Description**: Long-form respostas em painel separado (lado a lado com chat)  
+**Similar to**: Claude, ChatGPT artifacts  
+**Why**: Melhor experiência com código gerado, documentos, relatórios  
+**Effort**: Medium (5-6 hours)
 
-**Arquivos novos**:
-- `src/engine/compaction.ts` — resumo automático
-- `src/engine/budgeting.ts` — token + cost limits
-- `src/engine/cache.ts` — file content LRU
-- `src/engine/streaming.ts` — improved streaming
+**What to build**:
+- ✓ ArtifactPanel component
+- ✓ Detect artifact types (code, markdown, json, html)
+- ✓ Copy button, expand, fullscreen actions
+- ✓ Syntax highlighting with language detection
+- ✓ Integration with PDF reports
 
-**Saída**: Conversas longas eficientes, custo controlado.
-
----
-
-### **Fase 6: Coordinator Mode** (3-4 semanas)
-*Valor*: Multi-agent orchestration
-
-**Objetivos**:
-- Coordinator agent (dispatcher)
-- Worker agents (specialistas)
-- Message routing entre agents
-- Task decomposition
-- Result synthesis
-
-**Arquivos novos**:
-- `src/coordinator/index.ts` — coordinator logic
-- `src/coordinator/workers.ts` — worker pool
-- `src/coordinator/routing.ts` — message routing
-- `src/coordinator/tasks.ts` — task decomposition
-
-**Saída**: Um coordinator que delega trabalho para múltiplos workers especializados.
+**Files to create/modify**:
+- `app/components/ArtifactPanel.tsx` (NEW)
+- `app/components/MessageBubble.tsx` (MODIFY - add artifact detection)
+- `app/styles/artifacts.css` (NEW)
+- `app/lib/artifactDetection.ts` (NEW)
 
 ---
 
-## Timeline Realista
+### 2. **Web Search Real-time (Live Data)** 🌍
+**Description**: Agentes podem buscar informações atualizadas da web  
+**Similar to**: ChatGPT web search, Claude web access  
+**Why**: Respostas com dados atuais, não dependem de treinamento  
+**Effort**: Hard (8-10 hours - requer API setup)
 
-```
-Mar 2026  |████████ Fase 1 (MVP)
-          |████████████ Fase 2 (Permissions + Hooks)
-Abr 2026  |████████ Fase 3 (Bash Security)
-          |████████████ Fase 4 (Plugins)
-Mai 2026  |████████ Fase 5 (QueryEngine)
-          |████████████ Fase 6 (Coordinator)
-```
+**What to build**:
+- ✓ Web search tool (use SerpAPI ou Google Custom Search)
+- ✓ Limit queries (budget control like token system)
+- ✓ Cache resultados (30min TTL)
+- ✓ Display search sources/citations
+- ✓ Permission check (WEB_FETCH_ALLOWLIST)
 
-**Total**: ~4-5 meses para feature-complete.
-
----
-
-## Prioridades de Implementação
-
-1. **Crítica** (para MVP funcional):
-   - Fase 1 completa
-   - Permission Pipeline básica (Fase 2)
-   
-2. **Alta** (próximos meses):
-   - Hook System (Fase 2)
-   - Bash Security (Fase 3)
-   
-3. **Média** (roadmap 6+ meses):
-   - Plugin System
-   - QueryEngine
-   
-4. **Futura** (nice-to-have):
-   - Coordinator Mode
-   - MCP integration
+**Files to create/modify**:
+- `app/lib/server/search-tools.ts` (NEW)
+- `app/lib/server/chat-tools.ts` (MODIFY - add web_search tool)
+- `app/api/search/route.ts` (NEW)
+- `.env` (ADD: SEARCH_ENGINE_API_KEY, SEARCH_ENGINE_ID)
 
 ---
 
-## Métricas de Sucesso
+### 3. **Code Block Copy + Run Buttons** 💻
+**Description**: Buttons em code blocks (Copy, Create File, Run)  
+**Similar to**: GitHub Copilot, ChatGPT  
+**Why**: Acelera workflow de developers  
+**Effort**: Easy (2-3 hours)
 
-- ✅ Zero regressions após cada fase
-- ✅ Build + tests passando
-- ✅ Documentação atualizada
-- ✅ Funcionários podem usar dia 1
-- ✅ Extensibilidade clara (hooks + plugins)
+**What to build**:
+- ✓ Copy to clipboard button
+- ✓ "Create File" button → auto-create na workspace
+- ✓ "Run" button → detecta linguagem e executa (bash, node, python)
+- ✓ Icons + hover effects
+- ✓ Toast notifications (copied, created, executed)
 
+**Files to create/modify**:
+- `app/components/CodeBlock.tsx` (NEW or MODIFY)
+- `app/lib/codeActions.ts` (NEW - copy, create, run logic)
+- `app/api/code/execute/route.ts` (NEW - run code endpoint)
+- `app/styles/code-block.css` (NEW)
+
+---
+
+### 4. **Quick Actions Command Menu** ⌘K
+**Description**: Modal com quick actions (Cmd/Ctrl+K → filter + execute)  
+**Similar to**: VS Code command palette, GitHub Copilot  
+**Why**: Descoberta de features, UX melhorada  
+**Effort**: Medium (4-5 hours)
+
+**What to build**:
+- ✓ Global hotkey listener (Cmd+K / Ctrl+K)
+- ✓ Modal com searchable list de todas as tools
+- ✓ Categorias (Chat, Files, Coordination, Memory, etc)
+- ✓ Recent actions (MRU list)
+- ✓ Keyboard navigation (↑↓ filtering, Esc close)
+- ✓ Execute ação ao selecionar
+
+**Files to create/modify**:
+- `app/components/CommandPalette.tsx` (NEW)
+- `app/hooks/useCommandPalette.ts` (NEW)
+- `app/utils/hotkeyListener.ts` (NEW)
+- `app/styles/command-palette.css` (NEW)
+
+---
+
+## 💎 MEDIUM PRIORITY FEATURES
+
+### 5. **Conversation Search & Export** 🔍
+**Description**: Buscar no histórico, export a Markdown/PDF  
+**Files**: 
+- `app/components/SearchPanel.tsx`
+- `app/api/conversations/search/route.ts`
+- `app/api/conversations/export/route.ts`
+
+---
+
+### 6. **Smart Conversation Titles** 📝
+**Description**: Auto-rename chat baseado em contexto (1ª mensagem)  
+**Files**:
+- `app/lib/server/titleGeneration.ts`
+- `app/api/conversations/auto-title/route.ts`
+
+---
+
+### 7. **Code Block Run with Output Display** ▶️
+**Description**: Execute código e mostra stdout/stderr inline  
+**Files**:
+- `app/components/CodeOutput.tsx`
+- `app/api/code/execute/route.ts` (ENHANCE)
+
+---
+
+### 8. **Message Reactions & Favorites** ⭐
+**Description**: React com emojis, star messages  
+**Files**:
+- Database schema: messages table → add `reactions`, `starred`
+- `app/components/MessageReactions.tsx`
+- `app/api/messages/react/route.ts`
+
+---
+
+## 🎯 QUICK WINS (Easy + High Value)
+
+### Theme Toggle Dark/Light 🌓
+- ✅ Add toggle button in Topbar
+- ✅ Store preference in localStorage
+- Duration: 1 hour
+
+### Keyboard Shortcuts Cheat Sheet ⌨️
+- Modal com atalhos (Cmd+? para abrir)
+- `Cmd+K` = Command palette
+- `Cmd+Enter` = Send message
+- `Cmd+Shift+N` = New chat
+- Duration: 1 hour
+
+### Copy Chat Button 📋
+- Copiar conversation thread para clipboard
+- Duration: 30 min
+
+---
+
+## 📊 ESTIMATED TIMELINE
+
+| Prioridade | Feature | Esforço | Timeline |
+|------------|---------|--------|----------|
+| 🔥 High | Artifacts Panel | 5-6h | Week 1 |
+| 🔥 High | Web Search | 8-10h | Week 1-2 |
+| 🔥 High | Code Block Actions | 2-3h | Week 1 |
+| 🔥 High | Command Palette | 4-5h | Week 1 |
+| 💎 Medium | Search & Export | 3-4h | Week 2 |
+| 💎 Medium | Auto Titles | 2h | Week 2 |
+| 💎 Medium | Message Reactions | 3h | Week 2 |
+| 🎯 Quick | Theme Toggle | 1h | Any |
+| 🎯 Quick | Keyboard Shortcuts | 1h | Any |
+
+**Total Estimated**: 29-34 hours of development
+
+---
+
+## 🔗 Dependencies
+
+### External APIs (if implementing Web Search)
+- SerpAPI: $5-50/month (100-300k searches)
+- Google Custom Search: $0.50/1000 queries
+- Bing Search API: ~$7/month starter
+
+### Database Schema Updates
+- `messages` table: add `artifact_type`, `artifact_content` columns
+- `conversations` table: add `search_queries`, `web_sources` columns
+- `code_executions` table: NEW (track executed code + output)
+
+---
+
+## 🚦 NEXT STEPS
+
+1. **Choose priority feature** from HIGH PRIORITY list
+2. **Review architecture impact** (check if needs backend changes)
+3. **Create feature branch** (`feature/artifacts`, `feature/web-search`, etc)
+4. **Implement + Test** (unit tests, integration tests)
+5. **Deploy to staging** and validate
+
+---
+
+## 📝 Notes
+
+- Todas as features mantêm o padrão visual (dark theme + slate colors)
+- Respeitar performance (lazy load artifacts, cache search results)
+- Adicionar rate limiting para web search e code execution
+- Testar em mobile (alguns features podem ser desktop-only no início)
+
+---
+
+**Questions?** Consulte o chat ou a documentação em `/docs/project/`

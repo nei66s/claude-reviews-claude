@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireUser } from "@/app/lib/server/request";
-import { listTools, readAppSettings } from "@/app/lib/server/store";
+import { requireUser } from "@/lib/server/request";
+import { listTools, readAppSettings } from "@/lib/server/store";
 
 export async function GET(request: NextRequest) {
   const user = requireUser(request);
@@ -14,9 +14,11 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     fullAccess: settings.fullAccess,
     permissionMode: settings.permissionMode,
+    memoryMode: settings.memoryMode,
     approvedTools: settings.approvedTools,
     sandboxEnabled: settings.sandboxEnabled,
     sandboxWritableRoots: settings.sandboxWritableRoots,
     tools: await listTools(user),
   });
 }
+

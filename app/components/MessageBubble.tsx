@@ -1,141 +1,258 @@
 "use client";
 
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
+import { Download, FileText, PanelsTopLeft } from "lucide-react";
+
+import { Artifact, extractWebSources, pickPrimaryArtifact } from "../lib/artifactDetection";
 import { Message, TraceEntry } from "../lib/api";
+import { AgentProfile, getAgentProfile } from "../lib/familyRouting";
+import CodeBlock from "./CodeBlock";
+import MessageFeedback from "./MessageFeedback";
 
-function formatToolName(label?: string) {
-  const map: Record<string, string> = {
-    file_read: "li um arquivo",
-    ls_safe: "olhei uma pasta",
-    file_write: "editei um arquivo",
-    directory_create: "criei uma pasta",
-    file_move: "movi um item",
-    file_copy: "copiei um item",
-    file_delete: "removi um item",
-    workflow_get: "consultei o plano",
-    workflow_replace: "montei um plano",
-    workflow_update_step: "atualizei uma etapa do plano",
-    workflow_clear: "limpei o plano",
-  };
+function getMemoryCaptureTrace(trace: TraceEntry[] | undefined) {
+  if (!Array.isArray(trace)) return null;
 
-  return map[label || ""] || `usei ${label || "uma ferramenta"}`;
-}
-
-function formatState(state?: TraceEntry["state"]) {
-  if (state === "error") return "nao deu certo";
-  if (state === "pending") return "em andamento";
-  return "concluido";
-}
-
-function summarizePayload(entry: TraceEntry) {
-  if (!entry.payload || typeof entry.payload !== "object") {
-    return null;
-  }
-
-  const payload = entry.payload as Record<string, unknown>;
-  const output = payload.output;
-  const args =
-    payload.arguments && typeof payload.arguments === "string"
-      ? payload.arguments
-      : null;
-
-  if (entry.state === "error") {
-    if (output && typeof output === "object" && typeof (output as Record<string, unknown>).error === "string") {
-      return String((output as Record<string, unknown>).error);
+  for (let index = trace.length - 1; index >= 0; index -= 1) {
+    const entry = trace[index];
+    if (entry?.label !== "memory_capture" || entry?.state !== "complete") {
+      continue;
     }
-    return "Encontrei um problema ao executar essa etapa.";
+
+    const payload =
+      entry.payload && typeof entry.payload === "object" ? (entry.payload as Record<string, unknown>) : null;
+    const output =
+      payload?.output && typeof payload.output === "object" ? (payload.output as Record<string, unknown>) : null;
+    const savedPath = typeof output?.path === "string" ? output.path : "";
+    const storage = typeof output?.storage === "string" ? output.storage : "";
+
+    return {
+      subtitle: entry.subtitle || "Memoria salva no Obsidian.",
+      path: savedPath,
+      storage,
+    };
   }
 
-  if (entry.label === "file_read" && args) {
-    try {
-      const parsed = JSON.parse(args) as Record<string, unknown>;
-      if (typeof parsed.path === "string" && parsed.path.trim()) {
-        return `Arquivo consultado: ${parsed.path}`;
-      }
-    } catch {}
-  }
-
-  if (entry.label === "ls_safe" && args) {
-    try {
-      const parsed = JSON.parse(args) as Record<string, unknown>;
-      if (typeof parsed.path === "string" && parsed.path.trim()) {
-        return `Pasta consultada: ${parsed.path}`;
-      }
-    } catch {}
-  }
-
-  if ((entry.label === "file_write" || entry.label === "directory_create" || entry.label === "file_delete") && args) {
-    try {
-      const parsed = JSON.parse(args) as Record<string, unknown>;
-      if (typeof parsed.path === "string" && parsed.path.trim()) {
-        return `Destino: ${parsed.path}`;
-      }
-    } catch {}
-  }
-
-  if ((entry.label === "file_move" || entry.label === "file_copy") && args) {
-    try {
-      const parsed = JSON.parse(args) as Record<string, unknown>;
-      const fromPath = typeof parsed.from_path === "string" ? parsed.from_path : "";
-      const toPath = typeof parsed.to_path === "string" ? parsed.to_path : "";
-      if (fromPath || toPath) {
-        return `De ${fromPath || "origem"} para ${toPath || "destino"}`;
-      }
-    } catch {}
-  }
-
-  return entry.subtitle || "Etapa interna usada para montar a resposta.";
+  return null;
 }
 
-function renderReasoningEntry(entry: TraceEntry, index: number) {
-  const titleBase = formatToolName(entry.label);
-  const summary = summarizePayload(entry);
+function getPdfTrace(trace: TraceEntry[] | undefined) {
+  if (!Array.isArray(trace)) return null;
+
+  for (let index = trace.length - 1; index >= 0; index -= 1) {
+    const entry = trace[index];
+    if (entry?.label !== "pdf_report" || entry?.state !== "complete") {
+      continue;
+    }
+
+    const payload =
+      entry.payload && typeof entry.payload === "object" ? (entry.payload as Record<string, unknown>) : null;
+    const output =
+      payload?.output && typeof payload.output === "object" ? (payload.output as Record<string, unknown>) : null;
+    const savedPath = typeof output?.path === "string" ? output.path : "";
+    if (!savedPath) continue;
+
+    return {
+      path: savedPath,
+      fallback: Boolean(output?.fallback),
+      message: typeof output?.message === "string" ? output.message : "PDF gerado com sucesso.",
+    };
+  }
+
+  return null;
+}
+
+function SourcesList({ trace }: { trace?: TraceEntry[] }) {
+  const sources = extractWebSources(trace);
+  if (sources.length === 0) return null;
 
   return (
-    <details key={`${entry.label || entry.type || "trace"}-${index}`} className="reasoning-card">
-      <summary className="reasoning-card-summary">
-        <div className="reasoning-card-copy">
-          <span className="reasoning-card-title">{titleBase}</span>
-          {summary && <span className="reasoning-card-subtitle">{summary}</span>}
+    <div className="artifact-sources">
+      <div className="artifact-sources-title">Sources</div>
+      {sources.map((source, index) => (
+        <div key={`${source.url}-${index}`} className="artifact-source-item">
+          <a href={source.url} target="_blank" rel="noreferrer">
+            [{index + 1}] {source.title}
+          </a>
+          {source.date ? <div className="artifact-source-snippet">{source.date}</div> : null}
+          {source.snippet ? <div className="artifact-source-snippet">{source.snippet}</div> : null}
         </div>
-        <span className={`reasoning-state ${entry.state || "complete"}`}>{formatState(entry.state)}</span>
-      </summary>
-      <div className="reasoning-card-body">
-        {entry.subtitle && <div className="reasoning-card-note">{entry.subtitle.replaceAll("tool", "ferramenta")}</div>}
-        {entry.payload !== undefined && (
-          <pre className="reasoning-card-pre">{JSON.stringify(entry.payload, null, 2)}</pre>
-        )}
-      </div>
-    </details>
+      ))}
+    </div>
   );
 }
 
-export default function MessageBubble({ message }: { message: Message }) {
+function AgentFace({ agent, size, className }: { agent: AgentProfile; size: number; className?: string }) {
+  if (agent.avatarSrc) {
+    return <Image src={agent.avatarSrc} alt={agent.name} width={size} height={size} className={className} />;
+  }
+
+  return (
+    <span className={`message-badge-fallback ${className || ""}`.trim()}>
+      {agent.fallbackEmoji}
+    </span>
+  );
+}
+
+export default function MessageBubble({
+  message,
+  conversationId,
+  onOpenArtifact,
+}: {
+  message: Message;
+  conversationId?: string;
+  onOpenArtifact?: (artifact: Artifact) => void;
+}) {
   const isAgent = message.role === "agent";
-  const avatarSrc = "/chocks-avatar-face.jpg";
+  const agentProfile = getAgentProfile(message.agentId);
+  const helperAgentProfile = message.helperAgentId ? getAgentProfile(message.helperAgentId) : null;
+  const memoryNotice = isAgent ? getMemoryCaptureTrace(message.trace) : null;
+  const pdfNotice = isAgent ? getPdfTrace(message.trace) : null;
+  const primaryArtifact = isAgent ? pickPrimaryArtifact(message.content, message.trace) : null;
+  const showWorkingState = isAgent && message.streaming && !message.content.trim();
   
+  const messageId =
+    message.id ||
+    `${conversationId || "conversation"}-${message.role}-${message.content.trim().slice(0, 24)}`.replace(/\s+/g, "-");
+
   return (
     <div className={`message ${message.role} ${message.streaming ? "is-streaming" : ""}`}>
       <div className="message-row">
         {isAgent && (
-          <div className="message-badge">
-            <Image src={avatarSrc} alt={message.role} width={40} height={40} />
+          <div className={`message-badge ${helperAgentProfile ? "with-helper" : ""}`}>
+            <AgentFace agent={agentProfile} size={40} />
+            {helperAgentProfile ? (
+              <div className="message-helper-badge" title={`${helperAgentProfile.name} ajudando`}>
+                <AgentFace agent={helperAgentProfile} size={20} className="helper" />
+              </div>
+            ) : null}
           </div>
         )}
         <div className="bubble">
-          {message.content}
-          {message.streaming && <span className="streaming-dot">...</span>}
-          {isAgent && Array.isArray(message.trace) && message.trace.length > 0 && (
-            <details className="reasoning">
-              <summary className="reasoning-summary">
-                <span>Ver como cheguei nessa resposta</span>
-                <span className="reasoning-count">{message.trace.length} etapas</span>
-              </summary>
-              <div className="reasoning-list">
-                {message.trace.map((entry, index) => renderReasoningEntry(entry, index))}
+          {isAgent && (
+            <div className="chocks-header">
+              <div className="agent-title-group">
+                <span className="chocks-label">{agentProfile.name}</span>
+                <span className="chocks-subtitle">{agentProfile.subtitle}</span>
               </div>
-            </details>
+              {helperAgentProfile ? (
+                <div className="agent-support-inline">
+                  <span className="agent-support-label">com apoio de</span>
+                  <span className="agent-support-name">{helperAgentProfile.name}</span>
+                </div>
+              ) : null}
+            </div>
           )}
+
+          {isAgent && message.handoffLabel ? <div className="agent-handoff">{message.handoffLabel}</div> : null}
+          {isAgent && message.collaborationLabel ? <div className="agent-collaboration">{message.collaborationLabel}</div> : null}
+
+          {showWorkingState ? (
+            <div className="agent-working-panel">
+              <div className="agent-working-avatars">
+                <div className="agent-working-avatar primary">
+                  <AgentFace agent={agentProfile} size={34} />
+                </div>
+                {helperAgentProfile ? (
+                  <div className="agent-working-avatar secondary">
+                    <AgentFace agent={helperAgentProfile} size={30} />
+                  </div>
+                ) : null}
+              </div>
+              <div className="agent-working-copy">
+                <div className="agent-working-title">
+                  {helperAgentProfile
+                    ? `${agentProfile.name} e ${helperAgentProfile.name} estao trabalhando nisso`
+                    : `${agentProfile.name} esta trabalhando nisso`}
+                </div>
+                <div className="agent-working-subtitle">
+                  {helperAgentProfile
+                    ? `${agentProfile.name} puxou a resposta e ${helperAgentProfile.name} entrou como apoio especialista.`
+                    : `Analisando o pedido e montando a resposta.`}
+                </div>
+                <div className="agent-working-dots" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </div>
+            </div>
+          ) : null}
+          
+          {memoryNotice && (
+            <div className="memory-notice">
+              <div className="memory-notice-title">
+                {memoryNotice.storage === "database" ? "Memoria registrada no banco" : "Memoria registrada"}
+              </div>
+              <div className="memory-notice-copy">
+                {memoryNotice.subtitle}
+                {memoryNotice.path ? ` (${memoryNotice.path})` : ""}
+              </div>
+            </div>
+          )}
+
+          {pdfNotice ? (
+            <div className="pdf-download-card">
+              <div className="pdf-download-meta">
+                <div className="pdf-download-icon">
+                  <FileText size={16} />
+                </div>
+                <div className="pdf-download-copy">
+                  <div className="pdf-download-title">PDF pronto para baixar</div>
+                  <div className="pdf-download-subtitle">{pdfNotice.message}</div>
+                </div>
+              </div>
+              <a
+                className="pdf-download-button"
+                href={`/api/files/download?path=${encodeURIComponent(pdfNotice.path)}`}
+              >
+                <Download size={14} />
+                <span>Baixar PDF</span>
+              </a>
+            </div>
+          ) : null}
+
+          {!showWorkingState ? (
+            <div className="message-markdown">
+              <ReactMarkdown
+                components={{
+                  code({ className, children, ...props }) {
+                    const language = className?.replace("language-", "") || "";
+                    const code = String(children).replace(/\n$/, "");
+                    const isInline = !className && !code.includes("\n");
+
+                    if (isInline) {
+                      return (
+                        <code {...props}>
+                          {children}
+                        </code>
+                      );
+                    }
+
+                    return (
+                      <CodeBlock
+                        code={code}
+                        language={language}
+                        onOpenArtifact={onOpenArtifact}
+                      />
+                    );
+                  },
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
+          ) : null}
+
+          {primaryArtifact && onOpenArtifact ? (
+            <button type="button" className="artifact-trigger" onClick={() => onOpenArtifact(primaryArtifact)}>
+              <PanelsTopLeft size={14} />
+              <span>Abrir no painel</span>
+            </button>
+          ) : null}
+
+          {message.streaming && !showWorkingState && <span className="streaming-dot">...</span>}
+
           {Array.isArray(message.attachments) && message.attachments.length > 0 && (
             <div className="bubble-attachments">
               {message.attachments.map((attachment, index) => (
@@ -146,8 +263,35 @@ export default function MessageBubble({ message }: { message: Message }) {
               ))}
             </div>
           )}
+
+          <SourcesList trace={message.trace} />
         </div>
       </div>
+      
+      {isAgent && messageId && conversationId && (
+        <div className="message-feedback-wrapper">
+          <MessageFeedback
+            messageId={messageId}
+            conversationId={conversationId}
+            onSubmitFeedback={async (feedback, text) => {
+              try {
+                await fetch("/api/chat/feedback", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    messageId: messageId,
+                    conversationId: conversationId,
+                    feedback,
+                    feedbackText: text,
+                  }),
+                });
+              } catch (error) {
+                console.error("Failed to submit feedback:", error);
+              }
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

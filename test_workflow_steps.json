@@ -1,0 +1,23 @@
+{
+  "workflowId": "workflow-1776065630428-iuu6hd5",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "name": "Data Extraction",
+      "description": "Extract and validate input data",
+      "expectedDuration": 30
+    },
+    {
+      "stepNumber": 2,
+      "name": "Processing",
+      "description": "Process the data through pipeline",
+      "expectedDuration": 60
+    },
+    {
+      "stepNumber": 3,
+      "name": "Report Generation",
+      "description": "Generate final report",
+      "expectedDuration": 20
+    }
+  ]
+}

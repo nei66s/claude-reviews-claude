@@ -10,7 +10,13 @@ build/
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+*.tmp
+*.bak
+*.orig
+tmp/
+temp/
 
 # debug
 npm-debug.log*
@@ -25,6 +31,7 @@ pnpm-debug.log*
 
 # local app state
 .chocks-local/
+.vercel/
 
 # typescript
 *.tsbuildinfo

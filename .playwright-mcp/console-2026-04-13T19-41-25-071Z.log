@@ -1,0 +1,867 @@
+[     124ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     162ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     406ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/auth/me:0
+[     605ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/login:0
+[    7107ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    7133ms] [LOG] [Fast Refresh] done in 139ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[    9950ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   10027ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   10032ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   10039ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   10058ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   10086ms] [LOG] [Fast Refresh] done in 134ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   19920ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   19923ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   29922ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   29925ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   39970ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   39973ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   49924ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   49929ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   59914ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   59922ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   69938ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   69943ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   79932ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   79937ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   89958ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   89963ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[   99962ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[   99966ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  109944ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  109949ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  120018ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  120025ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  129957ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  129960ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  131951ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  131972ms] [LOG] [Fast Refresh] done in 123ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  140065ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  140082ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  140945ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  141001ms] [LOG] [Fast Refresh] done in 180ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  149993ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  150005ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  150946ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  151019ms] [LOG] [Fast Refresh] done in 178ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  159951ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  159969ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  169951ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  169961ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  180035ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  180043ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  189997ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  190005ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  199939ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  199944ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  209978ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  209988ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  219981ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  219989ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  230017ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  230033ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  239949ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  239966ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  250022ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  250031ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  256177ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  256319ms] [LOG] [Fast Refresh] done in 243ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  259978ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  259988ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  260915ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  260933ms] [LOG] [Fast Refresh] done in 127ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  269158ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  269164ms] [LOG] [Fast Refresh] done in 108ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  270003ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  270058ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  280012ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  280020ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  289958ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  289966ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  299997ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  300008ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js:7440:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  308515ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  309399ms] [LOG] [Fast Refresh] done in 1129ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  309539ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  309551ms] [LOG] [Fast Refresh] done in 131ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  309767ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  309777ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  309885ms] [LOG] [Fast Refresh] done in 267ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  310066ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  310243ms] [LOG] [Fast Refresh] done in 282ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  310459ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  310516ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:32:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  310561ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:32:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  316631ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  320843ms] [LOG] [Fast Refresh] done in 4316ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  320979ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  321415ms] [LOG] [Fast Refresh] done in 544ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  322326ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  322786ms] [LOG] [Fast Refresh] done in 574ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  323105ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  323148ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  323162ms] [LOG] [Fast Refresh] done in 120ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  323312ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  323694ms] [LOG] [Fast Refresh] done in 491ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  324353ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  324387ms] [LOG] [Fast Refresh] done in 141ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  324688ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_0iudm..._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:32:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  325161ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  325322ms] [LOG] [Fast Refresh] done in 263ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  325686ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  325829ms] [LOG] [Fast Refresh] done in 253ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  325860ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  326353ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  330700ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  330754ms] [LOG] [Fast Refresh] done in 155ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  330900ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  330926ms] [LOG] [Fast Refresh] done in 137ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  331238ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  331246ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  340686ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  340708ms] [LOG] [Fast Refresh] done in 130ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  340977ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  341002ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  350949ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  351130ms] [LOG] [Fast Refresh] done in 407ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  351282ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  351381ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  360913ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  360919ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  370690ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  370694ms] [LOG] [Fast Refresh] done in 109ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  370993ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  371015ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  371960ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  371967ms] [LOG] [Fast Refresh] done in 123ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  380715ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  380744ms] [LOG] [Fast Refresh] done in 137ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  380886ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  380926ms] [LOG] [Fast Refresh] done in 152ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  381123ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  381149ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  385065ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  390914ms] [LOG] [Fast Refresh] done in 5936ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  391083ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  391926ms] [LOG] [Fast Refresh] done in 949ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  392274ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  392590ms] [LOG] [Fast Refresh] done in 435ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  393894ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  394501ms] [LOG] [Fast Refresh] done in 708ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  394630ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  394853ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  394987ms] [LOG] [Fast Refresh] done in 236ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  395523ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  395886ms] [LOG] [Fast Refresh] done in 471ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  396467ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  396539ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  396634ms] [LOG] [Fast Refresh] done in 258ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  397160ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  397175ms] [LOG] [Fast Refresh] done in 119ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  397486ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  397584ms] [LOG] [Fast Refresh] done in 206ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  397704ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  397870ms] [LOG] [Fast Refresh] done in 280ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  398075ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  398097ms] [LOG] [Fast Refresh] done in 125ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  398645ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  398655ms] [LOG] [Fast Refresh] done in 129ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  399172ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  399181ms] [LOG] [Fast Refresh] done in 123ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  399682ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  399708ms] [LOG] [Fast Refresh] done in 142ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  400937ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  400960ms] [LOG] [Fast Refresh] done in 131ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  401200ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  401205ms] [LOG] [Fast Refresh] done in 118ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  401221ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  401241ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  410959ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  410964ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  421045ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  421057ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  421940ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  421970ms] [LOG] [Fast Refresh] done in 141ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  431087ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  431122ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  431950ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  431981ms] [LOG] [Fast Refresh] done in 133ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  441105ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  441126ms] [LOG] [Fast Refresh] done in 134ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  441142ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  441172ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  450792ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  450815ms] [LOG] [Fast Refresh] done in 131ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  450963ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  450993ms] [LOG] [Fast Refresh] done in 146ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  451148ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  451192ms] [LOG] [Fast Refresh] done in 150ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  451216ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  451233ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  460828ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  460940ms] [LOG] [Fast Refresh] done in 224ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  461063ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  461072ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  471072ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  471089ms] [LOG] [Fast Refresh] done in 128ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  471110ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  471126ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  480827ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  480862ms] [LOG] [Fast Refresh] done in 136ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  481054ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  481078ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  490810ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  490841ms] [LOG] [Fast Refresh] done in 141ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  490950ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  490957ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  500791ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  500805ms] [LOG] [Fast Refresh] done in 119ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  500973ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  501084ms] [LOG] [Fast Refresh] done in 260ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  501232ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  501254ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  510814ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  510833ms] [LOG] [Fast Refresh] done in 133ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  510985ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  510993ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  520832ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  520837ms] [LOG] [Fast Refresh] done in 129ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  521097ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  521117ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  530815ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  530822ms] [LOG] [Fast Refresh] done in 121ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  530985ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  531019ms] [LOG] [Fast Refresh] done in 142ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  531025ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  531073ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  540965ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  540971ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  550941ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  550944ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  560967ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  560972ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  570802ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  570809ms] [LOG] [Fast Refresh] done in 112ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  570954ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  570961ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  580967ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  580976ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  590948ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  590951ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  600970ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  600977ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  610950ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  610955ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  620796ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  620890ms] [LOG] [Fast Refresh] done in 199ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  621185ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  621341ms] [LOG] [Fast Refresh] done in 265ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  621356ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  621435ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  630914ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  630915ms] [LOG] [Fast Refresh] done in 122ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  631066ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  631098ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  641288ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  641328ms] [LOG] [Fast Refresh] done in 150ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  641342ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  641385ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  651073ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  651090ms] [LOG] [Fast Refresh] done in 124ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  651100ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  651132ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  660834ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  660875ms] [LOG] [Fast Refresh] done in 150ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  661068ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  661095ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  670815ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  670833ms] [LOG] [Fast Refresh] done in 132ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  670983ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  671057ms] [LOG] [Fast Refresh] done in 184ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  671216ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  671262ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  680969ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  680980ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  690824ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  690832ms] [LOG] [Fast Refresh] done in 124ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  691094ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  691117ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  700822ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  700860ms] [LOG] [Fast Refresh] done in 154ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  700991ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  701019ms] [LOG] [Fast Refresh] done in 131ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  701180ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  701233ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  710814ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  710864ms] [LOG] [Fast Refresh] done in 163ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  711113ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  711193ms] [LOG] [Fast Refresh] done in 188ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  711211ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  711364ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  720951ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  720956ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  730794ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  730806ms] [LOG] [Fast Refresh] done in 113ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  730952ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  730957ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  741160ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  741181ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  750809ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  750828ms] [LOG] [Fast Refresh] done in 134ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  750967ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  750983ms] [LOG] [Fast Refresh] done in 133ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  751174ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  751209ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  761065ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  761093ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  770799ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  770838ms] [LOG] [Fast Refresh] done in 147ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  771023ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  771028ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  780970ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  780976ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  790932ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  790939ms] [LOG] [Fast Refresh] done in 107ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  791118ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  791191ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  791953ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  791961ms] [LOG] [Fast Refresh] done in 114ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  800813ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  800864ms] [LOG] [Fast Refresh] done in 165ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  801090ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  801112ms] [LOG] [Fast Refresh] done in 131ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  801118ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  801212ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  810824ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  810859ms] [LOG] [Fast Refresh] done in 143ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  811098ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  811132ms] [LOG] [Fast Refresh] done in 138ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  811138ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  811182ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  820961ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  820970ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  830799ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  830956ms] [LOG] [Fast Refresh] done in 264ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  831301ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  831343ms] [LOG] [Fast Refresh] done in 156ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  831368ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  831468ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  840866ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  840903ms] [LOG] [Fast Refresh] done in 138ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  841052ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  841079ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  850811ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  850867ms] [LOG] [Fast Refresh] done in 167ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  851014ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  851043ms] [LOG] [Fast Refresh] done in 143ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  851060ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  851078ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  860819ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  860843ms] [LOG] [Fast Refresh] done in 128ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  861012ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  861026ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  870960ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  870971ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  880823ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  880852ms] [LOG] [Fast Refresh] done in 135ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  880998ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  881026ms] [LOG] [Fast Refresh] done in 143ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  881308ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  881516ms] [LOG] [Fast Refresh] done in 409ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  881529ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  881587ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  891036ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  891048ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  900893ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  901213ms] [LOG] [Fast Refresh] done in 450ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  901342ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  901344ms] [LOG] [Fast Refresh] done in 117ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  901424ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  901431ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  910802ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  910809ms] [LOG] [Fast Refresh] done in 114ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  911095ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  911117ms] [LOG] [Fast Refresh] done in 189ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  911167ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  911200ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  920943ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  920970ms] [LOG] [Fast Refresh] done in 128ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  920978ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  920985ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  930962ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  931077ms] [LOG] [Fast Refresh] done in 277ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  931275ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  931318ms] [LOG] [Fast Refresh] done in 169ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  931448ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  931483ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  941040ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  941048ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  943198ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  943368ms] [LOG] [Fast Refresh] done in 267ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  950828ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  950949ms] [LOG] [Fast Refresh] done in 226ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  951189ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  951216ms] [LOG] [Fast Refresh] done in 136ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  951233ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  951321ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  960624ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  961338ms] [LOG] [Fast Refresh] done in 820ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  961574ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  961597ms] [LOG] [Fast Refresh] done in 134ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  961608ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  961658ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  970796ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  970864ms] [LOG] [Fast Refresh] done in 170ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  970990ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  971029ms] [LOG] [Fast Refresh] done in 149ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  971157ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  971199ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  980815ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  980879ms] [LOG] [Fast Refresh] done in 170ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  981236ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  981250ms] [LOG] [Fast Refresh] done in 125ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  981260ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  981288ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  990814ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  990856ms] [LOG] [Fast Refresh] done in 153ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  991019ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[  991051ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1001038ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1001067ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1010968ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1010984ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1020802ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1020826ms] [LOG] [Fast Refresh] done in 132ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1020961ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1020967ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1030802ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1030813ms] [LOG] [Fast Refresh] done in 114ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1030953ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1030959ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1040801ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1040817ms] [LOG] [Fast Refresh] done in 122ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1041033ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1041039ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1050827ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1050938ms] [LOG] [Fast Refresh] done in 220ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1051121ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1051137ms] [LOG] [Fast Refresh] done in 132ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1051142ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1051160ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1061026ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1061042ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1071092ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1071123ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1080804ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1080922ms] [LOG] [Fast Refresh] done in 226ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1081105ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1081128ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1090940ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1090944ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1100805ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1100826ms] [LOG] [Fast Refresh] done in 129ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 1100968ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/swarm/teams:0
+[ 1100980ms] [ERROR] Failed to load teams: Error: API request failed with 404 Not Found. Check that the Chokito backend is running on http://127.0.0.1:3000 and that the Next app is running on a different port.
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:52:15)
+    at async requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:22)
+    at async SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:30) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1107241ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[ 1107503ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[ 1108136ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1111495ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1113245ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/swarm/teams:0
+[ 1113246ms] [ERROR] Failed to load teams: TypeError: Failed to fetch
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:46:28)
+    at requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:28)
+    at SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:172) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1113280ms] [ERROR] WebSocket is already in CLOSING or CLOSED state. @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2790
+[ 1113509ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/__nextjs_original-stack-frames:0
+[ 1114857ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1118219ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1121578ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1122230ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[ 1122506ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/swarm/teams:0
+[ 1122507ms] [ERROR] Failed to load teams: TypeError: Failed to fetch
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:46:28)
+    at requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:28)
+    at SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:172) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1122888ms] [ERROR] WebSocket is already in CLOSING or CLOSED state. @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2790
+[ 1123235ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[ 1128942ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1133250ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/swarm/teams:0
+[ 1133251ms] [ERROR] Failed to load teams: TypeError: Failed to fetch
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:46:28)
+    at requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:28)
+    at SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:172) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1133888ms] [ERROR] WebSocket is already in CLOSING or CLOSED state. @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2790
+[ 1136313ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1137227ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[ 1137490ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[ 1143244ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/swarm/teams:0
+[ 1143244ms] [ERROR] Failed to load teams: TypeError: Failed to fetch
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:46:28)
+    at requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:28)
+    at SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:172) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1143692ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1143915ms] [ERROR] WebSocket is already in CLOSING or CLOSED state. @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2790
+[ 1151082ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1152229ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[ 1152493ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/swarm/teams:0
+[ 1152493ms] [ERROR] Failed to load teams: TypeError: Failed to fetch
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:46:28)
+    at requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:28)
+    at SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:172) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1152890ms] [ERROR] WebSocket is already in CLOSING or CLOSED state. @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2790
+[ 1153232ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[ 1158498ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1163238ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/swarm/teams:0
+[ 1163239ms] [ERROR] Failed to load teams: TypeError: Failed to fetch
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:46:28)
+    at requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:28)
+    at SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:172) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1163891ms] [ERROR] WebSocket is already in CLOSING or CLOSED state. @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2790
+[ 1165920ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299
+[ 1167234ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/ping:0
+[ 1167497ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/health:0
+[ 1173244ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/api/swarm/teams:0
+[ 1173245ms] [ERROR] Failed to load teams: TypeError: Failed to fetch
+    at request (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:46:28)
+    at requestJson (http://localhost:3000/_next/static/chunks/app_lib_12ohr~f._.js:57:28)
+    at SwarmView.useCallback[loadTeams] (http://localhost:3000/_next/static/chunks/app_1247zk9._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252FSwarmView.tsx+%255Bapp-client%255D+%2528ecmascript%2529:35:172) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 1173386ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=Py5nSENbicVz9geqfsuka' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13299

@@ -161,9 +161,34 @@ claude-code-deep-dive/
 │   │   └── ...
 │   └── ...
 │
+├── app/                               # 🎪 Pimpotasma 应用
+│   ├── components/
+│   │   ├── EasterEggManager.tsx       # 🎮 全局复活节彩蛋检测器
+│   │   ├── EasterEggModal.tsx         # 🎪 复活节彩蛋模态弹窗
+│   │   └── PimpotasmaTeamCard.tsx     # 团队卡片（含交互彩蛋）
+│   └── hooks/
+│       └── useEasterEggs.ts           # ⌨️ 键盘序列检测钩子
+│
+├── EASTER_EGGS.md                     # 🎪 复活节彩蛋完整指南
+│
 └── stats/
     └── codebase-metrics.md            # 代码库统计指标
 ```
+
+---
+
+## 🎪 复活节彩蛋
+
+这个项目包含 **4 个隐藏的交互彩蛋**，用于奖励那些好奇的探索者：
+
+| # | 彩蛋 | 触发方式 | 内容 |
+|----|------|---------|------|
+| 1️⃣ | **Konami 代码** | 按 ↑↑↓↓←→←→BA | 🎪 "PIMPOTASMA UNLEASHED!" 模态 |
+| 2️⃣ | **三击 Pimpim 卡** | 连续点击 Pimpim 3 次 | 👑 Pimpim 智慧名言（随机7条） |
+| 3️⃣ | **点击 Chocks 名言** | 点击底部引言 | ✨ Chocks 属性库（随机4条） |
+| 4️⃣ | **秘密词语检测** | 输入 "chocks"、"pimpim"、"betinha" | 🔮 隐藏激活系统 |
+
+👉 **完整指南**: [EASTER_EGGS.md](EASTER_EGGS.md)
 
 ---
 

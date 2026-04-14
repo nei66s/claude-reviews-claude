@@ -2,8 +2,8 @@ import crypto from "node:crypto";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { duplicateConversation } from "@/app/lib/server/store";
-import { requireUser } from "@/app/lib/server/request";
+import { duplicateConversation } from "@/lib/server/store";
+import { requireUser } from "@/lib/server/request";
 
 export async function POST(
   request: NextRequest,

@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 
 import { NextRequest } from "next/server";
 
-import { requireUser } from "@/app/lib/server/request";
-import { resolveFileScope } from "@/app/lib/server/files";
+import { requireUser } from "@/lib/server/request";
+import { resolveFileScope } from "@/lib/server/files";
 
 export async function GET(request: NextRequest) {
   const user = requireUser(request);
@@ -35,4 +35,5 @@ export async function GET(request: NextRequest) {
     });
   }
 }
+
 
