@@ -1,0 +1,46 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          command_timeout: 60m
+          script: |
+            set -euo pipefail
+            export GIT_TERMINAL_PROMPT=0
+
+            echo "Starting deploy..."
+            cd "${{ secrets.PROJECT_PATH }}"
+
+            echo "Updating code..."
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "Installing dependencies..."
+            npm ci --no-audit --no-fund
+
+            echo "Building..."
+            npm run build
+
+            echo "Reloading pm2..."
+            pm2 reload app
+
+            echo "Deploy finished."
