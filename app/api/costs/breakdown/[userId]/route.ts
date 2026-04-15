@@ -38,7 +38,7 @@ export async function GET(
       breakdownCache.set(userId, { data, timestamp: Date.now() })
       return NextResponse.json(data)
     }
-  } catch (err) {
+  } catch {
     console.log('Backend slow/unavailable, using fallback')
   }
 

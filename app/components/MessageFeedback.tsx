@@ -14,8 +14,6 @@ interface MessageFeedbackProps {
 }
 
 export default function MessageFeedback({
-  messageId,
-  conversationId,
   onSubmitFeedback,
   isLoading = false,
 }: MessageFeedbackProps) {

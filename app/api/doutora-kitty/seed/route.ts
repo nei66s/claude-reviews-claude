@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDb, hasDatabase } from "@/lib/server/db";
 
 /**
  * Endpoint para popular dados mock de feedback para Doutora Kitty
  * Apenas para desenvolvimento/demo
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     if (!hasDatabase()) {
       return NextResponse.json(

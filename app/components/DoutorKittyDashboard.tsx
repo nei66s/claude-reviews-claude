@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Heart, MessageCircle, TrendingUp, AlertCircle } from "lucide-react";
 import styles from "./DoutorKittyDashboard.module.css";
+import type { KittyInterpretation } from "@/lib/server/doutora-kitty";
 
 interface DoutorKittyDashboardProps {
-  interpretation: any;
+  interpretation: KittyInterpretation | null;
   isLoading?: boolean;
 }
 
@@ -14,13 +14,7 @@ export default function DoutorKittyDashboard({
   interpretation,
   isLoading = false,
 }: DoutorKittyDashboardProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted || isLoading) {
+  if (isLoading) {
     return (
       <div className={styles.loading}>
         <div className={styles.spinner} />

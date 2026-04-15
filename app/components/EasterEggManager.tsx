@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import EasterEggModal from "./EasterEggModal";
 
+const KONAMI_CODE = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"] as const;
+
 /**
  * EasterEggManager Component
  * 
@@ -25,11 +27,9 @@ import EasterEggModal from "./EasterEggModal";
  * @component
  */
 export function EasterEggManager() {
-  const [konamiSequence, setKonamiSequence] = useState<string[]>([]);
+  const [, setKonamiSequence] = useState<string[]>([]);
   const [showUnleashed, setShowUnleashed] = useState(false);
-  const [typedBuffer, setTypedBuffer] = useState("");
-
-  const konamiCode = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+  const [, setTypedBuffer] = useState("");
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -37,8 +37,8 @@ export function EasterEggManager() {
 
       // Konami Code Detection
       setKonamiSequence((prev) => {
-        const newSequence = [...prev, key].slice(-konamiCode.length);
-        if (newSequence.join(",") === konamiCode.join(",")) {
+        const newSequence = [...prev, key].slice(-KONAMI_CODE.length);
+        if (newSequence.join(",") === KONAMI_CODE.join(",")) {
           setShowUnleashed(true);
           return [];
         }
@@ -75,7 +75,7 @@ export function EasterEggManager() {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [konamiCode]);
+  }, []);
 
   return (
     <>

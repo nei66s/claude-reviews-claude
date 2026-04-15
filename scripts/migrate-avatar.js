@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
 // Script para executar migração de avatar
-const { Pool } = require('pg');
-
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
@@ -11,6 +9,7 @@ if (!connectionString) {
 }
 
 async function migrate() {
+  const { Pool } = await import("pg");
   const pool = new Pool({
     connectionString,
     ssl: process.env.PGSSLMODE === 'require' 
@@ -39,7 +38,7 @@ async function migrate() {
     console.log('📸 Suporte a foto de perfil ativado.');
 
   } catch (error) {
-    console.error('❌ Erro ao executar migração:', error.message);
+    console.error('❌ Erro ao executar migração:', error);
     process.exit(1);
   } finally {
     await pool.end();

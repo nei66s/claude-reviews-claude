@@ -12,6 +12,7 @@
  */
 
 import { mockTeams, createMockTeam } from "./fixtures";
+import { http, HttpResponse, type HttpHandler } from "msw";
 
 // In-memory storage for this runtime session
 let teamsStorage = [...mockTeams];
@@ -26,85 +27,59 @@ let teamsStorage = [...mockTeams];
  *   ...createSwarmHandlers(),
  * ];
  */
-export function createSwarmHandlers() {
-  // MSW is optional - only load if installed
-  try {
-    // Attempt to load MSW - fails gracefully if not installed
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, global-require
-    const msw = (() => {
-      try {
-        return require("msw");
-      } catch {
-        return null;
+export function createSwarmHandlers(): HttpHandler[] {
+  return [
+    // GET all teams
+    http.get("/swarm/teams", () => {
+      return HttpResponse.json({
+        teams: teamsStorage,
+        total: teamsStorage.length,
+        timestamp: new Date().toISOString(),
+      });
+    }),
+
+    // GET single team
+    http.get("/swarm/teams/:teamId", ({ params }: { params: Record<string, string> }) => {
+      const team = teamsStorage.find((t) => t.id === (params.teamId as string));
+      if (!team) {
+        return HttpResponse.json({ error: "Team not found" }, { status: 404 });
       }
-    })();
-    
-    if (!msw || !msw.http || !msw.HttpResponse) {
-      return [];
-    }
-    const http = msw.http;
-    const HttpResponse = msw.HttpResponse;
+      return HttpResponse.json(team);
+    }),
 
-    return [
-      // GET all teams
-      http.get("/swarm/teams", () => {
-        return HttpResponse.json({
-          teams: teamsStorage,
-          total: teamsStorage.length,
-          timestamp: new Date().toISOString(),
-        });
-      }),
+    // POST create team
+    http.post("/swarm/teams", async ({ request }: { request: Request }) => {
+      const body = (await request.json()) as { name: string; description?: string };
+      const newTeam = createMockTeam(body.name, body.description);
+      teamsStorage.push(newTeam);
+      return HttpResponse.json(newTeam, { status: 201 });
+    }),
 
-      // GET single team
-      http.get("/swarm/teams/:teamId", ({ params }: { params: Record<string, string> }) => {
-        const team = teamsStorage.find((t) => t.id === params.teamId as string);
-        if (!team) {
-          return HttpResponse.json({ error: "Team not found" }, { status: 404 });
-        }
-        return HttpResponse.json(team);
-      }),
+    // POST send message
+    http.post("/swarm/message", async ({ request }: { request: Request }) => {
+      const body = (await request.json()) as { teamId: string; message: string };
+      const team = teamsStorage.find((t) => t.id === body.teamId);
+      if (!team) {
+        return HttpResponse.json({ error: "Team not found" }, { status: 404 });
+      }
+      return HttpResponse.json({
+        success: true,
+        message: body.message,
+        teamId: body.teamId,
+        timestamp: new Date().toISOString(),
+      });
+    }),
 
-      // POST create team
-      http.post("/swarm/teams", async ({ request }: { request: any }) => {
-        const body = await request.json() as { name: string; description?: string };
-        const newTeam = createMockTeam(body.name, body.description);
-        teamsStorage.push(newTeam);
-        return HttpResponse.json(newTeam, { status: 201 });
-      }),
-
-      // POST send message
-      http.post("/swarm/message", async ({ request }: { request: any }) => {
-        const body = await request.json() as { teamId: string; message: string };
-        const team = teamsStorage.find((t) => t.id === body.teamId);
-        if (!team) {
-          return HttpResponse.json(
-            { error: "Team not found" },
-            { status: 404 }
-          );
-        }
-        return HttpResponse.json({
-          success: true,
-          message: body.message,
-          teamId: body.teamId,
-          timestamp: new Date().toISOString(),
-        });
-      }),
-
-      // DELETE team
-      http.delete("/swarm/teams/:teamId", ({ params }: { params: Record<string, string> }) => {
-        const index = teamsStorage.findIndex((t) => t.id === params.teamId as string);
-        if (index === -1) {
-          return HttpResponse.json({ error: "Team not found" }, { status: 404 });
-        }
-        const deleted = teamsStorage.splice(index, 1)[0];
-        return HttpResponse.json(deleted);
-      }),
-    ];
-  } catch (error) {
-    // MSW not installed or error loading - component will use fallback mocks
-    console.debug("MSW not available, using component-level mocks");
-    return [];
-  }
+    // DELETE team
+    http.delete("/swarm/teams/:teamId", ({ params }: { params: Record<string, string> }) => {
+      const index = teamsStorage.findIndex((t) => t.id === (params.teamId as string));
+      if (index === -1) {
+        return HttpResponse.json({ error: "Team not found" }, { status: 404 });
+      }
+      const deleted = teamsStorage.splice(index, 1)[0];
+      return HttpResponse.json(deleted);
+    }),
+  ];
 }
 
 /**

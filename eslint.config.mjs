@@ -11,6 +11,7 @@ export default defineConfig([
       "agent-ts/**",
       "prototype-ts/**",
       "chokito-next/**",
+      "obsidian-vault/**",
       "Old/**",
       "nova-pasta/**",
     ],

@@ -1,13 +1,15 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import type PDFDocumentType from "pdfkit";
 
 // Lazy-load PDFDocument only when needed to avoid font path issues during import
-let PDFDocument: any = null;
-const getPDFDocument = async () => {
+type PDFDocumentConstructor = typeof PDFDocumentType;
+let PDFDocument: PDFDocumentConstructor | null = null;
+const getPDFDocument = async (): Promise<PDFDocumentConstructor> => {
   if (!PDFDocument) {
     const pdfkitModule = await import("pdfkit");
-    PDFDocument = pdfkitModule.default;
+    PDFDocument = (pdfkitModule.default ?? (pdfkitModule as unknown)) as PDFDocumentConstructor;
   }
   return PDFDocument;
 };
@@ -237,13 +239,11 @@ async function generatePdfReport(absPath: string, title: string, content: string
         ...wrappedLines,
       ];
 
-      let yPosition = 750;
       let contentStream = "BT\n/F1 10 Tf\n50 750 Td\n";
       
       for (const line of textLines) {
         const escapedLine = line.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
         contentStream += `(${escapedLine}) Tj\nT*\n`;
-        yPosition -= 12;
       }
       
       contentStream += "ET\n";

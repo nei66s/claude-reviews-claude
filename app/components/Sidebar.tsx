@@ -1,9 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Chat } from "../lib/api";
-import { useAuth } from "../lib/auth";
 import { useMemo, useState } from "react";
 import { WorkspaceId } from "../lib/workspaces";
 import ChubakaHungerBar from "./ChubakaHungerBar";
@@ -45,8 +43,6 @@ export default function Sidebar({
   onSleep,
   onWakeUp
 }: SidebarProps) {
-  const router = useRouter();
-  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredConversations = useMemo(() => {
@@ -54,15 +50,6 @@ export default function Sidebar({
     if (!normalizedQuery) return conversations;
     return conversations.filter((chat) => chat.title.toLowerCase().includes(normalizedQuery));
   }, [conversations, searchQuery]);
-
-  const getInitials = (name?: string) => {
-    if (!name) return "AD";
-    const parts = name.split(" ");
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
 
   const workspaces: { id: WorkspaceId; label: string; icon: React.ReactNode; color: string; emoji: string }[] = [
     { id: "conversations", label: "Conversas", color: "#10b981", emoji: "💬", icon: (

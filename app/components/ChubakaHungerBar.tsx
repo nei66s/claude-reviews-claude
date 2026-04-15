@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import styles from "./ChubakaHungerBar.module.css";
 
 interface ChubakaHungerBarProps {
@@ -62,9 +63,11 @@ export default function ChubakaHungerBar({
       <div className={cardClass}>
         {/* Imagem do Chubaka */}
         <div className={`${styles.imageWrapper} ${isSleeping ? styles.imageSleeping : ""}`}>
-          <img
+          <Image
             src="/chuba-rosto.png"
             alt="Chuba"
+            width={64}
+            height={64}
             className={styles.chubakaImage}
           />
           {isSleeping && <div className={styles.sleepingOverlay}>💤</div>}

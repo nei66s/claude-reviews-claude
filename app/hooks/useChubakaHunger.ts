@@ -23,6 +23,46 @@ export function useChubakaHunger() {
   const [isInputBlocked, setIsInputBlocked] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const sleepTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const notificationTriggeredRef = useRef(false);
+
+  // Som da fome (Web Audio API - grito dramático)
+  const playHungerSound = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    type WebkitAudioContextWindow = Window & {
+      webkitAudioContext?: typeof AudioContext;
+    };
+
+    try {
+      const audioContextCtor =
+        window.AudioContext || (window as WebkitAudioContextWindow).webkitAudioContext;
+      if (!audioContextCtor) return;
+
+      const audioContext = new audioContextCtor();
+      const now = audioContext.currentTime;
+
+      // Cria uma série de bips dramáticos
+      for (let i = 0; i < 3; i += 1) {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        osc.frequency.setValueAtTime(200 + i * 50, now + i * 0.2);
+        osc.frequency.exponentialRampToValueAtTime(100, now + i * 0.2 + 0.15);
+
+        gain.gain.setValueAtTime(0.3, now + i * 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.15);
+
+        osc.start(now + i * 0.2);
+        osc.stop(now + i * 0.2 + 0.15);
+      }
+    } catch {
+      // Silent fail se Web Audio não estiver disponível
+      console.debug("Web Audio API not available");
+    }
+  }, []);
 
   // Incrementa fome com o tempo (1% a cada 3 segundos = ~100% em 5 minutos)
   useEffect(() => {
@@ -44,9 +84,18 @@ export function useChubakaHunger() {
 
   // Verifica quando atinge o máximo e mostra notificação
   useEffect(() => {
-    if (hungerLevel >= HUNGER_THRESHOLD && !hasShownNotification && !isSleeping) {
-      setHasShownNotification(true);
-      setIsInputBlocked(true);
+    if (
+      hungerLevel >= HUNGER_THRESHOLD &&
+      !hasShownNotification &&
+      !isSleeping &&
+      !notificationTriggeredRef.current
+    ) {
+      notificationTriggeredRef.current = true;
+
+      setTimeout(() => {
+        setHasShownNotification(true);
+        setIsInputBlocked(true);
+      }, 0);
 
       // Escolha aleatória de frase dramática
       const randomCry = HUNGER_CRIES[Math.floor(Math.random() * HUNGER_CRIES.length)];
@@ -69,46 +118,18 @@ export function useChubakaHunger() {
       setTimeout(() => {
         setHungerLevel(0);
         setHasShownNotification(false);
+        notificationTriggeredRef.current = false;
       }, 1000);
     }
-  }, [hungerLevel, hasShownNotification, isSleeping]);
+  }, [hungerLevel, hasShownNotification, isSleeping, playHungerSound]);
 
   // Carrega estado de sono do localStorage
   useEffect(() => {
     const savedSleepState = localStorage.getItem("chubaka_sleeping");
     if (savedSleepState === "true") {
-      setIsSleeping(true);
+      setTimeout(() => setIsSleeping(true), 0);
     }
   }, []);
-
-  // Som da fome (Web Audio API - grito dramático)
-  const playHungerSound = () => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const now = audioContext.currentTime;
-      
-      // Cria uma série de bips dramáticos
-      for (let i = 0; i < 3; i++) {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        
-        osc.frequency.setValueAtTime(200 + i * 50, now + i * 0.2);
-        osc.frequency.exponentialRampToValueAtTime(100, now + i * 0.2 + 0.15);
-        
-        gain.gain.setValueAtTime(0.3, now + i * 0.2);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.15);
-        
-        osc.start(now + i * 0.2);
-        osc.stop(now + i * 0.2 + 0.15);
-      }
-    } catch (e) {
-      // Silent fail se Web Audio não estiver disponível
-      console.debug("Web Audio API not available");
-    }
-  };
 
   // Função para incrementar fome por ação (mensagem, clique, etc)
   const addHungerFromAction = useCallback(() => {

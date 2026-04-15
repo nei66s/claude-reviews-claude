@@ -133,8 +133,6 @@ export default function SwarmView() {
     return labels[status] || status;
   };
 
-  const selectedTeamData = selectedTeam ? teams.find((t) => t.id === selectedTeam) : null;
-
   return (
     <div className="view coordinator-view">
       <div className="coordinator-shell">
@@ -267,7 +265,7 @@ export default function SwarmView() {
                                     fontStyle: "italic",
                                   }}
                                 >
-                                  "{agent.lastMessage}"
+                                  &ldquo;{agent.lastMessage}&rdquo;
                                 </div>
                               )}
                             </div>

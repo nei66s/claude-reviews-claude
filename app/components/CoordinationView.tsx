@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { TeamsDashboard } from '@/components/CoordinationTeamsDashboard'
 import { WorkflowsDashboard } from '@/components/CoordinationWorkflowsDashboard'
 import { ErrorsDashboard } from '@/components/CoordinationErrorsDashboard'
@@ -12,9 +13,12 @@ interface FamilyMember {
   expertise: string[]
 }
 
+type CoordinationTabId = 'teams' | 'workflows' | 'agents' | 'errors'
+type TeamSummary = { id: string; name: string }
+
 export function CoordinationView() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('')
-  const [activeTab, setActiveTab] = useState<'teams' | 'workflows' | 'agents' | 'errors'>('teams')
+  const [activeTab, setActiveTab] = useState<CoordinationTabId>('teams')
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [isLoadingMembers, setIsLoadingMembers] = useState(false)
 
@@ -23,8 +27,13 @@ export function CoordinationView() {
     const loadFamilyTeam = async () => {
       try {
         const response = await fetch('/api/coordination/team')
-        const data = await response.json()
-        const familyTeam = (data.teams || []).find((t: any) => t.name === 'family-pimpotasma')
+        const data: unknown = await response.json()
+        const teams =
+          typeof data === 'object' && data && 'teams' in data
+            ? (data as { teams?: unknown }).teams
+            : undefined
+        const teamList = Array.isArray(teams) ? (teams as TeamSummary[]) : []
+        const familyTeam = teamList.find((t) => t.name === 'family-pimpotasma')
         if (familyTeam) {
           setSelectedTeamId(familyTeam.id)
         }
@@ -93,14 +102,14 @@ export function CoordinationView() {
       {/* Tabs Navigation - Melhorado */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderBottom: '2px solid #333', paddingBottom: '12px' }}>
         {[
-          { id: 'teams', label: '📋 Teams', icon: 'teams' },
-          { id: 'workflows', label: '🔄 Workflows', icon: 'workflows' },
-          { id: 'agents', label: '👥 Agentes', icon: 'agents' },
-          { id: 'errors', label: '🚨 Errors', icon: 'errors' },
+          { id: 'teams' as const, label: '📋 Teams', icon: 'teams' },
+          { id: 'workflows' as const, label: '🔄 Workflows', icon: 'workflows' },
+          { id: 'agents' as const, label: '👥 Agentes', icon: 'agents' },
+          { id: 'errors' as const, label: '🚨 Errors', icon: 'errors' },
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id)}
             disabled={tab.id !== 'teams' && !selectedTeamId}
             style={{
               padding: '10px 16px',
@@ -252,13 +261,13 @@ export function CoordinationView() {
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                         <div style={{ fontSize: '32px', marginRight: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', overflow: 'hidden' }}>
                           {member.name === 'Pimpim' ? (
-                            <img src="/pimpim.png" alt="Pimpim" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                            <Image src="/pimpim.png" alt="Pimpim" width={40} height={40} style={{ objectFit: 'cover' }} />
                           ) : member.name === 'Betinha' ? (
-                            <img src="/betinha-avatar.jpg" alt="Betinha" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                            <Image src="/betinha-avatar.jpg" alt="Betinha" width={40} height={40} style={{ objectFit: 'cover' }} />
                           ) : member.name === 'Kitty' ? (
-                            <img src="/kitty-avatar.jpg" alt="Kitty" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                            <Image src="/kitty-avatar.jpg" alt="Kitty" width={40} height={40} style={{ objectFit: 'cover' }} />
                           ) : member.name === 'Chubas' ? (
-                            <img src="/chuba-rosto.png" alt="Chubas" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                            <Image src="/chuba-rosto.png" alt="Chubas" width={40} height={40} style={{ objectFit: 'cover' }} />
                           ) : (
                             getRoleEmoji(member.role)
                           )}
@@ -269,7 +278,7 @@ export function CoordinationView() {
                         </div>
                       </div>
                       <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '12px', fontStyle: 'italic' }}>
-                        "{member.personality}"
+                        &ldquo;{member.personality}&rdquo;
                       </div>
                       <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
                         <strong>Expertise:</strong>

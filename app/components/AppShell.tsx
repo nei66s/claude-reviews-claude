@@ -24,7 +24,7 @@ import { CoordinationView } from "./CoordinationView";
 import EasterEggManager from "./EasterEggManager";
 import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
 import type { Artifact } from "../lib/artifactDetection";
-import { pickPrimaryArtifact, detectArtifacts } from "../lib/artifactDetection";
+import { detectArtifacts } from "../lib/artifactDetection";
 import { Attachment, Message } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useChat } from "../hooks/useChat";

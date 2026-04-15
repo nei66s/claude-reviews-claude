@@ -2,6 +2,21 @@ import { getDb, hasDatabase } from "./db";
 
 export type FeedbackType = "like" | "dislike" | null;
 
+const TONAL_PREFERENCES = ["formal", "casual", "balanced"] as const;
+const DEPTH_PREFERENCES = ["simplified", "technical", "balanced"] as const;
+const STRUCTURE_PREFERENCES = ["narrative", "list", "mixed"] as const;
+const PACE_PREFERENCES = ["fast", "detailed", "balanced"] as const;
+const EXAMPLE_TYPES = ["code", "conceptual", "mixed"] as const;
+const RESPONSE_LENGTHS = ["brief", "comprehensive", "balanced"] as const;
+
+function coerceEnum<TAllowed extends readonly string[]>(
+  value: string,
+  allowed: TAllowed,
+  fallback: TAllowed[number],
+): TAllowed[number] {
+  return (allowed as readonly string[]).includes(value) ? (value as TAllowed[number]) : fallback;
+}
+
 export type PsychologicalProfile = {
   userId: string;
   tonalPreference: "formal" | "casual" | "balanced"; // Preferência de tom
@@ -190,12 +205,12 @@ export async function getPsychologicalProfile(
   const row = result.rows[0];
   return {
     userId,
-    tonalPreference: row.tonal_preference as any,
-    depthPreference: row.depth_preference as any,
-    structurePreference: row.structure_preference as any,
-    pacePreference: row.pace_preference as any,
-    exampleType: row.example_type as any,
-    responseLength: row.response_length as any,
+    tonalPreference: coerceEnum(row.tonal_preference, TONAL_PREFERENCES, "balanced"),
+    depthPreference: coerceEnum(row.depth_preference, DEPTH_PREFERENCES, "balanced"),
+    structurePreference: coerceEnum(row.structure_preference, STRUCTURE_PREFERENCES, "mixed"),
+    pacePreference: coerceEnum(row.pace_preference, PACE_PREFERENCES, "balanced"),
+    exampleType: coerceEnum(row.example_type, EXAMPLE_TYPES, "mixed"),
+    responseLength: coerceEnum(row.response_length, RESPONSE_LENGTHS, "balanced"),
     confidenceScore: row.confidence_score,
     totalFeedback: row.total_feedback,
     likeCount: row.like_count,
@@ -227,9 +242,6 @@ function analyzePatterns(
       dislikeCount: 0,
     };
   }
-
-  // Calcular taxa de satisfação
-  const satisfactionRate = likeCount / totalFeedback;
 
   // Análise heurística baseada em feedback_text
   let tonalPreference: "formal" | "casual" | "balanced" = "balanced";

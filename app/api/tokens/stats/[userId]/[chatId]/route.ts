@@ -42,7 +42,7 @@ export async function GET(
       statsCache.set(cacheKey, { data, timestamp: Date.now() })
       return NextResponse.json(data)
     }
-  } catch (err) {
+  } catch {
     // Backend not available or timeout, use cached or mock data
     console.log('Backend slow/unavailable, using fallback')
   }

@@ -25,6 +25,7 @@ import EasterEggModal from "./EasterEggModal";
 export function PimpotasmaTeamCard() {
   // Modal state: tracks which easter egg modal is currently displayed
   const [modal, setModal] = useState<"pimpim_quotes" | "chocks_gallery" | "unleashed" | "none">("none");
+  const [modalSeed, setModalSeed] = useState<number>(1);
   
   // Click counter for triple-click detection on Pimpim card
   const [clickCount, setClickCount] = useState(0);
@@ -37,6 +38,7 @@ export function PimpotasmaTeamCard() {
     setClickCount((prev) => {
       const newCount = prev + 1;
       if (newCount >= 3) {
+        setModalSeed(Math.floor(Math.random() * 1_000_000_000));
         setModal("pimpim_quotes");
         return 0;
       }
@@ -49,6 +51,7 @@ export function PimpotasmaTeamCard() {
    * Opens Chocks attribute gallery modal
    */
   const handleChocksClick = () => {
+    setModalSeed(Math.floor(Math.random() * 1_000_000_000));
     setModal("chocks_gallery");
   };
   return (
@@ -78,7 +81,7 @@ export function PimpotasmaTeamCard() {
           color: 'var(--muted)',
           fontStyle: 'italic',
         }}>
-          "Onde o caos vira código"
+          &ldquo;Onde o caos vira código&rdquo;
         </div>
       </div>
 
@@ -150,7 +153,7 @@ export function PimpotasmaTeamCard() {
             marginTop: '4px',
             fontStyle: 'italic',
           }}>
-            "Burrinho fofo, visionário"
+            &ldquo;Burrinho fofo, visionário&rdquo;
           </div>
         </div>
         {clickCount > 0 && (
@@ -232,7 +235,7 @@ export function PimpotasmaTeamCard() {
             marginTop: '4px',
             fontStyle: 'italic',
           }}>
-            "Executiva inteligente e carinhosa"
+            &ldquo;Executiva inteligente e carinhosa&rdquo;
           </div>
         </div>
       </div>
@@ -307,10 +310,15 @@ export function PimpotasmaTeamCard() {
         }}
         title="Clique para galeria do Chocks"
       >
-        "Sou lindo, namorado da Betinha, ja fiz frete" — Chocks, 2026
+        &ldquo;Sou lindo, namorado da Betinha, ja fiz frete&rdquo; — Chocks, 2026
       </div>
 
-      <EasterEggModal isOpen={modal !== "none"} onClose={() => setModal("none")} type={modal} />
+      <EasterEggModal
+        isOpen={modal !== "none"}
+        onClose={() => setModal("none")}
+        type={modal}
+        seed={modalSeed}
+      />
     </div>
   );
 }

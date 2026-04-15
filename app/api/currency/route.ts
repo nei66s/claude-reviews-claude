@@ -6,13 +6,12 @@ interface ExchangeRateResponse {
   date: string;
 }
 
-interface GoogleExchangeData {
-  conversion_rate: number;
-  conversion_rate_ask: number;
-  conversion_rate_bid: number;
-  conversion_rates: Record<string, number>;
-  time_last_updated_utc: string;
-}
+type ExchangeData = {
+  rate: number;
+  source: string;
+  target: string;
+  timestamp: string;
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
     const sourceCurrency = searchParams.get('from') || 'USD';
 
     // Try multiple free APIs for exchange rates
-    let exchangeData: any = null;
+    let exchangeData: ExchangeData | null = null;
     let source = '';
 
     try {
@@ -33,15 +32,18 @@ export async function GET(request: NextRequest) {
       
       if (response1.ok) {
         const data: ExchangeRateResponse = await response1.json();
-        exchangeData = {
-          rate: data.rates[targetCurrency],
-          source: sourceCurrency,
-          target: targetCurrency,
-          timestamp: data.date,
-        };
-        source = 'exchangerate-api.com';
+        const rate = data.rates[targetCurrency];
+        if (typeof rate === 'number') {
+          exchangeData = {
+            rate,
+            source: sourceCurrency,
+            target: targetCurrency,
+            timestamp: data.date,
+          };
+          source = 'exchangerate-api.com';
+        }
       }
-    } catch (err) {
+    } catch {
       console.log('ExchangeRate-API failed, trying alternative...');
     }
 
@@ -55,15 +57,18 @@ export async function GET(request: NextRequest) {
         
         if (response2.ok) {
           const data: ExchangeRateResponse = await response2.json();
-          exchangeData = {
-            rate: data.rates[targetCurrency],
-            source: sourceCurrency,
-            target: targetCurrency,
-            timestamp: data.date,
-          };
-          source = 'open-exchange-rates';
+          const rate = data.rates[targetCurrency];
+          if (typeof rate === 'number') {
+            exchangeData = {
+              rate,
+              source: sourceCurrency,
+              target: targetCurrency,
+              timestamp: data.date,
+            };
+            source = 'open-exchange-rates';
+          }
         }
-      } catch (err) {
+      } catch {
         console.log('Open Exchange Rates failed');
       }
     }
@@ -110,10 +115,7 @@ export async function POST(request: NextRequest) {
     url.searchParams.set('to', to);
 
     return GET(new NextRequest(url));
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Invalid request body' },
-      { status: 400 }
-    );
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 }

@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let body: Record<string, unknown> = {}
     try {
       body = await request.json()
-    } catch (e) {
+    } catch {
       // Empty body is OK for some requests
     }
     

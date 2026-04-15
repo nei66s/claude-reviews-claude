@@ -22,18 +22,42 @@ export default function FileActionModal({
   onConfirm,
   onCancel,
 }: FileActionModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <FileActionModalInner
+      title={title}
+      label={label}
+      placeholder={placeholder}
+      defaultValue={defaultValue}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
+  );
+}
+
+function FileActionModalInner({
+  title,
+  label,
+  placeholder,
+  defaultValue,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  label: string;
+  placeholder: string;
+  defaultValue: string;
+  onConfirm: (value: string) => void;
+  onCancel: () => void;
+}) {
   const [value, setValue] = useState(defaultValue);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      setValue(defaultValue);
-      // Focus input after modal mounts
-      setTimeout(() => inputRef.current?.focus(), 0);
-    }
-  }, [isOpen, defaultValue]);
-
-  if (!isOpen) return null;
+    // Focus input after modal mounts
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }, []);
 
   const handleConfirm = () => {
     if (value.trim()) {

@@ -18,15 +18,6 @@ interface Plugin {
   capabilities: PluginCapability[];
 }
 
-interface CoreTool {
-  name: string;
-  enabled: boolean;
-  category: string;
-  reason?: string;
-  icon?: string;
-  description?: string;
-}
-
 interface ToolCategory {
   id: string;
   title: string;
@@ -119,7 +110,6 @@ const BUILTIN_TOOLS_CATEGORIES: ToolCategory[] = [
 
 export default function PluginsView() {
   const [plugins, setPlugins] = useState<Plugin[]>([]);
-  const [coreTools, setCoreTools] = useState<CoreTool[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedCategory, setExpandedCategory] = useState<string | null>("browser-interaction");
 
@@ -127,15 +117,9 @@ export default function PluginsView() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [pluginsData, toolsData] = await Promise.all([
-          requestJson("/plugins/list"),
-          requestJson("/tools/status"),
-        ]);
+        const pluginsData = await requestJson("/plugins/list");
 
         setPlugins(Array.isArray(pluginsData.plugins) ? pluginsData.plugins : []);
-
-        const allTools: CoreTool[] = Array.isArray(toolsData.tools) ? toolsData.tools : [];
-        setCoreTools(allTools.filter((tool: CoreTool) => tool.category !== "plugin"));
       } catch (err) {
         console.error("Failed to load plugins/tools:", err);
       } finally {
@@ -160,27 +144,6 @@ export default function PluginsView() {
       console.error("Failed to toggle plugin:", err);
       // Rollback
       setPlugins(prev => prev.map(p => p.id === id ? { ...p, enabled: currentEnabled } : p));
-    }
-  };
-
-  const toggleCoreTool = async (name: string, currentEnabled: boolean) => {
-    const nextEnabled = !currentEnabled;
-
-    setCoreTools(prev => prev.map(t => t.name === name ? { ...t, enabled: nextEnabled } : t));
-
-    try {
-      const response = await requestJson("/tools/toggle", {
-        method: "POST",
-        body: JSON.stringify({ name, enabled: nextEnabled })
-      });
-
-      const updatedTool = response?.tool;
-      if (updatedTool?.name) {
-        setCoreTools(prev => prev.map(t => t.name === updatedTool.name ? { ...t, ...updatedTool } : t));
-      }
-    } catch (err) {
-      console.error("Failed to toggle core tool:", err);
-      setCoreTools(prev => prev.map(t => t.name === name ? { ...t, enabled: currentEnabled } : t));
     }
   };
 
@@ -251,7 +214,7 @@ export default function PluginsView() {
             fontSize: "14px",
             color: "var(--text)"
           }}>
-            Todas essas ferramentas estão <strong>funcionando 100%</strong>, mesmo que apareçam apenas "4 ativas" no VS Code. A UI do chat tem espaço limitado, mas suas ferramentas reais todas rodam em segundo plano! 🚀
+            Todas essas ferramentas estão <strong>funcionando 100%</strong>, mesmo que apareçam apenas &quot;4 ativas&quot; no VS Code. A UI do chat tem espaço limitado, mas suas ferramentas reais todas rodam em segundo plano! 🚀
           </div>
         </div>
 

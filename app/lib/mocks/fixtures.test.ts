@@ -138,7 +138,7 @@ describe("Swarm Mocks", () => {
       }
 
       // Each agent should only appear in one team
-      for (const [agentId, teamIds] of teamMap) {
+      for (const [, teamIds] of teamMap) {
         expect(teamIds).toHaveLength(1);
       }
     });

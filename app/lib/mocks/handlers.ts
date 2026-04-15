@@ -3,10 +3,10 @@
  * Intercepta chamadas de API e retorna dados mock
  */
 
-import { mockTeams, mockSwarmResponse, createMockTeam } from "./fixtures";
+import { mockTeams, createMockTeam } from "./fixtures";
 
 // Simula um armazenamento em memória para este runtime
-let mockStorage = {
+const mockStorage = {
   teams: [...mockTeams],
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 
 /**
@@ -14,6 +14,8 @@ interface EasterEggModalProps {
   onClose: () => void;
   /** Type of easter egg content to display: pimpim_quotes | chocks_gallery | unleashed */
   type: "pimpim_quotes" | "chocks_gallery" | "unleashed" | "none";
+  /** Optional seed to keep "random" content stable for a given modal open */
+  seed?: number;
 }
 
 /**
@@ -70,9 +72,29 @@ const CHOCKS_GALLERY = [
  * 
  * @component
  */
-export function EasterEggModal({ isOpen, onClose, type }: EasterEggModalProps) {
-  const randomQuote = PIMPIM_QUOTES[Math.floor(Math.random() * PIMPIM_QUOTES.length)];
-  const randomGallery = CHOCKS_GALLERY.sort(() => 0.5 - Math.random()).slice(0, 4);
+export function EasterEggModal({ isOpen, onClose, type, seed = 1 }: EasterEggModalProps) {
+
+  const mulberry32 = (a: number) => {
+    return () => {
+      let t = (a += 0x6d2b79f5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+
+  const rng = mulberry32(seed || 1);
+  const quoteIndex = Math.floor(rng() * PIMPIM_QUOTES.length) % PIMPIM_QUOTES.length;
+  const randomQuote = PIMPIM_QUOTES[quoteIndex] ?? PIMPIM_QUOTES[0];
+
+  const shuffledGallery = [...CHOCKS_GALLERY];
+  for (let i = shuffledGallery.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rng() * (i + 1));
+    const temp = shuffledGallery[i];
+    shuffledGallery[i] = shuffledGallery[j];
+    shuffledGallery[j] = temp;
+  }
+  const randomGallery = shuffledGallery.slice(0, 4);
 
   if (!isOpen) return null;
 
@@ -121,7 +143,7 @@ export function EasterEggModal({ isOpen, onClose, type }: EasterEggModalProps) {
                 fontStyle: "italic",
               }}
             >
-              "{randomQuote}"
+              &ldquo;{randomQuote}&rdquo;
             </div>
             <div style={{ textAlign: "center", fontSize: "12px", color: "var(--muted-soft)" }}>
               Recarregue para outra sabedoria... 🎪
@@ -168,14 +190,14 @@ export function EasterEggModal({ isOpen, onClose, type }: EasterEggModalProps) {
                 <div style={{ fontSize: "20px" }}>🐴</div>
                 <div>
                   <div style={{ fontWeight: "600", color: "var(--text)" }}>Pimpim:</div>
-                  <p style={{ margin: 0 }}>"Ativa o caos!"</p>
+                  <p style={{ margin: 0 }}>&quot;Ativa o caos!&quot;</p>
                 </div>
               </div>
               <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
                 <div style={{ fontSize: "20px" }}>✨</div>
                 <div>
                   <div style={{ fontWeight: "600", color: "var(--text)" }}>Chocks:</div>
-                  <p style={{ margin: 0 }}>"Vamo trabalhar!"</p>
+                  <p style={{ margin: 0 }}>&quot;Vamo trabalhar!&quot;</p>
                 </div>
               </div>
               <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
@@ -200,14 +222,14 @@ export function EasterEggModal({ isOpen, onClose, type }: EasterEggModalProps) {
                 </div>
                 <div>
                   <div style={{ fontWeight: "600", color: "var(--text)" }}>Betinha:</div>
-                  <p style={{ margin: 0 }}>"Com amor e dedicação!"</p>
+                  <p style={{ margin: 0 }}>&quot;Com amor e dedicação!&quot;</p>
                 </div>
               </div>
               <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                 <div style={{ fontSize: "20px" }}>🎪</div>
                 <div>
                   <div style={{ fontWeight: "600", color: "var(--text)" }}>Pimpotasma:</div>
-                  <p style={{ margin: 0 }}>"PRONTA PARA TUDO!"</p>
+                  <p style={{ margin: 0 }}>&quot;PRONTA PARA TUDO!&quot;</p>
                 </div>
               </div>
             </div>

@@ -18,7 +18,6 @@ interface Workflow {
 export function WorkflowsDashboard({ teamId }: { teamId?: string }) {
   const [workflows, setWorkflows] = useState<Workflow[]>([])
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (!teamId) return
@@ -30,11 +29,6 @@ export function WorkflowsDashboard({ teamId }: { teamId?: string }) {
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
         const data = await response.json()
         setWorkflows(data.workflows || [])
-        
-        const statsResponse = await fetch(`/api/coordination/team/${teamId}/workflow-stats`)
-        if (statsResponse.ok) {
-          setStats(await statsResponse.json())
-        }
       } catch (err) {
         console.error('Error fetching workflows:', err)
         setWorkflows([])

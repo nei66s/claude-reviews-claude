@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'] as const
+
 /**
  * Configuration options for the useEasterEggs hook
  * @interface EasterEggConfig
@@ -32,10 +34,7 @@ interface EasterEggConfig {
  */
 export function useEasterEggs(config: EasterEggConfig = {}) {
   const [konamiSequence, setKonamiSequence] = useState<string[]>([])
-  const [clickSequence, setClickSequence] = useState<string[]>([])
-
-  /** Konami Code sequence: ↑↑↓↓←→←→BA */
-  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
+  const [, setClickSequence] = useState<string[]>([])
 
   useEffect(() => {
     // Handle keyboard press for Konami code detection
@@ -43,9 +42,9 @@ export function useEasterEggs(config: EasterEggConfig = {}) {
       const key = e.key.toLowerCase() === 'b' || e.key.toLowerCase() === 'a' ? e.key.toLowerCase() : e.code
 
       setKonamiSequence((prev) => {
-        const newSequence = [...prev, key].slice(-konamiCode.length)
+        const newSequence = [...prev, key].slice(-KONAMI_CODE.length)
         // Check if the last keys match the Konami code
-        if (newSequence.join(',') === konamiCode.join(',')) {
+        if (newSequence.join(',') === KONAMI_CODE.join(',')) {
           config.onKonamiCode?.()
           return []
         }
@@ -55,7 +54,7 @@ export function useEasterEggs(config: EasterEggConfig = {}) {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [konamiCode, config])
+  }, [config])
 
   /**
    * Detects triple-click pattern on a specific element
@@ -114,6 +113,6 @@ export function useEasterEggs(config: EasterEggConfig = {}) {
   return {
     handleTripleClick,
     detectWordSequence,
-    konamiActivated: konamiSequence.join(',') === konamiCode.join(','),
+    konamiActivated: konamiSequence.join(',') === KONAMI_CODE.join(','),
   }
 }
