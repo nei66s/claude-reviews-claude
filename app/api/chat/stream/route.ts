@@ -12,7 +12,7 @@ import { appendLog, readAppSettings, upsertConversation, getWorkflowState } from
 import { requireUser } from "@/lib/server/request";
 import { chatToolDefinitions, runChatTool } from "@/lib/server/chat-tools";
 import { listFileEntries } from "@/lib/server/files";
-import { buildAgentRuntimeInstructions, getAgentProfile } from "@/lib/familyRouting";
+import { buildAgentRuntimeInstructionsFromBackend, getAgentProfile } from "@/lib/familyRouting";
 import { getPsychologicalProfile, generateProfilePrompt, type PsychologicalProfile } from "@/lib/server/psychological-profile";
 
 export const runtime = "nodejs";
@@ -86,11 +86,6 @@ Use memory_capture com:
 - memory_type=decision para decisoes importantes
 - memory_type=summary ou log para resumos de progresso
 
-COMANDO: /create-agents (Criar times de subagentes)
-- Se usuário digitar: /create-agents, criar agentes, spawnar agents, etc
-- SEMPRE use CREATE_AGENTS_TEAM tool com parâmetros extraídos
-- Resultado: novo team já disponível na aba Coordination
-
 COMANDO: /create-workflow (Atribuir tasks ao time)
 - Se usuário digitar: /create-workflow, criar workflow, enviar tarefas, etc
 - FLUXO OBRIGATÓRIO:
@@ -105,10 +100,6 @@ COMANDO: /create-workflow (Atribuir tasks ao time)
 - Os agentes receberão as tasks na mailbox deles
 
 FLUXO COMPLETO (exemplo):
-User: /create-agents "Data Team" 3
-→ Tool: create_agents_team
-→ Retorna: team-xxx com 3 agents (researcher, implementer, tester)
-
 User: /create-workflow "Parse JSON" - researcher valida - implementer transforma
 → Tool: list_teams_and_agents
 → Mostra: "Data Team" com seus 3 agents
@@ -504,14 +495,66 @@ async function persistAssistantReply(
   prompt: string,
   messages: ChatMessage[],
   reply: string,
+  agentId: string,
+  helperAgentId?: string | null,
+  handoffLabel?: string,
+  collaborationLabel?: string,
+  trace?: unknown[],
 ) {
   if (!chatId) return;
 
   await upsertConversation(user, {
     id: chatId,
     title: prompt.slice(0, 30) || "Nova conversa",
-    messages: [...messages, { role: "agent", content: reply, streaming: false }],
+    messages: [
+      ...messages,
+      {
+        role: "agent",
+        content: reply,
+        streaming: false,
+        agentId,
+        helperAgentId: helperAgentId && helperAgentId !== "chocks" ? helperAgentId : undefined,
+        handoffLabel,
+        collaborationLabel,
+        trace: Array.isArray(trace) ? trace : undefined,
+      },
+    ],
   });
+}
+
+function getLastAgentIdFromMessages(messages: ChatMessage[]) {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (message?.role !== "agent") continue;
+    if (typeof message.agentId === "string" && message.agentId.trim()) {
+      return message.agentId.trim();
+    }
+    return "chocks";
+  }
+
+  return "chocks";
+}
+
+function buildHandoffAndCollaborationLabels(
+  selectedAgentId: string,
+  helperAgentId: string,
+  messages: ChatMessage[],
+) {
+  const previousAgentId = getLastAgentIdFromMessages(messages);
+  const hasAnyAgentMessage = messages.some((message) => message?.role === "agent");
+  const showHandoff =
+    selectedAgentId !== previousAgentId || (!hasAnyAgentMessage && selectedAgentId !== "chocks");
+
+  const selectedAgent = getAgentProfile(selectedAgentId);
+  const helperAgent = helperAgentId ? getAgentProfile(helperAgentId) : null;
+
+  return {
+    handoffLabel: showHandoff ? `${selectedAgent.name} assumiu a conversa` : undefined,
+    collaborationLabel:
+      helperAgent && helperAgent.id !== "chocks"
+        ? `${selectedAgent.name} chamou ${helperAgent.name} para ajudar`
+        : undefined,
+  };
 }
 
 function toModelInput(messages: ChatMessage[]): OpenAI.Responses.ResponseInput {
@@ -534,7 +577,7 @@ function toModelInput(messages: ChatMessage[]): OpenAI.Responses.ResponseInput {
     })) as OpenAI.Responses.ResponseInput;
 }
 
-function buildInstructions(
+async function buildInstructions(
   fullAccess: boolean,
   permissionMode: string,
   memoryMode: string,
@@ -583,7 +626,7 @@ Confiança desta análise: ${Math.round(psychProfile.confidenceScore * 100)}%
 (Baseado em ${psychProfile.totalFeedback} respostas avaliadas: ${psychProfile.likeCount} positivas, ${psychProfile.dislikeCount} negativas)`;
   }
 
-  const agentSection = buildAgentRuntimeInstructions(selectedAgentId, helperAgentId);
+  const agentSection = await buildAgentRuntimeInstructionsFromBackend(selectedAgentId, helperAgentId);
 
   return `${BASE_INSTRUCTIONS}
 
@@ -1052,9 +1095,21 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
   const directDesktopResult = await getDirectDesktopResult(prompt, previousAssistantText);
   const directPdfResult = await getDirectPdfResult(user, chatId, prompt, previousAssistantText);
+  const labels = buildHandoffAndCollaborationLabels(selectedAgentId, helperAgentId, messages);
 
   if (directDesktopResult) {
-    await persistAssistantReply(user, chatId, prompt, messages, directDesktopResult.outputText);
+    await persistAssistantReply(
+      user,
+      chatId,
+      prompt,
+      messages,
+      directDesktopResult.outputText,
+      selectedAgentId,
+      helperAgentId,
+      labels.handoffLabel,
+      labels.collaborationLabel,
+      directDesktopResult.trace,
+    );
     await appendLog(user, "info", "Listagem direta da Área de Trabalho", {
       chatId,
       fullAccess: settings.fullAccess,
@@ -1088,7 +1143,18 @@ export async function POST(request: NextRequest) {
   }
 
   if (directPdfResult) {
-    await persistAssistantReply(user, chatId, prompt, messages, directPdfResult.outputText);
+    await persistAssistantReply(
+      user,
+      chatId,
+      prompt,
+      messages,
+      directPdfResult.outputText,
+      selectedAgentId,
+      helperAgentId,
+      labels.handoffLabel,
+      labels.collaborationLabel,
+      directPdfResult.trace,
+    );
     await appendLog(user, "info", "Geracao direta de PDF", {
       chatId,
       totalMs: Date.now() - startedAt,
@@ -1164,7 +1230,7 @@ export async function POST(request: NextRequest) {
           apiKey,
           {
             model,
-            instructions: buildInstructions(
+            instructions: await buildInstructions(
               settings.fullAccess,
               settings.permissionMode,
               settings.memoryMode,
@@ -1433,7 +1499,18 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encodeEvent("trace", memoryTrace));
         }
 
-        await persistAssistantReply(user, chatId, prompt, messages, finalText);
+        await persistAssistantReply(
+          user,
+          chatId,
+          prompt,
+          messages,
+          finalText,
+          selectedAgentId,
+          helperAgentId,
+          labels.handoffLabel,
+          labels.collaborationLabel,
+          traceEntries,
+        );
         await appendLog(user, "info", "Resposta enviada", {
           chatId,
           model,

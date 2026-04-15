@@ -1,23 +1,32 @@
 import { NextResponse } from "next/server";
-import { getLoginConfig } from "@/lib/server/auth";
+import { isAuthConfigured } from "@/lib/server/auth";
+import { findDbUserByEmail } from "@/lib/server/db";
 
 export async function GET() {
-  const config = getLoginConfig();
-  
-  if (!config) {
+  if (!isAuthConfigured()) {
     return NextResponse.json(
-      { error: "Auth is not configured" },
+      { error: "Auth is not configured. Set AUTH_SECRET." },
       { status: 503 }
     );
   }
 
+  let adminUser = null;
+  try {
+    adminUser = await findDbUserByEmail("admin@gmail.com");
+  } catch {
+    // Database might not be available
+  }
+
   return NextResponse.json({
-    email: config.email,
-    displayName: config.displayName,
-    passwordConfigured: !!(process.env.ADMIN_PASSWORD || "").trim(),
+    authConfigured: isAuthConfigured(),
+    adminUserExists: !!adminUser,
+    adminUser: adminUser ? {
+      id: adminUser.id,
+      email: adminUser.email,
+      displayName: adminUser.display_name,
+      passwordSet: !!adminUser.password_hash,
+    } : null,
     envVars: {
-      ADMIN_EMAIL: process.env.ADMIN_EMAIL || "NOT SET",
-      ADMIN_PASSWORD_LENGTH: (process.env.ADMIN_PASSWORD || "").length,
       AUTH_SECRET_LENGTH: (process.env.AUTH_SECRET || "").length,
     }
   });

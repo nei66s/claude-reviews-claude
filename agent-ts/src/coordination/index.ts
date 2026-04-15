@@ -25,6 +25,14 @@ export {
 } from './mailbox.js'
 
 export {
+  initCoordinationAgentProfileTables,
+  upsertAgentProfile,
+  getAgentProfile,
+  listAgentProfiles,
+  type PersistedAgentProfile,
+} from './agentProfiles.js'
+
+export {
   spawnWorker,
   spawnWorkers,
   createCoordinationTeam,

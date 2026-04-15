@@ -50,14 +50,16 @@ export interface CoordinationAgent extends QueryResultRow {
  * Initialize coordination tables
  */
 export async function initCoordinationTables() {
+  // Backward-compat: older schemas enforced 1 team per leader. We now allow multiple teams per leader.
+  await query(`ALTER TABLE IF EXISTS coordination_teams DROP CONSTRAINT IF EXISTS coordination_teams_leader_agent_id_key;`)
+
   await query(`
     CREATE TABLE IF NOT EXISTS coordination_teams (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL UNIQUE,
       leader_agent_id TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      config JSONB,
-      UNIQUE(leader_agent_id)
+      config JSONB
     );
 
     CREATE TABLE IF NOT EXISTS coordination_agents (

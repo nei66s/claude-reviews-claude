@@ -11,11 +11,6 @@ interface Command {
 
 const BASE_SLASH_COMMANDS: Command[] = [
   {
-    name: 'create-agents',
-    description: 'Criar um novo time de coordination com múltiplos agentes',
-    icon: '🤖',
-  },
-  {
     name: 'create-workflow',
     description: 'Atribuir um workflow/tarefas para o time de agentes',
     icon: '⚙️',

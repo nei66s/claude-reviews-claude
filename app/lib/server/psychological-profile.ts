@@ -1,4 +1,5 @@
 import { getDb, hasDatabase } from "./db";
+import { callOpenAI } from "./openai";
 
 export type FeedbackType = "like" | "dislike" | null;
 
@@ -51,18 +52,31 @@ export async function saveFeedback(
 
   const db = getDb();
 
+  // Tentar obter o message_number (ID numérico da mensagem)
+  // Se messageId é numérico (string que parece número), usar diretamente
+  let messageNumber: number | null = null;
+  
+  if (/^\d+$/.test(messageId)) {
+    // messageId é numérico
+    messageNumber = parseInt(messageId, 10);
+  }
+
+  // Salvar feedback com message_id (texto) e message_number (numérico se disponível)
   await db.query(
-    `INSERT INTO public.message_feedback (message_id, conversation_id, user_id, feedback, feedback_text)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO public.message_feedback (message_id, message_number, conversation_id, user_id, feedback, feedback_text)
+     VALUES ($1, $2, $3, $4, $5, $6)
      ON CONFLICT (message_id, user_id) DO UPDATE SET
-       feedback = $4,
-       feedback_text = $5,
+       message_number = $2,
+       feedback = $5,
+       feedback_text = $6,
        updated_at = NOW()`,
-    [messageId, conversationId, userId, feedback, feedbackText || null],
+    [messageId, messageNumber, conversationId, userId, feedback, feedbackText || null],
   );
 
   // Atualizar perfil psicológico
   await updatePsychologicalProfile(userId);
+
+  console.log(`[Feedback] Saved: messageId=${messageId}, messageNumber=${messageNumber}, feedback=${feedback}`);
 
   return {
     messageId,
@@ -90,14 +104,11 @@ export async function updatePsychologicalProfile(
   const feedbackResult = await db.query<{
     feedback: string;
     feedback_text: string;
-    m_content: string;
   }>(
     `SELECT 
       mf.feedback,
-      mf.feedback_text,
-      m.content as m_content
+      mf.feedback_text
      FROM public.message_feedback mf
-     JOIN public.messages m ON mf.message_id = m.id
      WHERE mf.user_id = $1
      ORDER BY mf.created_at DESC
      LIMIT 50`,
@@ -109,8 +120,10 @@ export async function updatePsychologicalProfile(
   const dislikeCount = feedbacks.filter((f) => f.feedback === "dislike").length;
   const totalFeedback = feedbacks.length;
 
-  // Analisar padrões (análise simples baseada em heurística)
-  const profile = analyzePatterns(feedbacks, likeCount, dislikeCount, totalFeedback);
+  // Analisar padrões com OpenAI se houver feedback
+  const profile = totalFeedback > 0 
+    ? await analyzeWithOpenAI(feedbacks, likeCount, dislikeCount, totalFeedback)
+    : analyzePatterns(feedbacks, likeCount, dislikeCount, totalFeedback);
 
   // Salvar no banco
   if (totalFeedback > 0) {
@@ -205,10 +218,96 @@ export async function getPsychologicalProfile(
 }
 
 /**
+ * Analisar padrões com OpenAI
+ */
+async function analyzeWithOpenAI(
+  feedbacks: Array<{ feedback: string; feedback_text: string }>,
+  likeCount: number,
+  dislikeCount: number,
+  totalFeedback: number,
+): Promise<Omit<PsychologicalProfile, "userId" | "lastUpdated">> {
+  if (totalFeedback === 0) {
+    return {
+      tonalPreference: "balanced",
+      depthPreference: "balanced",
+      structurePreference: "mixed",
+      pacePreference: "balanced",
+      exampleType: "mixed",
+      responseLength: "balanced",
+      confidenceScore: 0,
+      totalFeedback: 0,
+      likeCount: 0,
+      dislikeCount: 0,
+    };
+  }
+
+  try {
+    const dislikeFeedbacks = feedbacks
+      .filter((f) => f.feedback === "dislike" && f.feedback_text)
+      .map((f) => f.feedback_text);
+
+    const prompt = `Você é um analista de psicologia digital. Baseado no seguinte feedback de um usuário, determine suas preferências:
+
+Estatísticas:
+- Total de feedbacks: ${totalFeedback}
+- Likes: ${likeCount}
+- Dislikes: ${dislikeCount}
+- Taxa de satisfação: ${((likeCount / totalFeedback) * 100).toFixed(0)}%
+
+Feedback negativo (dislikes com explicações):
+${dislikeFeedbacks.length > 0 ? dislikeFeedbacks.map((f, i) => `${i + 1}. "${f}"`).join("\n") : "Nenhum feedback negativo com explicação"}
+
+Baseado nisso, retorne um JSON com as preferências do usuário:
+{
+  "tonalPreference": "formal" | "casual" | "balanced",
+  "depthPreference": "simplified" | "technical" | "balanced",
+  "structurePreference": "narrative" | "list" | "mixed",
+  "pacePreference": "fast" | "detailed" | "balanced",
+  "exampleType": "code" | "conceptual" | "mixed",
+  "responseLength": "brief" | "comprehensive" | "balanced",
+  "reasoning": "Breve explicação"
+}
+
+Retorne APENAS o JSON, sem markdown.`;
+
+    const response = await callOpenAI(prompt, 0.7);
+
+    // Parse JSON response
+    let profile;
+    try {
+      profile = JSON.parse(response);
+    } catch {
+      // Se falhar parse, usar heurística
+      return analyzePatterns(feedbacks, likeCount, dislikeCount, totalFeedback);
+    }
+
+    // Confiança aumenta com mais feedback e análise OpenAI
+    const confidenceScore = Math.min((totalFeedback + 5) / 25, 1);
+
+    return {
+      tonalPreference: profile.tonalPreference || "balanced",
+      depthPreference: profile.depthPreference || "balanced",
+      structurePreference: profile.structurePreference || "mixed",
+      pacePreference: profile.pacePreference || "balanced",
+      exampleType: profile.exampleType || "mixed",
+      responseLength: profile.responseLength || "balanced",
+      confidenceScore,
+      totalFeedback,
+      likeCount,
+      dislikeCount,
+    };
+  } catch (error) {
+    console.error("Error analyzing profile with OpenAI:", error);
+    // Fallback para heurística
+    return analyzePatterns(feedbacks, likeCount, dislikeCount, totalFeedback);
+  }
+}
+
+/**
  * Analisar padrões de feedback
  */
 function analyzePatterns(
-  feedbacks: Array<{ feedback: string; feedback_text: string; m_content: string }>,
+  feedbacks: Array<{ feedback: string; feedback_text: string }>,
   likeCount: number,
   dislikeCount: number,
   totalFeedback: number,

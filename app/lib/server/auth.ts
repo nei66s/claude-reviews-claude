@@ -13,13 +13,6 @@ type TokenPayload = SessionUser & {
 
 const TOKEN_TTL_SECONDS = 60 * 60 * 12;
 
-type AuthConfig = {
-  email: string;
-  password: string;
-  displayName: string;
-  secret: string;
-};
-
 function encodeBase64Url(input: string) {
   return Buffer.from(input, "utf8").toString("base64url");
 }
@@ -28,22 +21,13 @@ function decodeBase64Url<T>(input: string) {
   return JSON.parse(Buffer.from(input, "base64url").toString("utf8")) as T;
 }
 
-function getAuthConfig(): AuthConfig | null {
-  const email = process.env.ADMIN_EMAIL?.trim();
-  const password = process.env.ADMIN_PASSWORD?.trim();
-  const displayName = process.env.ADMIN_DISPLAY_NAME?.trim() || "Admin Chocks";
+function getAuthSecret(): string | null {
   const secret = process.env.AUTH_SECRET?.trim();
+  return secret || null;
+}
 
-  if (!email || !password || !secret) {
-    return null;
-  }
-
-  return {
-    email,
-    password,
-    displayName,
-    secret,
-  };
+function hashPassword(password: string): string {
+  return crypto.createHash("sha256").update(password).digest("hex");
 }
 
 function sign(value: string, secret: string) {
@@ -51,50 +35,38 @@ function sign(value: string, secret: string) {
 }
 
 export function isAuthConfigured() {
-  return getAuthConfig() !== null;
-}
-
-export function getLoginConfig() {
-  const config = getAuthConfig();
-  if (!config) {
-    return null;
-  }
-
-  return {
-    email: config.email,
-    password: config.password,
-    displayName: config.displayName,
-  };
+  return getAuthSecret() !== null;
 }
 
 export async function authenticate(email: string, password: string) {
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedPassword = password.trim();
-  const config = getLoginConfig();
-  if (!config) {
-    throw new Error("Auth is not configured. Set ADMIN_EMAIL, ADMIN_PASSWORD and AUTH_SECRET.");
-  }
 
-  if (
-    normalizedEmail !== config.email.toLowerCase() ||
-    normalizedPassword !== config.password
-  ) {
+  const dbUser = await findDbUserByEmail(normalizedEmail).catch(() => null);
+  if (!dbUser) {
     return null;
   }
 
-  const dbUser = await findDbUserByEmail(config.email).catch(() => null);
+  if (!dbUser.password_hash) {
+    return null;
+  }
+
+  const passwordHash = hashPassword(normalizedPassword);
+  if (passwordHash !== dbUser.password_hash) {
+    return null;
+  }
 
   return {
-    id: dbUser?.id ?? "local-admin",
-    email: dbUser?.email ?? config.email,
-    displayName: dbUser?.display_name ?? config.displayName,
+    id: dbUser.id,
+    email: dbUser.email ?? "",
+    displayName: dbUser.display_name,
   } satisfies SessionUser;
 }
 
 export function createToken(user: SessionUser) {
-  const config = getAuthConfig();
-  if (!config) {
-    throw new Error("Auth is not configured. Set AUTH_SECRET before issuing tokens.");
+  const secret = getAuthSecret();
+  if (!secret) {
+    throw new Error("AUTH_SECRET is not configured.");
   }
 
   const payload: TokenPayload = {
@@ -102,13 +74,13 @@ export function createToken(user: SessionUser) {
     exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS,
   };
   const encodedPayload = encodeBase64Url(JSON.stringify(payload));
-  const signature = sign(encodedPayload, config.secret);
+  const signature = sign(encodedPayload, secret);
   return `${encodedPayload}.${signature}`;
 }
 
 export function verifyToken(token: string) {
-  const config = getAuthConfig();
-  if (!config) {
+  const secret = getAuthSecret();
+  if (!secret) {
     return null;
   }
 
@@ -117,7 +89,7 @@ export function verifyToken(token: string) {
     return null;
   }
 
-  const expectedSignature = sign(encodedPayload, config.secret);
+  const expectedSignature = sign(encodedPayload, secret);
   if (providedSignature !== expectedSignature) {
     return null;
   }

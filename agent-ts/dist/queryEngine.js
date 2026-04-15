@@ -106,13 +106,17 @@ export function compressMessages(messages) {
 }
 /**
  * Assemble context with smart compression
+ * 🧠 Now with instinct-driven optimization!
  */
 export async function assembleContext(messages, systemPrompt, maxTokens = MAX_CONTEXT_TOKENS) {
     let workingMessages = [...messages];
     let hadCompression = false;
     const originalCount = workingMessages.length;
-    // Try compression if we have many messages
-    if (workingMessages.length >= COMPRESS_THRESHOLD_MESSAGES) {
+    // For now, use basic heuristic for early compression
+    // In future, could integrate habit recommendations
+    const shouldCompressEarly = false;
+    // Try compression if we have many messages OR habit recommends it
+    if (workingMessages.length >= COMPRESS_THRESHOLD_MESSAGES || shouldCompressEarly) {
         const oldMessageThreshold = Math.floor(workingMessages.length * 0.5);
         const oldMessages = workingMessages.slice(0, oldMessageThreshold);
         const compression = compressMessages(oldMessages);

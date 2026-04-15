@@ -484,13 +484,10 @@ export function triageAgentFromMessage(input: string, currentAgentId?: string | 
 }
 
 export function buildAgentRuntimeInstructions(agentId?: string | null, helperAgentId?: string | null) {
+  // NOTE: System prompts for production are fetched from the backend DB via
+  // /api/coordination/family/prompt/:agentId. This local prompt is only a fallback.
   const agent = getAgentProfile(agentId);
   const helper = helperAgentId ? getAgentProfile(helperAgentId) : null;
-  if (agent.id === "chocks" || !agent.systemPrompt) {
-    if (!helper || helper.id === "chocks" || !helper.systemPrompt) {
-      return "";
-    }
-  }
 
   const lines = [
     `AGENTE ATIVO NESTE TURNO: ${agent.name}.`,
@@ -518,4 +515,66 @@ export function buildAgentRuntimeInstructions(agentId?: string | null, helperAge
   );
 
   return lines.filter(Boolean).join("\n");
+}
+
+export async function buildAgentRuntimeInstructionsFromBackend(agentId?: string | null, helperAgentId?: string | null) {
+  const agent = getAgentProfile(agentId);
+  const helper = helperAgentId ? getAgentProfile(helperAgentId) : null;
+
+  const backendOrigin =
+    (process.env.NEXT_PUBLIC_CHOKITO_API_ORIGIN || "").trim() ||
+    (process.env.CHOKITO_API_ORIGIN || "").trim() ||
+    "http://127.0.0.1:3001";
+
+  async function fetchPrompt(targetId: AgentId) {
+    try {
+      const response = await fetch(`${backendOrigin}/api/coordination/family/prompt/${targetId}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const data = (await response.json()) as { systemPrompt?: string };
+      return typeof data?.systemPrompt === "string" ? data.systemPrompt : null;
+    } catch {
+      return null;
+    }
+  }
+
+  const [agentPrompt, helperPrompt] = await Promise.all([
+    agent.id === "chocks" ? Promise.resolve(null) : fetchPrompt(agent.id),
+    helper && helper.id !== "chocks" ? fetchPrompt(helper.id) : Promise.resolve(null),
+  ]);
+
+  const fallback = buildAgentRuntimeInstructions(agentId, helperAgentId);
+  const effectiveAgentPrompt = agentPrompt || agent.systemPrompt || "";
+  const effectiveHelperPrompt = helperPrompt || helper?.systemPrompt || "";
+
+  if (agent.id === "chocks" && !effectiveHelperPrompt) {
+    return "";
+  }
+
+  const lines = [
+    `AGENTE ATIVO NESTE TURNO: ${agent.name}.`,
+    effectiveAgentPrompt,
+  ];
+
+  if (helper && helper.id !== agent.id && effectiveHelperPrompt) {
+    lines.push(
+      `APOIO ESPECIALIZADO NESTE TURNO: ${helper.name}.`,
+      `Quando fizer sentido, responda como ${agent.name} consultando ${helper.name} e incorporando a especialidade dele na mesma resposta.`,
+      `Nao troque o protagonismo principal: quem fala com o usuario e ${agent.name}.`,
+      `Na resposta final, deixe a colaboracao perceptivel no proprio texto de forma natural.`,
+      `Use formulacoes como "conversei com ${helper.name}", "${helper.name} puxou um ponto importante", "olhando pelo lado da ${helper.name}" ou equivalente quando isso ajudar.`,
+      `Se houver apoio, evite responder como se ${agent.name} tivesse feito tudo sozinho.`,
+      `Nao transforme a resposta num roteiro teatral; mantenha naturalidade, objetividade e uma unica resposta coesa.`,
+      getCollaborationStyle(agent, helper),
+      effectiveHelperPrompt,
+    );
+  }
+
+  lines.push(
+    "Mantenha esse personagem durante toda a resposta.",
+    "Nao diga que houve roteamento automatico ou classificacao interna.",
+    "Fale em portugues do Brasil e preserve o estilo humano da familia Pimpotasma.",
+  );
+
+  const compiled = lines.filter(Boolean).join("\n").trim();
+  return compiled || fallback;
 }

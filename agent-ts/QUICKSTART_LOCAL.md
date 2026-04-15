@@ -116,7 +116,7 @@ Listening on http://localhost:3001
 ### Criar seus agentes
 
 ```typescript
-// Exemplo: /create-agents
+// (Desativado) /create-agents
 POST /api/coordination/spawn
 {
   "agentCount": 2,

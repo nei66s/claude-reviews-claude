@@ -40,9 +40,18 @@ function invalidateConversationsCache(userId: string): void {
 }
 
 export type ChatMessage = {
+  id?: number; // ID numérico único da mensagem
   role: "user" | "agent";
   content: string;
   streaming?: boolean;
+  feedback?: "like" | "dislike" | null; // Feedback do usuário para esta mensagem
+  feedbackText?: string; // Texto do feedback se houver
+  // Identidade do agente que respondeu (para persistir avatar/nome após reload).
+  agentId?: string;
+  helperAgentId?: string;
+  handoffLabel?: string;
+  collaborationLabel?: string;
+  trace?: unknown[];
 };
 
 export type StoredConversation = {
@@ -50,6 +59,99 @@ export type StoredConversation = {
   title: string;
   messages: ChatMessage[];
 };
+
+type MessagesSchema = {
+  agentId: boolean;
+  helperAgentId: boolean;
+  handoffLabel: boolean;
+  collaborationLabel: boolean;
+  traceJson: boolean;
+};
+
+let ensuredMessagesSchema: Promise<void> | null = null;
+let messagesSchemaAlterDenied = false;
+let cachedMessagesSchema:
+  | {
+      value: MessagesSchema;
+      timestamp: number;
+    }
+  | null = null;
+const MESSAGES_SCHEMA_TTL = 1000 * 30; // 30s
+
+function isAlterDeniedError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  return (
+    /must be owner of relation/i.test(error.message) ||
+    /must be owner of table/i.test(error.message) ||
+    /permission denied/i.test(error.message)
+  );
+}
+
+async function detectMessagesSchema(db: ReturnType<typeof getDb>): Promise<MessagesSchema> {
+  const now = Date.now();
+  if (cachedMessagesSchema && now - cachedMessagesSchema.timestamp < MESSAGES_SCHEMA_TTL) {
+    return cachedMessagesSchema.value;
+  }
+
+  const targetColumns = [
+    "agent_id",
+    "helper_agent_id",
+    "handoff_label",
+    "collaboration_label",
+    "trace_json",
+  ];
+
+  const result = await db.query<{ column_name: string }>(
+    `select column_name
+     from information_schema.columns
+     where table_schema = 'public'
+       and table_name = 'messages'
+       and column_name = any($1::text[])`,
+    [targetColumns],
+  );
+
+  const present = new Set(result.rows.map((row) => row.column_name));
+  const value: MessagesSchema = {
+    agentId: present.has("agent_id"),
+    helperAgentId: present.has("helper_agent_id"),
+    handoffLabel: present.has("handoff_label"),
+    collaborationLabel: present.has("collaboration_label"),
+    traceJson: present.has("trace_json"),
+  };
+
+  cachedMessagesSchema = { value, timestamp: now };
+  return value;
+}
+
+async function tryEnsureMessagesSchemaReady() {
+  if (!hasDatabase()) return;
+  if (messagesSchemaAlterDenied) return;
+  if (ensuredMessagesSchema) return ensuredMessagesSchema;
+
+  const db = getDb();
+  ensuredMessagesSchema = db
+    .query(`
+      ALTER TABLE public.messages
+        ADD COLUMN IF NOT EXISTS agent_id TEXT,
+        ADD COLUMN IF NOT EXISTS helper_agent_id TEXT,
+        ADD COLUMN IF NOT EXISTS handoff_label TEXT,
+        ADD COLUMN IF NOT EXISTS collaboration_label TEXT;
+    `)
+    .then(() => {
+      cachedMessagesSchema = null;
+      return undefined;
+    })
+    .catch((err) => {
+      ensuredMessagesSchema = null;
+      if (isAlterDeniedError(err)) {
+        messagesSchemaAlterDenied = true;
+        return;
+      }
+      throw err;
+    });
+
+  return ensuredMessagesSchema;
+}
 
 type AuditLog = {
   id: string;
@@ -485,6 +587,8 @@ export async function listConversations(user: SessionUser) {
   if (hasDatabase()) {
     const db = getDb();
     const ownerId = await resolveOwnerId(user);
+    await tryEnsureMessagesSchemaReady();
+    const messagesSchema = await detectMessagesSchema(db);
 
     // Verificar cache primeiro
     const cached = getCachedConversations(ownerId);
@@ -510,26 +614,86 @@ export async function listConversations(user: SessionUser) {
       return [];
     }
 
-    const messageResult = await db.query<
-      ChatMessage & { conversation_id: string; sort_order: number }
-    >(
-      `select conversation_id, sort_order, role, content, streaming
-       from public.messages
-       where conversation_id = any($1::text[])
-       order by conversation_id asc, sort_order asc, id asc`,
-      [ids],
+    type DbMessageRow = {
+      id: string;
+      conversation_id: string;
+      sort_order: number;
+      role: "user" | "agent";
+      content: string;
+      streaming: boolean;
+      user_feedback: string | null;
+      user_feedback_text: string | null;
+      agent_id: string | null;
+      helper_agent_id: string | null;
+      handoff_label: string | null;
+      collaboration_label: string | null;
+      trace_json: unknown[] | null;
+    };
+
+    const messageResult = await db.query<DbMessageRow>(
+      `select 
+        COALESCE(m.id::text, '') as id,
+        m.conversation_id, 
+        m.sort_order, 
+        m.role, 
+        m.content, 
+        m.streaming,
+        ${messagesSchema.agentId ? "m.agent_id" : "NULL::text"} as agent_id,
+        ${messagesSchema.helperAgentId ? "m.helper_agent_id" : "NULL::text"} as helper_agent_id,
+        ${messagesSchema.handoffLabel ? "m.handoff_label" : "NULL::text"} as handoff_label,
+        ${messagesSchema.collaborationLabel ? "m.collaboration_label" : "NULL::text"} as collaboration_label,
+        ${messagesSchema.traceJson ? "m.trace_json" : "NULL::jsonb"} as trace_json,
+        mf.feedback as user_feedback,
+        mf.feedback_text as user_feedback_text
+       from public.messages m
+       left join public.message_feedback mf on 
+         (m.id = mf.message_number OR m.id::text = mf.message_id) 
+         and mf.user_id = $2
+       where m.conversation_id = any($1::text[])
+       order by m.conversation_id asc, m.sort_order asc, m.id asc`,
+      [ids, ownerId],
     );
 
     const messagesByConversation = new Map<string, ChatMessage[]>();
     for (const row of messageResult.rows) {
       const list = messagesByConversation.get(row.conversation_id) ?? [];
-      list.push({
+      const msgId = row.id ? parseInt(row.id, 10) : undefined;
+      const normalizedTrace = (() => {
+        if (Array.isArray(row.trace_json)) return row.trace_json;
+        if (typeof row.trace_json === "string") {
+          try {
+            const parsed = JSON.parse(row.trace_json) as unknown;
+            return Array.isArray(parsed) ? (parsed as unknown[]) : undefined;
+          } catch {
+            return undefined;
+          }
+        }
+        return undefined;
+      })();
+      const message: ChatMessage = {
+        id: msgId,
         role: row.role,
         content: row.content,
         streaming: row.streaming,
-      });
+        agentId: row.agent_id || undefined,
+        helperAgentId: row.helper_agent_id || undefined,
+        handoffLabel: row.handoff_label || undefined,
+        collaborationLabel: row.collaboration_label || undefined,
+        trace: normalizedTrace,
+      };
+      
+      // Incluir feedback se existir
+      if (row.user_feedback) {
+        message.feedback = row.user_feedback as "like" | "dislike" | null;
+        message.feedbackText = row.user_feedback_text || undefined;
+        console.log(`[Store] Message ${msgId} has feedback: ${row.user_feedback}`);
+      }
+      
+      list.push(message);
       messagesByConversation.set(row.conversation_id, list);
     }
+
+    console.log(`[Store] Loaded ${messageResult.rows.length} messages with feedback mapping`);
 
     const result = conversationResult.rows.map(
       (conversation: Pick<StoredConversation, "id" | "title">) => ({
@@ -591,6 +755,8 @@ export async function upsertConversation(user: SessionUser, conversation: Stored
   if (hasDatabase()) {
     const db = getDb();
     const ownerId = await resolveOwnerId(user);
+    await tryEnsureMessagesSchemaReady();
+    const messagesSchema = await detectMessagesSchema(db);
 
     await db.query(
       `insert into public.conversations (id, title, owner_id)
@@ -605,19 +771,58 @@ export async function upsertConversation(user: SessionUser, conversation: Stored
     ]);
 
     for (const [index, message] of conversation.messages.entries()) {
+      const columns = ["conversation_id", "sort_order", "role", "content", "streaming"];
+      const values: Array<string> = ["$1", "$2", "$3", "$4", "$5"];
+      const params: unknown[] = [
+        conversation.id,
+        index,
+        message.role,
+        message.content,
+        Boolean(message.streaming),
+      ];
+
+      if (messagesSchema.agentId) {
+        columns.push("agent_id");
+        values.push(`$${params.length + 1}`);
+        params.push(message.role === "agent" ? message.agentId || null : null);
+      }
+
+      if (messagesSchema.helperAgentId) {
+        columns.push("helper_agent_id");
+        values.push(`$${params.length + 1}`);
+        params.push(message.role === "agent" ? message.helperAgentId || null : null);
+      }
+
+      if (messagesSchema.handoffLabel) {
+        columns.push("handoff_label");
+        values.push(`$${params.length + 1}`);
+        params.push(message.role === "agent" ? message.handoffLabel || null : null);
+      }
+
+      if (messagesSchema.collaborationLabel) {
+        columns.push("collaboration_label");
+        values.push(`$${params.length + 1}`);
+        params.push(message.role === "agent" ? message.collaborationLabel || null : null);
+      }
+
+      if (messagesSchema.traceJson) {
+        columns.push("trace_json");
+        values.push(`$${params.length + 1}`);
+        params.push(
+          message.role === "agent" && Array.isArray(message.trace)
+            ? JSON.stringify(message.trace)
+            : null,
+        );
+      }
+
       await db.query(
-        `insert into public.messages (conversation_id, sort_order, role, content, streaming)
-         values ($1, $2, $3, $4, $5)`,
-        [
-          conversation.id,
-          index,
-          message.role,
-          message.content,
-          Boolean(message.streaming),
-        ],
+        `insert into public.messages (${columns.join(", ")})
+         values (${values.join(", ")})`,
+        params,
       );
     }
 
+    invalidateConversationsCache(ownerId);
     return;
   }
 
@@ -690,6 +895,8 @@ export async function duplicateConversation(
   if (hasDatabase()) {
     const db = getDb();
     const ownerId = await resolveOwnerId(user);
+    await tryEnsureMessagesSchemaReady();
+    const messagesSchema = await detectMessagesSchema(db);
     const conversationResult = await db.query<
       { id: string; title: string }
     >(
@@ -712,9 +919,25 @@ export async function duplicateConversation(
     );
 
     const messages = await db.query<
-      ChatMessage & { sort_order: number }
+      ChatMessage & {
+        sort_order: number;
+        agent_id: string | null;
+        helper_agent_id: string | null;
+        handoff_label: string | null;
+        collaboration_label: string | null;
+        trace_json: unknown[] | null;
+      }
     >(
-      `select sort_order, role, content, streaming
+      `select
+        sort_order,
+        role,
+        content,
+        streaming,
+        ${messagesSchema.agentId ? "agent_id" : "NULL::text"} as agent_id,
+        ${messagesSchema.helperAgentId ? "helper_agent_id" : "NULL::text"} as helper_agent_id,
+        ${messagesSchema.handoffLabel ? "handoff_label" : "NULL::text"} as handoff_label,
+        ${messagesSchema.collaborationLabel ? "collaboration_label" : "NULL::text"} as collaboration_label,
+        ${messagesSchema.traceJson ? "trace_json" : "NULL::jsonb"} as trace_json
        from public.messages
        where conversation_id = $1
        order by sort_order asc, id asc`,
@@ -722,10 +945,54 @@ export async function duplicateConversation(
     );
 
     for (const message of messages.rows) {
+      const columns = ["conversation_id", "sort_order", "role", "content", "streaming"];
+      const values: Array<string> = ["$1", "$2", "$3", "$4", "$5"];
+      const params: unknown[] = [
+        nextId,
+        message.sort_order,
+        message.role,
+        message.content,
+        Boolean(message.streaming),
+      ];
+
+      if (messagesSchema.agentId) {
+        columns.push("agent_id");
+        values.push(`$${params.length + 1}`);
+        params.push(message.role === "agent" ? message.agent_id : null);
+      }
+
+      if (messagesSchema.helperAgentId) {
+        columns.push("helper_agent_id");
+        values.push(`$${params.length + 1}`);
+        params.push(message.role === "agent" ? message.helper_agent_id : null);
+      }
+
+      if (messagesSchema.handoffLabel) {
+        columns.push("handoff_label");
+        values.push(`$${params.length + 1}`);
+        params.push(message.role === "agent" ? message.handoff_label : null);
+      }
+
+      if (messagesSchema.collaborationLabel) {
+        columns.push("collaboration_label");
+        values.push(`$${params.length + 1}`);
+        params.push(message.role === "agent" ? message.collaboration_label : null);
+      }
+
+      if (messagesSchema.traceJson) {
+        columns.push("trace_json");
+        values.push(`$${params.length + 1}`);
+        params.push(
+          message.role === "agent" && message.trace_json != null
+            ? JSON.stringify(message.trace_json)
+            : null,
+        );
+      }
+
       await db.query(
-        `insert into public.messages (conversation_id, sort_order, role, content, streaming)
-         values ($1, $2, $3, $4, $5)`,
-        [nextId, message.sort_order, message.role, message.content, Boolean(message.streaming)],
+        `insert into public.messages (${columns.join(", ")})
+         values (${values.join(", ")})`,
+        params,
       );
     }
 

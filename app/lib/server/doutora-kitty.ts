@@ -32,9 +32,10 @@ export async function getFeedbackHistory(userId: string) {
 
   const db = getDb();
 
-  // Buscar últimos 100 feedbacks (com LEFT JOIN para suportardados sem mensagens vinculadas)
+  // Buscar últimos 100 feedbacks (sem join, usando feedback_text como fallback para preview)
   const feedbackResult = await db.query<{
     message_id: string;
+    message_number: number | null;
     feedback: string;
     feedback_text: string;
     content: string;
@@ -43,13 +44,13 @@ export async function getFeedbackHistory(userId: string) {
   }>(
     `SELECT 
       mf.message_id,
+      mf.message_number,
       mf.feedback,
       mf.feedback_text,
-      COALESCE(m.content, 'Demo message') as content,
+      COALESCE(mf.feedback_text, 'Mensagem sem comentário') as content,
       mf.created_at,
       mf.conversation_id
      FROM public.message_feedback mf
-     LEFT JOIN public.messages m ON mf.message_id = m.id
      WHERE mf.user_id = $1
      ORDER BY mf.created_at DESC
      LIMIT 100`,
@@ -57,11 +58,21 @@ export async function getFeedbackHistory(userId: string) {
   );
 
   const feedback = feedbackResult.rows;
-  const totalLikes = feedback.filter((f) => f.feedback === "like").length;
-  const totalDislikes = feedback.filter((f) => f.feedback === "dislike").length;
+  // Deduplicate by message (prefer numeric message_number when available)
+  const seen = new Set<string>();
+  const deduped: typeof feedback = [];
+  for (const f of feedback) {
+    const key = f.message_number ? String(f.message_number) : f.message_id;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(f);
+  }
+
+  const totalLikes = deduped.filter((f) => f.feedback === "like").length;
+  const totalDislikes = deduped.filter((f) => f.feedback === "dislike").length;
 
   // Top dislikes com feedback text
-  const topDislikes = feedback
+  const topDislikes = deduped
     .filter((f) => f.feedback === "dislike" && f.feedback_text)
     .slice(0, 10)
     .map((f) => ({
@@ -73,7 +84,7 @@ export async function getFeedbackHistory(userId: string) {
   return {
     totalLikes,
     totalDislikes,
-    feedback,
+    feedback: deduped,
     topDislikes,
   };
 }

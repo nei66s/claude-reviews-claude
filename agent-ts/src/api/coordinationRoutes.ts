@@ -30,6 +30,7 @@ import {
   listFamilyMembers,
   WORKFLOW_TEMPLATES,
 } from '../coordination/family-service.js'
+import { getAgentProfile as getPersistedAgentProfile, listAgentProfiles } from '../coordination/agentProfiles.js'
 
 const router = Router()
 
@@ -229,6 +230,56 @@ router.get('/family/members', async (req: Request, res: Response) => {
     res.json({ members, count: members.length })
   } catch (error) {
     console.error('Failed to list family members', error)
+    res.status(500).json({ error: String(error) })
+  }
+})
+
+// List full persisted profiles for family agents (source of truth for prompts)
+router.get('/family/profiles', async (req: Request, res: Response) => {
+  try {
+    await ensureFamilyTeamExists()
+    const profiles = await listAgentProfiles()
+    const family = profiles
+      .filter((p) => typeof p.agentId === 'string' && (p.agentId.endsWith('@family') || ['pimpim', 'betinha', 'bento', 'kitty', 'chubaka', 'repeteco', 'jorginho', 'tunico', 'miltinho'].includes(p.agentId)))
+      // Prefer plain ids over @family duplicates
+      .filter((p) => !p.agentId.endsWith('@family'))
+      .map((p) => ({ agentId: p.agentId, ...(p.profile as any) }))
+
+    res.json({ profiles: family, count: family.length })
+  } catch (error) {
+    console.error('Failed to list family profiles', error)
+    res.status(500).json({ error: String(error) })
+  }
+})
+
+// Get system prompt for a specific family agent id (e.g. betinha, kitty, pimpim)
+router.get('/family/prompt/:agentId', async (req: Request, res: Response) => {
+  try {
+    const agentId = String(req.params.agentId || '').trim().toLowerCase()
+    if (!agentId) return res.status(400).json({ error: 'Missing agentId' })
+
+    await ensureFamilyTeamExists()
+
+    const aliases: string[] = [agentId]
+    if (agentId === 'chubas') aliases.push('chubaka')
+
+    let prompt: string | null = null
+    for (const candidate of aliases) {
+      const found = await getPersistedAgentProfile(candidate)
+      const candidatePrompt =
+        found?.profile && typeof (found.profile as any).systemPrompt === 'string'
+          ? (found.profile as any).systemPrompt
+          : null
+      if (candidatePrompt) {
+        prompt = candidatePrompt
+        break
+      }
+    }
+    if (!prompt) return res.status(404).json({ error: 'Agent prompt not found' })
+
+    res.json({ agentId, systemPrompt: prompt })
+  } catch (error) {
+    console.error('Failed to get family agent prompt', error)
     res.status(500).json({ error: String(error) })
   }
 })

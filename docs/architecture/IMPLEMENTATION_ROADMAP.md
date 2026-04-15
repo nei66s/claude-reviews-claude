@@ -30,7 +30,7 @@ Sistema de multi-agent coordination com UI moderna, slash commands e integraçã
 - ✅ Coordination Dashboard (Teams, Workflows, Errors tabs)
 
 ### Phase 3: Slash Commands ✅
-- ✅ `/create-agents` - Spawn coordination teams
+- ⛔ `/create-agents` - (desativado) spawn de coordination teams
 - ✅ `/create-workflow` - Assign tasks to teams
 - ✅ Command autocomplete menu (↑↓ navigation, filtering)
 - ✅ 8 default commands (create, explain, fix, new, search, plan, test)

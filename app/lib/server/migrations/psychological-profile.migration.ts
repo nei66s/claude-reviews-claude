@@ -7,7 +7,7 @@ const PSYCHOLOGICAL_PROFILE_MIGRATION = `
 -- Tabela de feedback de mensagens
 CREATE TABLE IF NOT EXISTS public.message_feedback (
   id BIGSERIAL PRIMARY KEY,
-  message_id BIGINT NOT NULL REFERENCES public.messages(id) ON DELETE CASCADE,
+  message_id TEXT NOT NULL,
   conversation_id TEXT NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
   user_id TEXT NOT NULL REFERENCES public.app_users(id) ON DELETE CASCADE,
   feedback TEXT NOT NULL CHECK (feedback IN ('like', 'dislike', 'neutral')),

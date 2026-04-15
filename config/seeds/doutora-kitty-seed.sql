@@ -1,6 +1,11 @@
 -- Seed data para Doutora Kitty
 -- Para executar: psql -h localhost -U admin -d chocks < doutora-kitty-seed.sql
 
+-- Create the local-admin user (required by the auth system)
+INSERT INTO public.app_users (id, display_name, created_at, updated_at)
+VALUES ('local-admin', 'Local Admin', NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO public.message_feedback 
   (message_id, conversation_id, user_id, feedback, feedback_text, created_at) 
 VALUES

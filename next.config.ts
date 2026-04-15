@@ -11,6 +11,13 @@ const localOrigins = new Set([
 const shouldProxyApi = !!backendOrigin && !localOrigins.has(backendOrigin);
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "localhost",
+    "127.0.0.1",
+    "187.45.255.14",
+    "pimpotasma.com.br",
+    "www.pimpotasma.com.br",
+  ],
   async rewrites() {
     if (!shouldProxyApi || !backendOrigin) {
       return [];

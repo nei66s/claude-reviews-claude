@@ -15,10 +15,10 @@ export async function GET(request: NextRequest) {
 
   const response = NextResponse.json({ conversations: await listConversations(user) });
   
-  // Cache por 30 segundos, com revalidação em background por até 1 minuto
+  // Banco é ultra-veloz no datacenter local, busca sempre fresco
   response.headers.set(
     "Cache-Control",
-    "private, max-age=30, stale-while-revalidate=30"
+    "no-store, must-revalidate"
   );
   
   return response;
@@ -57,6 +57,11 @@ export async function DELETE(request: NextRequest) {
   }
 
   await deleteConversation(user, id);
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+  response.headers.set(
+    "Cache-Control",
+    "no-store, must-revalidate"
+  );
+  return response;
 }
 

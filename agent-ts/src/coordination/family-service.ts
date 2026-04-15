@@ -18,6 +18,7 @@ import {
   getFamilyAgent,
   getFamilyAgentNames,
 } from './family-agents.js'
+import { upsertAgentProfile } from './agentProfiles.js'
 
 /**
  * Create the main "family-pimpotasma" team if it doesn't exist
@@ -29,11 +30,27 @@ export async function ensureFamilyTeamExists(): Promise<CoordinationTeam> {
     const existingTeam = teams.find((t) => t.name === 'family-pimpotasma')
     
     if (existingTeam) {
+      // Ensure all base family members are registered (idempotent)
+      const baseFamily = ['pimpim', 'betinha', 'bento', 'kitty', 'chubaka', 'repeteco', 'jorginho', 'tunico', 'miltinho']
+      for (const member of baseFamily) {
+        const agent = getFamilyAgent(member)
+        if (agent) {
+          // Persist full profile for both ids (plain + team-scoped)
+          await upsertAgentProfile(member, agent)
+          await upsertAgentProfile(`${member}@family`, agent)
+          if (member === 'chubaka') {
+            await upsertAgentProfile('chubas', agent)
+            await upsertAgentProfile('chubas@family', agent)
+          }
+          await registerAgent(existingTeam.id, `${member}@family`, agent.role)
+        }
+      }
+
       return existingTeam
     }
 
     // Create the team if it doesn't exist
-    const team = await createTeam(
+    const teamId = await createTeam(
       'family-pimpotasma',
       'chocks', // Chocks is the main coordinator
       {
@@ -42,12 +59,23 @@ export async function ensureFamilyTeamExists(): Promise<CoordinationTeam> {
     )
 
     // Register base family members
-    const baseFamily = ['pimpim', 'betinha', 'bento', 'kitty', 'chubaka', 'repeteco', 'jorginho', 'tunico']
+    const baseFamily = ['pimpim', 'betinha', 'bento', 'kitty', 'chubaka', 'repeteco', 'jorginho', 'tunico', 'miltinho']
     for (const member of baseFamily) {
       const agent = getFamilyAgent(member)
       if (agent) {
-        await registerAgent(team.id, `${member}@family`, agent.role)
+        await upsertAgentProfile(member, agent)
+        await upsertAgentProfile(`${member}@family`, agent)
+        if (member === 'chubaka') {
+          await upsertAgentProfile('chubas', agent)
+          await upsertAgentProfile('chubas@family', agent)
+        }
+        await registerAgent(teamId, `${member}@family`, agent.role)
       }
+    }
+
+    const team = await getTeam(teamId)
+    if (!team) {
+      throw new Error(`Failed to load created team: ${teamId}`)
     }
 
     return team

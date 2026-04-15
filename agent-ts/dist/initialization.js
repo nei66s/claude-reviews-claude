@@ -6,7 +6,8 @@ import { loadDenyRules, loadAskRules, initPermissionTables } from './permissions
 import { loadHooks, initHookTables } from './swarm/hookPersistence.js';
 import { getPermissionPipeline } from './permissions/pipeline.js';
 import { initTokenManager } from './tokenManager.js';
-import { initCoordinationTables, initWorkflowHistoryTables, initErrorHandlingTables, initMCPTables, } from './coordination/index.js';
+import { initCoordinationTables, initWorkflowHistoryTables, initErrorHandlingTables, initMCPTables, initCoordinationAgentProfileTables, } from './coordination/index.js';
+import { ensureFamilyTeamExists } from './coordination/family-service.js';
 /**
  * Initialize all persistent configurations from database on startup
  */
@@ -22,6 +23,8 @@ export async function initializePersistentState() {
         // Initialize coordination system tables
         await initCoordinationTables();
         console.log('[INIT] Coordination tables initialized');
+        await initCoordinationAgentProfileTables();
+        console.log('[INIT] Coordination agent profile tables initialized');
         await initWorkflowHistoryTables();
         console.log('[INIT] Workflow history tables initialized');
         await initErrorHandlingTables();
@@ -63,6 +66,14 @@ export async function initializePersistentState() {
         // Load hooks from DB (stored for reference, not yet loaded into registry)
         const hooks = await loadHooks();
         console.log(`[INIT] Loaded ${hooks.length} hooks from database`);
+        // Ensure Pimpotasma family team + profiles exist (idempotent)
+        try {
+            await ensureFamilyTeamExists();
+            console.log('[INIT] Family team initialized');
+        }
+        catch (error) {
+            console.error('[INIT] Failed to initialize family team:', error instanceof Error ? error.message : error);
+        }
         console.log('[INIT] ✅ Persistent state loaded successfully');
     }
     catch (err) {

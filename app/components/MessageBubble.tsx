@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Download, FileText, PanelsTopLeft } from "lucide-react";
 
 import { Artifact, extractWebSources, pickPrimaryArtifact } from "../lib/artifactDetection";
-import { Message, TraceEntry } from "../lib/api";
+import { Message, TraceEntry, requestJson } from "../lib/api";
 import { AgentProfile, getAgentProfile } from "../lib/familyRouting";
 import CodeBlock from "./CodeBlock";
 import MessageFeedback from "./MessageFeedback";
@@ -273,11 +273,11 @@ export default function MessageBubble({
           <MessageFeedback
             messageId={messageId}
             conversationId={conversationId}
+            initialFeedback={message.feedback || null}
             onSubmitFeedback={async (feedback, text) => {
               try {
-                await fetch("/api/chat/feedback", {
+                const response = await requestJson("/chat/feedback", {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     messageId: messageId,
                     conversationId: conversationId,
@@ -285,8 +285,31 @@ export default function MessageBubble({
                     feedbackText: text,
                   }),
                 });
+                console.log("Feedback submitted successfully:", response);
               } catch (error) {
                 console.error("Failed to submit feedback:", error);
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                console.error("Error details:", errorMsg);
+                console.error("Check: 1) Are you logged in? 2) Database tables created? 3) Auth token valid?");
+                throw error; // Re-throw so MessageFeedback can handle it
+              }
+            }}
+            onFeedbackSuccess={async (feedback) => {
+              // Refetch feedback for this conversation to ensure UI stays in sync
+              try {
+                const feedbackData = await requestJson(`/chat/feedback/${encodeURIComponent(conversationId)}`);
+                const feedbacks = feedbackData?.feedbacks || {};
+                const messageIdStr = messageId ? String(messageId) : undefined;
+                const updatedFeedback = messageIdStr ? feedbacks[messageIdStr] : undefined;
+                
+                if (updatedFeedback) {
+                  console.debug("Feedback state synchronized with server");
+                }
+                
+                // Signal Doutora Kitty to refresh her interpretation
+                localStorage.setItem("feedbackUpdated", JSON.stringify({ timestamp: Date.now(), messageId, feedback }));
+              } catch (err) {
+                console.debug("Failed to sync feedback state:", err);
               }
             }}
           />

@@ -1265,33 +1265,6 @@ export const chatToolDefinitions = [
   },
   {
     type: "function",
-    name: "create_agents_team",
-    description: "Criar um novo time de coordination com múltiplos agentes para trabalhar em paralelo. Similar ao GitHub Copilot agents.",
-    parameters: {
-      type: "object",
-      properties: {
-        team_name: { type: "string", description: "Nome do time, ex: 'Research Team', 'Dev Squad'. Se vazio, gera nome automático." },
-        num_agents: { type: "number", description: "Quantidade de agentes a spawnar (1-10). Padrão: 3." },
-        roles: { 
-          type: "array", 
-          items: { type: "string" },
-          description: "Roles dos agentes, ex: ['researcher', 'implementer', 'tester']. Se vazio, distribui automaticamente."
-        },
-        goal: { 
-          type: "string", 
-          description: "Objetivo principal do time, ex: 'Parse JSON data and validate'."
-        },
-        context: { 
-          type: "object", 
-          description: "Contexto inicial, ex: {domain: 'data-processing'}"
-        },
-      },
-      required: ["team_name"],
-      additionalProperties: false,
-    },
-  },
-  {
-    type: "function",
     name: "list_teams_and_agents",
     description: "Listar todos os times de coordination e seus agentes. Use antes de criar workflows para saber qual team usar.",
     parameters: {
@@ -1508,80 +1481,6 @@ export async function runChatTool(
         fallback: true,
         message: `PDF gerado em ${absPath}`,
       };
-    }
-  }
-
-  if (toolName === "create_agents_team") {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
-    const teamName = String(input.team_name || `Team-${Date.now()}`).trim();
-    const numAgents = Math.min(10, Math.max(1, Number(input.num_agents) || 3));
-    const rolesList = Array.isArray(input.roles) ? input.roles.map(String) : [];
-    const goal = String(input.goal || "Collaborate on tasks").trim();
-    const context = typeof input.context === "object" && input.context ? input.context : {};
-
-    // Default roles if not provided
-    const defaultRoles = ["researcher", "implementer", "tester"];
-    const roles = rolesList.length > 0 ? rolesList : defaultRoles.slice(0, numAgents);
-
-    // Generate coordinator ID
-    const coordinatorId = `coordinator-${crypto.randomUUID()}`;
-
-    try {
-      // 1. Create team
-      const createTeamRes = await fetch(`${backendUrl}/api/coordination/team/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          name: teamName,
-          leaderAgentId: coordinatorId,
-          config: { goal, context }
-        }),
-      });
-      if (!createTeamRes.ok) {
-        const errData = await createTeamRes.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(`Failed to create team: ${createTeamRes.status} - ${String(errData.error || "")}`);
-      }
-      const teamData = await createTeamRes.json();
-      const teamId = teamData.teamId || teamData.id;
-      if (!teamId) throw new Error("No teamId returned from server");
-
-      // 2. Spawn agents
-      const agentIds: string[] = [];
-
-      for (let i = 0; i < numAgents; i++) {
-        const role = roles[i % roles.length];
-        const agentId = `${role}-${crypto.randomUUID().slice(0, 8)}@${teamId}`;
-        
-        const spawnRes = await fetch(`${backendUrl}/api/coordination/team/${teamId}/spawn`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            coordinatorAgentId: coordinatorId,
-            role,
-            goal: `${goal} (Role: ${role})`,
-            context: { ...context, teamId, agentIndex: i + 1 },
-          }),
-        });
-        
-        if (spawnRes.ok) {
-          agentIds.push(agentId);
-        }
-      }
-
-      return {
-        ok: true,
-        teamId,
-        teamName,
-        coordinatorId,
-        numAgents: agentIds.length,
-        agentIds,
-        goal,
-        roles,
-        context,
-        message: `✅ Team "${teamName}" criado com ${agentIds.length} agente(s). Agora use /create-workflow ou use_tool list_teams_and_agents para ver os times disponíveis.`,
-      };
-    } catch (error) {
-      throw new Error(`Failed to create agents team: ${String(error)}`);
     }
   }
 

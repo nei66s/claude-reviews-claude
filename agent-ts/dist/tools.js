@@ -4,6 +4,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fetch from 'node-fetch';
 import fg from 'fast-glob';
+import { socialProtocolManager } from './instincts/social-protocols.js';
 import { addTodo, clearWorkflowState, getWorkflowState, listTodos, saveWorkflowState, updateTodo, } from './store.js';
 const execp = promisify(exec);
 const PROJECT_ROOT = process.env.PROJECT_ROOT
@@ -90,6 +91,17 @@ function hasExplicitApproval(tool, latestUserMessage) {
     return false;
 }
 function assertToolPermission(tool, context) {
+    // 👥 Check social protocols first (auto-approve/deny for roles)
+    const userRole = context?.userId === 'admin' ? 'admin' : 'user';
+    const protocolDecision = socialProtocolManager.applyProtocols(userRole, tool, { context });
+    if (protocolDecision === 'auto_deny') {
+        throw new Error(`permission blocked: role '${userRole}' denied for '${tool}'`);
+    }
+    if (protocolDecision === 'auto_allow') {
+        // Role is automatically allowed! Skip other checks
+        return;
+    }
+    // Otherwise fall through to normal permission checks
     const permissionMode = normalizePermissionMode(context?.permissionMode);
     const approvedTools = Array.isArray(context?.approvedTools)
         ? context.approvedTools.map((item) => String(item || '').trim()).filter(Boolean)

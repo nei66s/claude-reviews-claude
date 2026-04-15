@@ -10,6 +10,8 @@ interface FamilyMember {
   role: string
   personality: string
   expertise: string[]
+  relationships?: string[]
+  systemPrompt?: string
 }
 
 export function CoordinationView() {
@@ -22,6 +24,9 @@ export function CoordinationView() {
   useEffect(() => {
     const loadFamilyTeam = async () => {
       try {
+        // Ensure the family team exists (idempotent)
+        await fetch('/api/coordination/family/init', { method: 'POST' })
+
         const response = await fetch('/api/coordination/team')
         const data = await response.json()
         const familyTeam = (data.teams || []).find((t: any) => t.name === 'family-pimpotasma')
@@ -39,9 +44,9 @@ export function CoordinationView() {
   const loadFamilyMembers = async () => {
     try {
       setIsLoadingMembers(true)
-      const response = await fetch('/api/coordination/family/members')
+      const response = await fetch('/api/coordination/family/profiles')
       const data = await response.json()
-      setFamilyMembers(data.members || [])
+      setFamilyMembers(data.profiles || [])
     } catch (error) {
       console.error('Failed to load family members:', error)
     } finally {
@@ -291,6 +296,49 @@ export function CoordinationView() {
                           ))}
                         </div>
                       </div>
+                      {Array.isArray(member.relationships) && member.relationships.length > 0 ? (
+                        <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '12px' }}>
+                          <strong>Relacionamentos:</strong>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                            {member.relationships.map((rel) => (
+                              <span
+                                key={rel}
+                                style={{
+                                  backgroundColor: 'rgba(236, 72, 153, 0.18)',
+                                  color: '#ffd1ea',
+                                  padding: '4px 8px',
+                                  borderRadius: '999px',
+                                  fontSize: '11px',
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {rel}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {typeof member.systemPrompt === 'string' && member.systemPrompt.trim() ? (
+                        <details style={{ marginTop: '12px' }}>
+                          <summary style={{ color: 'var(--muted)', fontSize: '12px', cursor: 'pointer' }}>
+                            Ver system prompt
+                          </summary>
+                          <pre
+                            style={{
+                              marginTop: '10px',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(0,0,0,0.35)',
+                              color: 'var(--text)',
+                              fontSize: '11px',
+                              whiteSpace: 'pre-wrap',
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            {member.systemPrompt}
+                          </pre>
+                        </details>
+                      ) : null}
                     </div>
                   ))}
                 </div>

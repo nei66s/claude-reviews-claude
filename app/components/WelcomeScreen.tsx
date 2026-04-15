@@ -92,7 +92,6 @@ export default function WelcomeScreen({
     { icon: "✨", label: "Criar", desc: "Novos arquivos e projetos", action: () => onSetPrompt("/new ") },
     { icon: "🔧", label: "Corrigir", desc: "Fix bugs e problemas", action: () => onSetPrompt("/fix ") },
     { icon: "💡", label: "Explicar", desc: "Explicar conceito ou código", action: () => onSetPrompt("/explain ") },
-    { icon: "🤖", label: "Agentes", desc: "Criar time de agentes", action: () => onSetPrompt("/create-agents ") },
     { icon: "⚙️", label: "Workflow", desc: "Atribuir tarefas ao time", action: () => onSetPrompt("/create-workflow ") },
   ];
 

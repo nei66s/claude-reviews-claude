@@ -121,8 +121,48 @@ export function useChat(enabled = true) {
     }
 
     loadConversations();
-  }, [enabled, loadConversations]);
+  }, [enabled]);
 
+  // Quando a conversa ativa muda, carregar o feedback - sem dependency em loadFeedbackForChat
+  useEffect(() => {
+    if (!activeChat?.id || !enabled) return;
+    
+    const loadFeedback = async () => {
+      try {
+        const data = await requestJson(`/chat/feedback/${encodeURIComponent(activeChat.id)}`);
+        const feedbacks = data?.feedbacks || {};
+        
+        setActiveChat((prev) => {
+          if (!prev || prev.id !== activeChat.id) return prev;
+          
+          const messagesWithFeedback = (prev.messages || []).map((message: Message) => {
+            const messageIdStr = message.id ? String(message.id) : undefined;
+            const feedbackData = messageIdStr ? feedbacks[messageIdStr] : undefined;
+            
+            if (feedbackData) {
+              return {
+                ...message,
+                feedback: feedbackData.feedback,
+                feedbackText: feedbackData.feedbackText,
+              };
+            }
+            return message;
+          });
+          
+          return {
+            ...prev,
+            messages: messagesWithFeedback,
+          };
+        });
+      } catch (err) {
+        console.debug("Failed to load feedback:", err);
+      }
+    };
+    
+    loadFeedback();
+  }, [activeChat?.id, enabled]);
+
+  // Sincronizar activeChat com o array de conversations
   useEffect(() => {
     if (!activeChat) return;
 
@@ -136,8 +176,9 @@ export function useChat(enabled = true) {
       next[index] = activeChat;
       return next;
     });
-  }, [activeChat]);
+  }, [activeChat?.id]);
 
+  // Persistir conversas no localStorage
   useEffect(() => {
     if (!enabled) return;
     writeLocalConversations(conversations);

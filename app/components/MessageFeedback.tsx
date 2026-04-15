@@ -6,20 +6,24 @@ import styles from "./MessageFeedback.module.css";
 
 export type FeedbackType = "like" | "dislike" | null;
 
+
 interface MessageFeedbackProps {
   messageId: string;
   conversationId: string;
   onSubmitFeedback?: (feedback: FeedbackType, text?: string) => Promise<void>;
+  onFeedbackSuccess?: (feedback: FeedbackType) => void;
   isLoading?: boolean;
+  initialFeedback?: FeedbackType;
 }
-
 export default function MessageFeedback({
   messageId,
   conversationId,
   onSubmitFeedback,
+  onFeedbackSuccess,
   isLoading = false,
+  initialFeedback = null,
 }: MessageFeedbackProps) {
-  const [currentFeedback, setCurrentFeedback] = useState<FeedbackType>(null);
+  const [currentFeedback, setCurrentFeedback] = useState<FeedbackType>(initialFeedback);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +36,7 @@ export default function MessageFeedback({
       setIsSubmitting(true);
       try {
         await onSubmitFeedback(feedback);
+        onFeedbackSuccess?.(feedback);
       } finally {
         setIsSubmitting(false);
       }
@@ -45,6 +50,7 @@ export default function MessageFeedback({
         await onSubmitFeedback(currentFeedback, feedbackText);
         setShowFeedbackForm(false);
         setFeedbackText("");
+        onFeedbackSuccess?.(currentFeedback);
       } finally {
         setIsSubmitting(false);
       }

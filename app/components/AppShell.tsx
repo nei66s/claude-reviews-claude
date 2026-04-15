@@ -4,10 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import Sidebar from "./Sidebar";
+import { requestJson } from "@/lib/api";
 import Topbar from "./Topbar";
 import MessageBubble from "./MessageBubble";
 import TaskProgressPanel from "./TaskProgressPanel";
-import TokenCostPanel from "./TokenCostPanel";
 import FilesView from "./FilesView";
 import WorkflowView from "./WorkflowView";
 import MonitorView from "./MonitorView";
@@ -97,27 +97,45 @@ export default function AppShell({
   }, [user, isLoading, router]);
 
   // Load Doutora Kitty interpretation when workspace changes
+  const refreshKittyInterpretation = async () => {
+    if (!chatEnabled) return;
+    try {
+      setKittyIsLoading(true);
+      const data = await requestJson("/doutora-kitty/interpretation", {
+        credentials: "include",
+        cache: "no-store",
+      });
+      setKittyInterpretation(data);
+    } catch (error) {
+      console.error("Error fetching Doutora Kitty interpretation:", error);
+    } finally {
+      setKittyIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeWorkspace === "doutora-kitty" && chatEnabled) {
-      const fetchInterpretation = async () => {
-        try {
-          setKittyIsLoading(true);
-          const response = await fetch("/api/doutora-kitty/interpretation", {
-            credentials: "include",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setKittyInterpretation(data);
-          }
-        } catch (error) {
-          console.error("Error fetching Doutora Kitty interpretation:", error);
-        } finally {
-          setKittyIsLoading(false);
-        }
-      };
-
-      fetchInterpretation();
+      refreshKittyInterpretation();
+      
+      // Refetch interpretation every 10 seconds to catch updates
+      const interval = setInterval(refreshKittyInterpretation, 10000);
+      return () => clearInterval(interval);
     }
+  }, [activeWorkspace, chatEnabled]);
+
+  // Listen for feedback updates from other components
+  useEffect(() => {
+    if (!chatEnabled) return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "feedbackUpdated" && activeWorkspace === "doutora-kitty") {
+        console.log("Feedback updated, refreshing Doutora Kitty interpretation...");
+        refreshKittyInterpretation();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, [activeWorkspace, chatEnabled]);
 
 
@@ -509,9 +527,8 @@ export default function AppShell({
               />
             ) : (
               <div className={`view chat-view chat-layout ${selectedArtifacts.length > 0 ? "with-artifact" : ""}`}>
-                <div className="messages">
+                  <div className="messages">
                   <div className="messages-inner">
-                    {user && activeChat?.id && <TokenCostPanel userId={user.id} chatId={activeChat.id} />}
                     {activeChat?.messages?.map((msg, idx) => (
                       <MessageBubble
                         key={idx}

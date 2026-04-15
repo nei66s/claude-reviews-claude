@@ -6,7 +6,7 @@ import { appendLog } from "@/lib/server/store";
 export async function POST(request: NextRequest) {
   if (!isAuthConfigured()) {
     return NextResponse.json(
-      { error: "Autenticacao indisponivel. Configure ADMIN_EMAIL, ADMIN_PASSWORD e AUTH_SECRET." },
+      { error: "Autenticacao indisponivel. Configure AUTH_SECRET." },
       { status: 503 },
     );
   }

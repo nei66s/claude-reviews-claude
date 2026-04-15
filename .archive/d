@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Deploy Rápido - Apenas digite a mensagem e pronto
+# Uso: ./d "mensagem" (ou deixa vazio para ser solicitado)
+
+cd /root/claude-reviews-claude
+
+MSG="${1:-}"
+
+if [ -z "$MSG" ]; then
+    echo "📝 Digite a mensagem:"
+    read -p "> " MSG
+    if [ -z "$MSG" ]; then
+        MSG="Update: $(date +%H:%M:%S)"
+    fi
+fi
+
+echo "🚀 Deployando: $MSG"
+echo ""
+
+git add -A && git commit -m "$MSG" --no-verify 2>/dev/null || true
+git push origin main && \
+git pull origin main && \
+npm install --omit=dev --no-save && \
+npm run build && \
+pm2 restart chocks agent-ts --wait-ready && \
+pm2 save && \
+echo "" && \
+echo "✅ Deploy OK! https://pimpotasma.com.br"

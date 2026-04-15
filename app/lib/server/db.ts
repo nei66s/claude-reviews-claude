@@ -32,12 +32,13 @@ export type DbUser = {
   email: string | null;
   display_name: string;
   avatar?: string | null;
+  password_hash?: string | null;
 };
 
 export async function findDbUserByEmail(email: string) {
   const db = getDb();
   const result = await db.query<DbUser>(
-    `select id, email, display_name
+    `select id, email, display_name, password_hash
      from public.app_users
      where lower(email) = lower($1)
      limit 1`,

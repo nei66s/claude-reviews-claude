@@ -36,13 +36,15 @@ export async function POST(request: NextRequest) {
     await db.query(`
       CREATE TABLE IF NOT EXISTS public.message_feedback (
         id BIGSERIAL PRIMARY KEY,
-        message_id BIGINT,
-        conversation_id TEXT,
+        message_id TEXT NOT NULL,
+        conversation_id TEXT NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
         user_id TEXT NOT NULL REFERENCES public.app_users(id) ON DELETE CASCADE,
         feedback TEXT NOT NULL CHECK (feedback IN ('like', 'dislike', 'neutral')),
         feedback_text TEXT,
+        retry_count INT NOT NULL DEFAULT 0,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE(message_id, user_id)
       )
     `);
 

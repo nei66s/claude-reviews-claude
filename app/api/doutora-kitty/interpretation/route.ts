@@ -6,9 +6,12 @@ import { getPsychologicalProfile } from "@/lib/server/psychological-profile";
 export async function GET(request: NextRequest) {
   try {
     const user = requireUser(request);
-    
+    // LOGS DE DEPURAÇÃO
+    console.log("[Kitty] Authorization header:", request.headers.get("authorization"));
+    console.log("[Kitty] Resolved user:", user);
+
     let userId = user?.id;
-    
+
     // Se não estiver autenticado, usar demo-user
     if (!userId) {
       userId = "demo-user";
@@ -75,7 +78,14 @@ export async function GET(request: NextRequest) {
       feedbackHistory,
     );
 
-    return NextResponse.json(interpretation);
+    const response = NextResponse.json(interpretation);
+    
+    // Disable caching to show updated analysis
+    response.headers.set('Cache-Control', 'no-cache, no-store, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error) {
     console.error("Error generating Doutora Kitty interpretation:", error);
     return NextResponse.json(
