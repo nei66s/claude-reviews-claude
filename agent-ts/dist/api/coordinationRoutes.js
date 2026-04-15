@@ -10,6 +10,7 @@
 import { Router } from 'express';
 import { createTeam, getInbox, markAsRead, sendMessage, getTeam, getAllTeams, registerAgent, updateAgentStatus, getMessageHistory, deleteTeam, } from '../coordination/index.js';
 import { spawnWorker, getTeamWorkers } from '../coordination/spawner.js';
+import { ensureFamilyTeamExists, createFamilyWorkflow, createWorkflowFromTemplate, listFamilyMembers, WORKFLOW_TEMPLATES, } from '../coordination/family-service.js';
 const router = Router();
 // Create a new team
 router.post('/team/create', async (req, res) => {
@@ -168,6 +169,78 @@ router.delete('/team/:teamId', async (req, res) => {
     }
     catch (error) {
         console.error('Failed to delete team', error);
+        res.status(500).json({ error: String(error) });
+    }
+});
+// ============= PIMPOTASMA FAMILY AGENTS =============
+// List all family members
+router.get('/family/members', async (req, res) => {
+    try {
+        const members = listFamilyMembers();
+        res.json({ members, count: members.length });
+    }
+    catch (error) {
+        console.error('Failed to list family members', error);
+        res.status(500).json({ error: String(error) });
+    }
+});
+// Ensure family team exists or create it
+router.post('/family/init', async (req, res) => {
+    try {
+        const team = await ensureFamilyTeamExists();
+        res.json({ success: true, team });
+    }
+    catch (error) {
+        console.error('Failed to initialize family team', error);
+        res.status(500).json({ error: String(error) });
+    }
+});
+// Create a workflow with family members
+// Example: POST /api/coordination/family/workflow
+// Body: { goal: "Lançar novo produto", steps: [{ agent: "pimpim", task: "..." }, ...] }
+router.post('/family/workflow', async (req, res) => {
+    try {
+        const { goal, description, steps } = req.body;
+        if (!goal || !steps || !Array.isArray(steps)) {
+            return res.status(400).json({ error: 'Missing goal or steps array' });
+        }
+        const workflow = await createFamilyWorkflow({ goal, description, steps });
+        res.json({ success: true, workflow });
+    }
+    catch (error) {
+        console.error('Failed to create family workflow', error);
+        res.status(500).json({ error: String(error) });
+    }
+});
+// List available workflow templates
+router.get('/family/templates', async (req, res) => {
+    try {
+        const templates = Object.entries(WORKFLOW_TEMPLATES).map(([key, template]) => ({
+            key,
+            goal: template.goal,
+            description: template.description,
+            stepsCount: template.steps.length,
+        }));
+        res.json({ templates, count: templates.length });
+    }
+    catch (error) {
+        console.error('Failed to list templates', error);
+        res.status(500).json({ error: String(error) });
+    }
+});
+// Create workflow from template
+// Example: POST /api/coordination/family/workflow-template/launch_product
+router.post('/family/workflow-template/:templateKey', async (req, res) => {
+    try {
+        const { templateKey } = req.params;
+        if (!templateKey) {
+            return res.status(400).json({ error: 'Missing templateKey' });
+        }
+        const workflow = await createWorkflowFromTemplate(templateKey);
+        res.json({ success: true, workflow });
+    }
+    catch (error) {
+        console.error('Failed to create workflow from template', error);
         res.status(500).json({ error: String(error) });
     }
 });

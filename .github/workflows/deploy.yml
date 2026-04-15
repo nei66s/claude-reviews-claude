@@ -37,10 +37,17 @@ jobs:
             echo "Installing dependencies..."
             npm ci --no-audit --no-fund
 
+            echo "Installing agent-ts dependencies..."
+            (cd agent-ts && npm ci --no-audit --no-fund)
+
             echo "Building..."
             npm run build
 
+            echo "Building agent-ts..."
+            (cd agent-ts && npm run build)
+
             echo "Reloading pm2..."
-            pm2 reload app
+            pm2 startOrReload ecosystem.config.js --env production
+            pm2 save
 
             echo "Deploy finished."

@@ -8,6 +8,7 @@
  * - Provide warnings when approaching limits
  */
 import { query, withTransaction } from './db.js';
+import { circuitBreakerManager } from './instincts/circuit-breaker.js';
 const TOKENS_PER_HOUR_PER_USER = 100_000;
 const TOKENS_PER_DAY_PER_USER = 500_000;
 const TOKENS_PER_MONTH_PER_USER = 5_000_000;
@@ -135,6 +136,14 @@ export async function recordUsage(userId, chatId, tokens) {
         const newHourly = row.tokens_used_this_hour + tokens;
         const newDaily = row.tokens_used_today + tokens;
         const newMonthly = row.tokens_used_this_month + tokens;
+        // ⚙️ Check circuit breaker on token limits
+        if (newDaily > TOKENS_PER_DAY_PER_USER * 0.95) {
+            circuitBreakerManager.recordFailure('token_limit');
+            console.warn(`⚠️ Daily token limit 95% reached for ${userId}`);
+        }
+        else {
+            circuitBreakerManager.recordSuccess('token_limit');
+        }
         // Update budget
         await client.query(`UPDATE token_budgets 
        SET tokens_used_this_hour = $2,

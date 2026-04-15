@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import pg from 'pg';
-dotenv.config();
+// Load .env.local first (before any other config)
+dotenv.config({ path: '.env.local' });
+dotenv.config(); // Then load .env as fallback
 const { Pool } = pg;
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {

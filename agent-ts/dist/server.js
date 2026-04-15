@@ -6,6 +6,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { runAgent, streamAgent } from './llm.js';
 import { initDatabase } from './db.js';
+import { instinctEngine } from './instincts/instinct-engine.js';
+import { cacheHandler } from './instincts/cache-handler.js';
+import { detectEngagement, processEmotionEvent } from './instincts/emotion-triggers.js';
 import { createConversation, deleteConversation, duplicateConversation, getWorkflowState, listConversations, renameConversation, saveConversationSnapshot, } from './store.js';
 import { getToolStatuses, runTool } from './tools.js';
 import { moderateText } from './moderation.js';
@@ -20,6 +23,7 @@ import auditRoutes from './api/auditRoutes.js';
 import coordinationRoutes from './api/coordinationRoutes.js';
 import coordinationExtendedRoutes from './api/coordinationExtendedRoutes.js';
 import queryEngineRoutes from './api/queryEngineRoutes.js';
+import agentPersonalityRoutes from './api/agentPersonalityRoutes.js';
 import { recordUsage } from './tokenManager.js';
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -436,6 +440,29 @@ app.post('/chat', async (req, res) => {
         }
         const user = getRequestUser(req);
         const latestUserMessage = getLastUserMessageText(messages);
+        // 🧠 Check instincts BEFORE calling LLM (< 50ms vs 2-5s)
+        const userInputTokens = Math.ceil(userText.length * 0.25);
+        const instinctResponse = await instinctEngine.process({
+            input: userText,
+            tokenCount: userInputTokens,
+            tokenLimit: 100_000,
+            userRole: user.id === 'admin' ? 'admin' : 'user',
+            action: 'query_process',
+            context: { chatId, userText },
+        });
+        if (instinctResponse && instinctResponse.skipLLM) {
+            // Instinct handled it!  ⚡
+            console.log(`[INSTINCT] ${instinctResponse.type}: ${instinctResponse.reason}`);
+            return res.json({
+                output_text: instinctResponse.action || instinctResponse.reason,
+                response: {
+                    output_text: instinctResponse.action || instinctResponse.reason,
+                    source: 'instinct',
+                    type: instinctResponse.type,
+                },
+                trace: [],
+            });
+        }
         const result = await runAgent(messages, {
             chatId,
             userId: user.id,
@@ -450,6 +477,17 @@ app.post('/chat', async (req, res) => {
             const inputTokens = Math.ceil(messages.reduce((sum, m) => sum + (m.content?.length || 0), 0) * 0.25);
             const outputTokens = Math.ceil((result.response.output_text?.length || 0) * 0.25);
             await recordUsage(user.id, chatId, inputTokens + outputTokens);
+        }
+        // 📦 Cache the response for future instincts
+        cacheHandler.store(userText, result.response.output_text || '', 0.95);
+        // 🎭 Track emotional responses (heuristic: check follow-up patterns)
+        const engagementEvent = detectEngagement({
+            userMessage: userText,
+            messageLength: userText.length,
+            followupQuickly: messages.length > 1, // If there's history, it's a follow-up
+        });
+        if (engagementEvent) {
+            processEmotionEvent(engagementEvent);
         }
         res.json({
             output_text: result.response.output_text,
@@ -725,6 +763,7 @@ async function startServer() {
     app.use('/api/coordination', coordinationExtendedRoutes);
     app.use('/api/tokens', queryEngineRoutes);
     app.use('/api/costs', queryEngineRoutes);
+    app.use('/api/agent', agentPersonalityRoutes);
     app.listen(port, () => console.log(`Chocks listening on ${port}`));
     // Graceful shutdown
     process.on('SIGTERM', () => {

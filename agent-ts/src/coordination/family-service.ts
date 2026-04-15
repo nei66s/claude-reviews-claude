@@ -33,7 +33,7 @@ export async function ensureFamilyTeamExists(): Promise<CoordinationTeam> {
     }
 
     // Create the team if it doesn't exist
-    const team = await createTeam(
+    const teamId = await createTeam(
       'family-pimpotasma',
       'chocks', // Chocks is the main coordinator
       {
@@ -41,12 +41,17 @@ export async function ensureFamilyTeamExists(): Promise<CoordinationTeam> {
       }
     )
 
+    const team = await getTeam(teamId)
+    if (!team) {
+      throw new Error(`Failed to load newly created team: ${teamId}`)
+    }
+
     // Register base family members
     const baseFamily = ['pimpim', 'betinha', 'bento', 'kitty', 'chubaka', 'repeteco', 'jorginho', 'tunico']
     for (const member of baseFamily) {
       const agent = getFamilyAgent(member)
       if (agent) {
-        await registerAgent(team.id, `${member}@family`, agent.role)
+        await registerAgent(teamId, `${member}@family`, agent.role)
       }
     }
 
