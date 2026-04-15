@@ -55,6 +55,7 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+  const version = "1.0";
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -74,9 +75,32 @@ export default function LoginPage() {
   return (
     <div style={pageStyle}>
       <div style={cardStyle}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", marginBottom: "22px", fontSize: "24px", fontWeight: 700 }}>
-          <span style={{ color: "#10b981", fontSize: "28px" }}>*</span>
-          <span>Chocks</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "22px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", fontSize: "24px", fontWeight: 700 }}>
+            <span style={{ color: "#10b981", fontSize: "28px" }}>*</span>
+            <span>Chocks</span>
+          </div>
+          <div
+            aria-label={`Versão ${version}`}
+            title={`Versão ${version}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "6px 10px",
+              borderRadius: "999px",
+              border: "1px solid rgba(16,185,129,0.28)",
+              background: "linear-gradient(180deg, rgba(16,185,129,0.18), rgba(16,185,129,0.08))",
+              color: "#a7f3d0",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              boxShadow: "0 10px 24px rgba(16,185,129,0.10)",
+              userSelect: "none",
+            }}
+          >
+            v{version}
+          </div>
         </div>
 
         <h1 style={{ margin: 0, fontSize: "34px", lineHeight: 1, letterSpacing: "-0.04em" }}>Bem-vindo de volta</h1>
