@@ -110,6 +110,11 @@ export function useChat(enabled = true) {
       });
     } catch (err) {
       console.error("Failed to load chats:", err);
+      const fallback = readLocalConversations();
+      if (fallback.length > 0) {
+        setConversations(fallback);
+        setActiveChat((prev) => prev ?? fallback[0] ?? null);
+      }
     }
   }, [enabled]);
 

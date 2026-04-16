@@ -43,6 +43,10 @@ export type ChatMessage = {
   role: "user" | "agent";
   content: string;
   streaming?: boolean;
+  agentId?: string | null;
+  helperAgentId?: string | null;
+  handoffLabel?: string | null;
+  collaborationLabel?: string | null;
 };
 
 export type StoredConversation = {
@@ -511,9 +515,24 @@ export async function listConversations(user: SessionUser) {
     }
 
     const messageResult = await db.query<
-      ChatMessage & { conversation_id: string; sort_order: number }
+      ChatMessage & {
+        conversation_id: string;
+        sort_order: number;
+        agentId: string | null;
+        helperAgentId: string | null;
+        handoffLabel: string | null;
+        collaborationLabel: string | null;
+      }
     >(
-      `select conversation_id, sort_order, role, content, streaming
+      `select conversation_id,
+              sort_order,
+              role,
+              content,
+              streaming,
+              agent_id as "agentId",
+              helper_agent_id as "helperAgentId",
+              handoff_label as "handoffLabel",
+              collaboration_label as "collaborationLabel"
        from public.messages
        where conversation_id = any($1::text[])
        order by conversation_id asc, sort_order asc, id asc`,
@@ -527,6 +546,10 @@ export async function listConversations(user: SessionUser) {
         role: row.role,
         content: row.content,
         streaming: row.streaming,
+        agentId: row.agentId ?? undefined,
+        helperAgentId: row.helperAgentId ?? undefined,
+        handoffLabel: row.handoffLabel ?? undefined,
+        collaborationLabel: row.collaborationLabel ?? undefined,
       });
       messagesByConversation.set(row.conversation_id, list);
     }
@@ -606,18 +629,33 @@ export async function upsertConversation(user: SessionUser, conversation: Stored
 
     for (const [index, message] of conversation.messages.entries()) {
       await db.query(
-        `insert into public.messages (conversation_id, sort_order, role, content, streaming)
-         values ($1, $2, $3, $4, $5)`,
+        `insert into public.messages (
+           conversation_id,
+           sort_order,
+           role,
+           content,
+           streaming,
+           agent_id,
+           helper_agent_id,
+           handoff_label,
+           collaboration_label
+         )
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           conversation.id,
           index,
           message.role,
           message.content,
           Boolean(message.streaming),
+          message.agentId ?? null,
+          message.helperAgentId ?? null,
+          message.handoffLabel ?? null,
+          message.collaborationLabel ?? null,
         ],
       );
     }
 
+    invalidateConversationsCache(ownerId);
     return;
   }
 
@@ -714,7 +752,14 @@ export async function duplicateConversation(
     const messages = await db.query<
       ChatMessage & { sort_order: number }
     >(
-      `select sort_order, role, content, streaming
+      `select sort_order,
+              role,
+              content,
+              streaming,
+              agent_id as "agentId",
+              helper_agent_id as "helperAgentId",
+              handoff_label as "handoffLabel",
+              collaboration_label as "collaborationLabel"
        from public.messages
        where conversation_id = $1
        order by sort_order asc, id asc`,
@@ -723,12 +768,33 @@ export async function duplicateConversation(
 
     for (const message of messages.rows) {
       await db.query(
-        `insert into public.messages (conversation_id, sort_order, role, content, streaming)
-         values ($1, $2, $3, $4, $5)`,
-        [nextId, message.sort_order, message.role, message.content, Boolean(message.streaming)],
+        `insert into public.messages (
+           conversation_id,
+           sort_order,
+           role,
+           content,
+           streaming,
+           agent_id,
+           helper_agent_id,
+           handoff_label,
+           collaboration_label
+         )
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          nextId,
+          message.sort_order,
+          message.role,
+          message.content,
+          Boolean(message.streaming),
+          message.agentId ?? null,
+          message.helperAgentId ?? null,
+          message.handoffLabel ?? null,
+          message.collaborationLabel ?? null,
+        ],
       );
     }
 
+    invalidateConversationsCache(ownerId);
     await appendLog(user, "info", "Conversa duplicada", { sourceId, nextId });
     return {
       id: nextId,
@@ -737,6 +803,10 @@ export async function duplicateConversation(
         role: message.role,
         content: message.content,
         streaming: Boolean(message.streaming),
+        agentId: message.agentId ?? undefined,
+        helperAgentId: message.helperAgentId ?? undefined,
+        handoffLabel: message.handoffLabel ?? undefined,
+        collaborationLabel: message.collaborationLabel ?? undefined,
       })),
     };
   }

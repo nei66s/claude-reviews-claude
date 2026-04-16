@@ -49,7 +49,7 @@ export async function getFeedbackHistory(userId: string) {
       mf.created_at,
       mf.conversation_id
      FROM public.message_feedback mf
-     LEFT JOIN public.messages m ON mf.message_id = m.id
+     LEFT JOIN public.messages m ON mf.message_id::text = m.id::text
      WHERE mf.user_id = $1
      ORDER BY mf.created_at DESC
      LIMIT 100`,

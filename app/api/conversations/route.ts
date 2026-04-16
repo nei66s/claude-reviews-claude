@@ -14,13 +14,7 @@ export async function GET(request: NextRequest) {
   }
 
   const response = NextResponse.json({ conversations: await listConversations(user) });
-  
-  // Cache por 30 segundos, com revalidação em background por até 1 minuto
-  response.headers.set(
-    "Cache-Control",
-    "private, max-age=30, stale-while-revalidate=30"
-  );
-  
+  response.headers.set("Cache-Control", "no-store");
   return response;
 }
 

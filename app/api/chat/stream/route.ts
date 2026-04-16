@@ -439,13 +439,40 @@ async function persistAssistantReply(
   prompt: string,
   messages: ChatMessage[],
   reply: string,
+  selectedAgentId: string,
+  helperAgentId: string | null,
 ) {
   if (!chatId) return;
+
+  const previousAgentId =
+    [...messages].reverse().find((message) => message?.role === "agent")?.agentId || "chocks";
+  const isFirstMessage = messages.length === 0;
+  const showHandoff =
+    selectedAgentId !== previousAgentId || (isFirstMessage && selectedAgentId !== "chocks");
+
+  const selectedAgent = getAgentProfile(selectedAgentId);
+  const helperAgent = helperAgentId ? getAgentProfile(helperAgentId) : null;
+  const handoffLabel = showHandoff ? `${selectedAgent.name} assumiu a conversa` : null;
+  const collaborationLabel =
+    helperAgent && helperAgent.id !== selectedAgent.id
+      ? `${selectedAgent.name} chamou ${helperAgent.name} para ajudar`
+      : null;
 
   await upsertConversation(user, {
     id: chatId,
     title: prompt.slice(0, 30) || "Nova conversa",
-    messages: [...messages, { role: "agent", content: reply, streaming: false }],
+    messages: [
+      ...messages,
+      {
+        role: "agent",
+        content: reply,
+        streaming: false,
+        agentId: selectedAgentId,
+        helperAgentId,
+        handoffLabel,
+        collaborationLabel,
+      },
+    ],
   });
 }
 
@@ -970,9 +997,10 @@ export async function POST(request: NextRequest) {
   const selectedAgentId = getAgentProfile(
     typeof body?.selectedAgentId === "string" ? body.selectedAgentId.trim() : "chocks",
   ).id;
-  const helperAgentId = getAgentProfile(
-    typeof body?.helperAgentId === "string" ? body.helperAgentId.trim() : "chocks",
-  ).id;
+  const helperAgentId =
+    typeof body?.helperAgentId === "string" && body.helperAgentId.trim()
+      ? getAgentProfile(body.helperAgentId.trim()).id
+      : null;
   const messages = Array.isArray(body?.messages) ? (body.messages as ChatMessage[]) : [];
   const previousAssistantText = getPreviousAssistantText(messages);
   const lastUserMessage = [...messages]
@@ -989,7 +1017,15 @@ export async function POST(request: NextRequest) {
   const directPdfResult = await getDirectPdfResult(user, chatId, prompt, previousAssistantText);
 
   if (directDesktopResult) {
-    await persistAssistantReply(user, chatId, prompt, messages, directDesktopResult.outputText);
+    await persistAssistantReply(
+      user,
+      chatId,
+      prompt,
+      messages,
+      directDesktopResult.outputText,
+      selectedAgentId,
+      helperAgentId,
+    );
     await appendLog(user, "info", "Listagem direta da Área de Trabalho", {
       chatId,
       fullAccess: settings.fullAccess,
@@ -1023,7 +1059,15 @@ export async function POST(request: NextRequest) {
   }
 
   if (directPdfResult) {
-    await persistAssistantReply(user, chatId, prompt, messages, directPdfResult.outputText);
+    await persistAssistantReply(
+      user,
+      chatId,
+      prompt,
+      messages,
+      directPdfResult.outputText,
+      selectedAgentId,
+      helperAgentId,
+    );
     await appendLog(user, "info", "Geracao direta de PDF", {
       chatId,
       totalMs: Date.now() - startedAt,
@@ -1368,7 +1412,7 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encodeEvent("trace", memoryTrace));
         }
 
-        await persistAssistantReply(user, chatId, prompt, messages, finalText);
+        await persistAssistantReply(user, chatId, prompt, messages, finalText, selectedAgentId, helperAgentId);
         await appendLog(user, "info", "Resposta enviada", {
           chatId,
           model,

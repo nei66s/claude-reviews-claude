@@ -62,9 +62,22 @@ export async function initDatabase() {
       content TEXT NOT NULL DEFAULT '',
       trace_json JSONB,
       streaming BOOLEAN NOT NULL DEFAULT FALSE,
+      agent_id TEXT,
+      helper_agent_id TEXT,
+      handoff_label TEXT,
+      collaboration_label TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE (conversation_id, sort_order)
     );
+
+    ALTER TABLE IF EXISTS messages
+      ADD COLUMN IF NOT EXISTS agent_id TEXT;
+    ALTER TABLE IF EXISTS messages
+      ADD COLUMN IF NOT EXISTS helper_agent_id TEXT;
+    ALTER TABLE IF EXISTS messages
+      ADD COLUMN IF NOT EXISTS handoff_label TEXT;
+    ALTER TABLE IF EXISTS messages
+      ADD COLUMN IF NOT EXISTS collaboration_label TEXT;
 
     CREATE TABLE IF NOT EXISTS message_attachments (
       id BIGSERIAL PRIMARY KEY,
