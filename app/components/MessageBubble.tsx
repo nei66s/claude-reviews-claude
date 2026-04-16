@@ -117,11 +117,17 @@ export default function MessageBubble({
     <div className={`message ${message.role} ${message.streaming ? "is-streaming" : ""}`}>
       <div className="message-row">
         {isAgent && (
-          <div className={`message-badge ${helperAgentProfile ? "with-helper" : ""}`}>
-            <AgentFace agent={agentProfile} size={40} />
+          <div className={`message-badge-group ${helperAgentProfile ? "with-helper" : ""}`}>
+            <div className="message-badge message-badge-primary" title={agentProfile.name}>
+              <div className="message-badge-inner">
+                <AgentFace agent={agentProfile} size={40} />
+              </div>
+            </div>
             {helperAgentProfile ? (
-              <div className="message-helper-badge" title={`${helperAgentProfile.name} ajudando`}>
-                <AgentFace agent={helperAgentProfile} size={20} className="helper" />
+              <div className="message-badge message-badge-helper" title={`${helperAgentProfile.name} ajudando`}>
+                <div className="message-badge-inner">
+                  <AgentFace agent={helperAgentProfile} size={40} className="helper" />
+                </div>
               </div>
             ) : null}
           </div>

@@ -20,15 +20,21 @@ Tudo foi integrado:
 
 ## 🚀 Comece Agora (2 minutos)
 
-### 1. Inicie o Servidor
+### 1. Suba tudo (recomendado)
+```bash
+npm run dev
+```
+
+### 2. (Opcional) Subir separado
+Backend:
 ```bash
 cd agent-ts
 npm run dev  # ou 'bun dev'
 ```
 
-### 2. Abra o Frontend (em outro terminal)
+Frontend:
 ```bash
-npm run dev
+npm run dev:web
 ```
 
 ### 3. Veja o Chocks

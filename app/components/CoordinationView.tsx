@@ -259,7 +259,7 @@ export function CoordinationView() {
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '32px', marginRight: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', overflow: 'hidden' }}>
+                        <div style={{ fontSize: '32px', marginRight: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', overflow: 'hidden' }}>
                           {member.name === 'Pimpim' ? (
                             <Image src="/pimpim.png" alt="Pimpim" width={40} height={40} style={{ objectFit: 'cover' }} />
                           ) : member.name === 'Betinha' ? (

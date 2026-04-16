@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3000",
-    "dev:all": "concurrently \"npm run dev\" \"cd agent-ts && npm run dev\"",
+    "dev:web": "next dev --port 3000",
+    "dev:backend": "cd agent-ts && npm run dev",
+    "dev:all": "concurrently -n web,coordination -c \"cyan,magenta\" \"npm run dev:web\" \"npm run dev:backend\"",
+    "dev": "npm run dev:all",
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "eslint"

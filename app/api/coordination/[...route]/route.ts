@@ -7,6 +7,23 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
+function buildBackendUnavailableResponse(fetchError: unknown) {
+  const backendHint =
+    process.env.NODE_ENV === 'development'
+      ? 'Run `npm run dev` (or `npm run dev:backend`) to start the coordination backend on port 3001.'
+      : 'Ensure the coordination backend is running and BACKEND_URL is configured.'
+
+  return NextResponse.json(
+    {
+      error: 'Backend coordination service unavailable',
+      backendUrl: BACKEND_URL,
+      hint: backendHint,
+      message: String(fetchError),
+    },
+    { status: 503 },
+  )
+}
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ route: string[] }> }) {
   try {
     const { route } = await params
@@ -29,14 +46,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json(data, { status: response.status })
     } catch (fetchError) {
       console.error('[Coordination API] Backend connection failed:', fetchError)
-      return NextResponse.json(
-        { 
-          error: 'Backend coordination service unavailable',
-          details: 'Make sure the Express server is running on port 3001',
-          message: String(fetchError),
-        },
-        { status: 503 }
-      )
+      return buildBackendUnavailableResponse(fetchError)
     }
   } catch (error) {
     console.error('[Coordination API Proxy Error]', error)
@@ -75,14 +85,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json(data, { status: response.status })
     } catch (fetchError) {
       console.error('[Coordination API] Backend connection failed:', fetchError)
-      return NextResponse.json(
-        { 
-          error: 'Backend coordination service unavailable',
-          details: 'Make sure the Express server is running on port 3001',
-          message: String(fetchError),
-        },
-        { status: 503 }
-      )
+      return buildBackendUnavailableResponse(fetchError)
     }
   } catch (error) {
     console.error('[Coordination API Proxy Error]', error)

@@ -61,25 +61,32 @@ Next.js Frontend (port 3000)
 
 ## Running the System
 
-### Start Expression Backend (New Location)
+### Start Everything (Recommended)
+```bash
+# From root directory
+npm run dev
+# Runs Next.js (3000) + Express backend (3001)
+```
+
+### Start Express Backend Only
 ```bash
 # From root directory
 cd agent-ts
 npm run dev
-# Backend now runs on port 3001
+# Backend runs on port 3001
 ```
 
-### Start Next.js Frontend (Unchanged)
+### Start Next.js Frontend Only
 ```bash
 # From root directory
-npm run dev
+npm run dev:web
 # Frontend runs on port 3000
 ```
 
 ### Environment Variables
 Set `BACKEND_URL` to override the proxy target:
 ```bash
-BACKEND_URL=http://api.example.com:3001 npm run dev
+BACKEND_URL=http://api.example.com:3001 npm run dev:web
 ```
 
 ## API Endpoints Now Available
