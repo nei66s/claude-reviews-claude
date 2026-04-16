@@ -12,12 +12,24 @@ import { appendConversationMessages, appendLog, readAppSettings, getWorkflowStat
 import { requireUser } from "@/lib/server/request";
 import { chatToolDefinitions, runChatTool } from "@/lib/server/chat-tools";
 import { listFileEntries } from "@/lib/server/files";
-import { buildAgentRuntimeInstructions, getAgentProfile } from "@/lib/familyRouting";
 import { getPsychologicalProfile, generateProfilePrompt, type PsychologicalProfile } from "@/lib/server/psychological-profile";
 
 export const runtime = "nodejs";
 
 const encoder = new TextEncoder();
+
+type CoordinationMember = {
+  id: string;
+  name?: string;
+  role?: string;
+  personality?: string;
+  expertise?: string[];
+};
+
+type CoordinationData = {
+  teamId: string | null;
+  members: CoordinationMember[];
+};
 
 /** Strip bare JSON objects/arrays the model sometimes leaks into response text. */
 function cleanText(text: string): string {
@@ -143,6 +155,103 @@ function parsePositiveInt(value: string | undefined) {
   if (!value) return null;
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function getCoordinationMember(members: CoordinationMember[], agentId: string | null) {
+  const safeId = agentId || "chocks";
+  return members.find((member) => member.id === safeId) ?? null;
+}
+
+function pickCoordinationAgentId(members: CoordinationMember[], preferredId: string | null) {
+  if (preferredId && members.some((member) => member.id === preferredId)) {
+    return preferredId;
+  }
+
+  const chocks = members.find((member) => member.id === "chocks");
+  return chocks?.id ?? members[0]?.id ?? "chocks";
+}
+
+async function fetchCoordinationData(origin: string): Promise<CoordinationData> {
+  const initResponse = await fetch(`${origin}/api/coordination/family/init`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!initResponse.ok) {
+    const errorText = await initResponse.text().catch(() => "");
+    throw new Error(errorText || "Falha ao inicializar equipe de coordenação.");
+  }
+
+  const initPayload = await initResponse.json().catch(() => null);
+  const teamId = typeof initPayload?.team?.id === "string" ? initPayload.team.id : null;
+
+  if (!teamId) {
+    throw new Error("Equipe de coordenação indisponível.");
+  }
+
+  const membersResponse = await fetch(`${origin}/api/coordination/family/members`);
+  if (!membersResponse.ok) {
+    const errorText = await membersResponse.text().catch(() => "");
+    throw new Error(errorText || "Falha ao carregar membros da coordenação.");
+  }
+
+  const membersPayload = await membersResponse.json().catch(() => null);
+  const members = Array.isArray(membersPayload?.members) ? membersPayload.members : [];
+
+  return {
+    teamId,
+    members: members as CoordinationMember[],
+  };
+}
+
+async function sendCoordinationMessage(params: {
+  origin: string;
+  teamId: string;
+  fromAgentId: string;
+  toAgentId: string | null;
+  messageType: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const response = await fetch(`${params.origin}/api/coordination/team/${params.teamId}/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fromAgentId: params.fromAgentId,
+      toAgentId: params.toAgentId,
+      messageType: params.messageType,
+      content: params.content,
+      metadata: params.metadata || {},
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(errorText || "Falha ao enviar mensagem para a coordenação.");
+  }
+
+  return response.json().catch(() => null);
+}
+
+function buildCoordinationAgentInstructions(member: CoordinationMember | null) {
+  if (!member) return "";
+
+  const roleLine = member.role ? `Cargo: ${member.role}.` : "";
+  const personalityLine = member.personality ? `Personalidade: ${member.personality}.` : "";
+  const expertiseLine = Array.isArray(member.expertise) && member.expertise.length > 0
+    ? `Especialidades: ${member.expertise.join(", ")}.`
+    : "";
+  const name = member.name || member.id;
+
+  return [
+    `Agente selecionado: ${name}.`,
+    roleLine,
+    personalityLine,
+    expertiseLine,
+    "Responda como esse agente, mantendo a voz e o jeito descritos acima.",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function normalizePrompt(prompt: string) {
@@ -440,7 +549,7 @@ async function persistAssistantReply(
   messages: ChatMessage[],
   reply: string,
   selectedAgentId: string,
-  helperAgentId: string | null,
+  selectedAgentName: string | null,
 ) {
   if (!chatId) return;
 
@@ -450,13 +559,8 @@ async function persistAssistantReply(
   const showHandoff =
     selectedAgentId !== previousAgentId || (isFirstMessage && selectedAgentId !== "chocks");
 
-  const selectedAgent = getAgentProfile(selectedAgentId);
-  const helperAgent = helperAgentId ? getAgentProfile(helperAgentId) : null;
-  const handoffLabel = showHandoff ? `${selectedAgent.name} assumiu a conversa` : null;
-  const collaborationLabel =
-    helperAgent && helperAgent.id !== selectedAgent.id
-      ? `${selectedAgent.name} chamou ${helperAgent.name} para ajudar`
-      : null;
+  const resolvedAgentName = selectedAgentName || selectedAgentId;
+  const handoffLabel = showHandoff ? `${resolvedAgentName} assumiu a conversa` : null;
 
   const title = prompt.slice(0, 30) || "Nova conversa";
   const { insertedMessageIds } = await appendConversationMessages(user, chatId, title, [
@@ -470,9 +574,9 @@ async function persistAssistantReply(
       content: reply,
       streaming: false,
       agentId: selectedAgentId,
-      helperAgentId,
+      helperAgentId: null,
       handoffLabel,
-      collaborationLabel,
+      collaborationLabel: null,
     },
   ]);
 
@@ -505,8 +609,7 @@ function buildInstructions(
   memoryMode: string,
   workflow?: Awaited<ReturnType<typeof import('@/lib/server/store').getWorkflowState>>,
   psychProfile?: PsychologicalProfile | null,
-  selectedAgentId?: string | null,
-  helperAgentId?: string | null,
+  selectedAgent?: CoordinationMember | null,
 ) {
   let workflowSection = "";
 
@@ -548,7 +651,7 @@ Confiança desta análise: ${Math.round(psychProfile.confidenceScore * 100)}%
 (Baseado em ${psychProfile.totalFeedback} respostas avaliadas: ${psychProfile.likeCount} positivas, ${psychProfile.dislikeCount} negativas)`;
   }
 
-  const agentSection = buildAgentRuntimeInstructions(selectedAgentId, helperAgentId);
+  const agentSection = buildCoordinationAgentInstructions(selectedAgent ?? null);
 
   return `${BASE_INSTRUCTIONS}
 
@@ -997,13 +1100,16 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => null);
   const chatId = typeof body?.chatId === "string" ? body.chatId.trim() : "";
-  const selectedAgentId = getAgentProfile(
-    typeof body?.selectedAgentId === "string" ? body.selectedAgentId.trim() : "chocks",
-  ).id;
-  const helperAgentId =
-    typeof body?.helperAgentId === "string" && body.helperAgentId.trim()
-      ? getAgentProfile(body.helperAgentId.trim()).id
-      : null;
+  const origin = new URL(request.url).origin;
+  const coordinationData = await fetchCoordinationData(origin);
+  const requestedAgentId = typeof body?.selectedAgentId === "string" ? body.selectedAgentId.trim() : null;
+  const selectedAgentId = pickCoordinationAgentId(coordinationData.members, requestedAgentId);
+  const selectedAgent = getCoordinationMember(coordinationData.members, selectedAgentId);
+  const selectedAgentName = selectedAgent?.name || selectedAgentId;
+  const coordinationTeamId =
+    typeof body?.coordinationTeamId === "string" && body.coordinationTeamId.trim()
+      ? body.coordinationTeamId.trim()
+      : coordinationData.teamId;
   const messages = Array.isArray(body?.messages) ? (body.messages as ChatMessage[]) : [];
   const previousAssistantText = getPreviousAssistantText(messages);
   const lastUserMessage = [...messages]
@@ -1014,6 +1120,23 @@ export async function POST(request: NextRequest) {
   if (!prompt) {
     return new Response("A user message is required.", { status: 400 });
   }
+
+  if (!coordinationTeamId) {
+    return new Response("Coordination team not available.", { status: 503 });
+  }
+
+  await sendCoordinationMessage({
+    origin,
+    teamId: coordinationTeamId,
+    fromAgentId: user.id,
+    toAgentId: selectedAgentId,
+    messageType: "direct_message",
+    content: prompt,
+    metadata: {
+      chatId,
+      direction: "user_to_agent",
+    },
+  });
 
   const startedAt = Date.now();
   const directDesktopResult = await getDirectDesktopResult(prompt, previousAssistantText);
@@ -1027,8 +1150,20 @@ export async function POST(request: NextRequest) {
       messages,
       directDesktopResult.outputText,
       selectedAgentId,
-      helperAgentId,
+      selectedAgentName,
     );
+    await sendCoordinationMessage({
+      origin,
+      teamId: coordinationTeamId,
+      fromAgentId: selectedAgentId,
+      toAgentId: user.id,
+      messageType: "direct_message",
+      content: directDesktopResult.outputText,
+      metadata: {
+        chatId,
+        direction: "agent_to_user",
+      },
+    });
     await appendLog(user, "info", "Listagem direta da Área de Trabalho", {
       chatId,
       fullAccess: settings.fullAccess,
@@ -1070,8 +1205,20 @@ export async function POST(request: NextRequest) {
       messages,
       directPdfResult.outputText,
       selectedAgentId,
-      helperAgentId,
+      selectedAgentName,
     );
+    await sendCoordinationMessage({
+      origin,
+      teamId: coordinationTeamId,
+      fromAgentId: selectedAgentId,
+      toAgentId: user.id,
+      messageType: "direct_message",
+      content: directPdfResult.outputText,
+      metadata: {
+        chatId,
+        direction: "agent_to_user",
+      },
+    });
     await appendLog(user, "info", "Geracao direta de PDF", {
       chatId,
       totalMs: Date.now() - startedAt,
@@ -1139,7 +1286,6 @@ export async function POST(request: NextRequest) {
               fullAccess: settings.fullAccess,
               permissionMode: settings.permissionMode,
               selectedAgentId,
-              helperAgentId: helperAgentId === "chocks" ? undefined : helperAgentId,
             },
           }),
         );
@@ -1154,8 +1300,7 @@ export async function POST(request: NextRequest) {
               settings.memoryMode,
               activeWorkflow ?? undefined,
               psychProfile,
-              selectedAgentId,
-              helperAgentId === "chocks" ? undefined : helperAgentId,
+              selectedAgent,
             ),
             input: modelInput,
             tools: chatToolDefinitions,
@@ -1424,8 +1569,20 @@ export async function POST(request: NextRequest) {
           messages,
           finalText,
           selectedAgentId,
-          helperAgentId,
+          selectedAgentName,
         );
+        await sendCoordinationMessage({
+          origin,
+          teamId: coordinationTeamId,
+          fromAgentId: selectedAgentId,
+          toAgentId: user.id,
+          messageType: "direct_message",
+          content: finalText,
+          metadata: {
+            chatId,
+            direction: "agent_to_user",
+          },
+        });
         await appendLog(user, "info", "Resposta enviada", {
           chatId,
           model,

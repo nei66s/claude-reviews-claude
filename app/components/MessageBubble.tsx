@@ -6,9 +6,17 @@ import { Download, FileText, PanelsTopLeft } from "lucide-react";
 
 import { Artifact, extractWebSources, pickPrimaryArtifact } from "../lib/artifactDetection";
 import { Message, TraceEntry, requestJson } from "../lib/api";
-import { AgentProfile, getAgentProfile } from "../lib/familyRouting";
+import { getAgentProfile } from "../lib/familyRouting";
 import CodeBlock from "./CodeBlock";
 import MessageFeedback from "./MessageFeedback";
+
+type AgentProfile = {
+  id: string;
+  name: string;
+  subtitle?: string;
+  avatarSrc?: string;
+  fallbackEmoji: string;
+};
 
 function getMemoryCaptureTrace(trace: TraceEntry[] | undefined) {
   if (!Array.isArray(trace)) return null;
@@ -82,6 +90,21 @@ function SourcesList({ trace }: { trace?: TraceEntry[] }) {
   );
 }
 
+function buildAgentProfile(agentId?: string | null) {
+  const safeId = agentId?.trim() || "agente";
+  const fallbackProfile = getAgentProfile(safeId);
+  const displayName = safeId === "agente" ? "Agente" : fallbackProfile.name || safeId;
+  const fallback = fallbackProfile.fallbackEmoji || displayName.slice(0, 1).toUpperCase() || "A";
+
+  return {
+    id: safeId,
+    name: displayName,
+    subtitle: fallbackProfile.subtitle || (safeId === "agente" ? "Agente" : `ID ${safeId}`),
+    avatarSrc: fallbackProfile.avatarSrc,
+    fallbackEmoji: fallback,
+  } satisfies AgentProfile;
+}
+
 function AgentFace({ agent, size, className }: { agent: AgentProfile; size: number; className?: string }) {
   if (agent.avatarSrc) {
     return <Image src={agent.avatarSrc} alt={agent.name} width={size} height={size} className={className} />;
@@ -104,8 +127,8 @@ export default function MessageBubble({
   onOpenArtifact?: (artifact: Artifact) => void;
 }) {
   const isAgent = message.role === "agent";
-  const agentProfile = getAgentProfile(message.agentId);
-  const helperAgentProfile = message.helperAgentId ? getAgentProfile(message.helperAgentId) : null;
+  const agentProfile = buildAgentProfile(message.agentId);
+  const helperAgentProfile = message.helperAgentId ? buildAgentProfile(message.helperAgentId) : null;
   const memoryNotice = isAgent ? getMemoryCaptureTrace(message.trace) : null;
   const pdfNotice = isAgent ? getPdfTrace(message.trace) : null;
   const primaryArtifact = isAgent ? pickPrimaryArtifact(message.content, message.trace) : null;

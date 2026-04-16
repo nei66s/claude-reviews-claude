@@ -148,7 +148,7 @@ curl -X POST http://localhost:3000/api/coordination/family/workflow \
 
 ### 🐴 Pimpim
 - **Role**: CEO
-- **Personalidade**: Estrategista, visionário, lider criativo
+- **Personalidade**: Estrategista, visionário, líder criativo
 - **Expertise**: Estratégia, liderança, delegação, visão
 - **Melhor para**: Planejamento estratégico, aprovações finais, decisões críticas
 
@@ -170,7 +170,7 @@ curl -X POST http://localhost:3000/api/coordination/family/workflow \
 - **Expertise**: Design, criatividade, estética, comunicação visual
 - **Melhor para**: Comunicação visual, design, branding, conceito
 
-### 🍽️ Chubaka
+### 🍽️ Chubas
 - **Role**: Quality
 - **Personalidade**: Testador feliz, sempre comendo, palato expert
 - **Expertise**: Qualidade, teste, paladar, feedback sensorial
@@ -212,7 +212,7 @@ Coordena lançamento completo com todas as perspectivas:
 1. 🐴 Pimpim (CEO)    → Define visão e estratégia do lançamento
 2. 💼 Betinha (CFO)   → Valida viabilidade financeira
 3. 🐱 Kitty (Design)  → Cria comunicação visual
-4. 🍽️ Chubaka (QA)   → Testa e aprova qualidade
+4. 🍽️ Chubas (QA)   → Testa e aprova qualidade
 5. 🐻 Bento (QA)      → Code review e riscos
 6. 🛡️ Jorginho (Seg)  → Valida segurança
 ```
@@ -245,7 +245,7 @@ Fluxo estruturado para resolver problemas:
 Iteração criativa com validação:
 
 ```
-1. 🐱 Kitty           → Ideação criativa e concepto visual
+1. 🐱 Kitty           → Ideação criativa e conceito visual
 2. 🐴 Pimpim          → Valida alinhamento com estratégia
 3. 🐻 Bento           → Feedback crítico
 4. 🐱 Kitty           → Iteração final
@@ -322,7 +322,7 @@ curl -X POST http://localhost:3000/api/coordination/family/workflow-template/res
 
 ---
 
-## 🔧 Integração com seu Cód igo
+## 🔧 Integração com seu Código
 
 ### Em TypeScript/Node
 

@@ -2,9 +2,20 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Attachment, Chat, Message, requestJson, TraceEntry } from "../lib/api";
-import { getAgentProfile, triageAgentFromMessage } from "../lib/familyRouting";
+import { findExplicitCoordinationAgentId, triageCoordinationAgent } from "../lib/coordinationRouting";
 
 const LOCAL_CHAT_CACHE_KEY = "chocks_conversations_cache_v1";
+
+type CoordinationAgentProfile = {
+  id: string;
+  name: string;
+  role?: string;
+};
+
+type CoordinationData = {
+  teamId: string | null;
+  agents: CoordinationAgentProfile[];
+};
 
 function readLocalConversations(): Chat[] {
   if (typeof window === "undefined") return [];
@@ -72,11 +83,50 @@ function getLastAgentId(chat: Chat | null) {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index];
     if (message?.role === "agent") {
-      return message.agentId || "chocks";
+      return message.agentId || null;
     }
   }
 
-  return "chocks";
+  return null;
+}
+
+function getCoordinationAgent(
+  agents: CoordinationAgentProfile[],
+  agentId: string | null,
+): CoordinationAgentProfile {
+  const safeId = agentId || "chocks";
+  return agents.find((agent) => agent.id === safeId) ?? { id: safeId, name: safeId };
+}
+
+function pickDefaultAgentId(agents: CoordinationAgentProfile[], preferredId: string | null) {
+  if (preferredId && agents.some((agent) => agent.id === preferredId)) {
+    return preferredId;
+  }
+
+  const chocks = agents.find((agent) => agent.id === "chocks");
+  return chocks?.id ?? agents[0]?.id ?? "chocks";
+}
+
+async function requestTriageAgentId(params: {
+  input: string;
+  agents: CoordinationAgentProfile[];
+  previousAgentId: string | null;
+}) {
+  try {
+    const data = await requestJson("/coordination/triage", {
+      method: "POST",
+      body: JSON.stringify({
+        input: params.input,
+        agents: params.agents,
+        previousAgentId: params.previousAgentId,
+      }),
+    });
+
+    return typeof data?.agentId === "string" ? data.agentId : null;
+  } catch (error) {
+    console.error("Failed to triage agent with LLM:", error);
+    return null;
+  }
 }
 
 export function useChat(enabled = true) {
@@ -85,6 +135,9 @@ export function useChat(enabled = true) {
   const [isThinking, setIsThinking] = useState(false);
   const sendLockRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [coordinationTeamId, setCoordinationTeamId] = useState<string | null>(null);
+  const [coordinationAgents, setCoordinationAgents] = useState<CoordinationAgentProfile[]>([]);
+  const coordinationLoadRef = useRef<Promise<CoordinationData> | null>(null);
 
   const persistConversation = useCallback(async (chat: Chat) => {
     await requestJson("/conversations", {
@@ -92,6 +145,53 @@ export function useChat(enabled = true) {
       body: JSON.stringify({ id: chat.id, title: chat.title }),
     });
   }, []);
+
+  const loadCoordinationData = useCallback(async (): Promise<CoordinationData> => {
+    if (!enabled) {
+      return { teamId: null, agents: [] };
+    }
+
+    if (coordinationLoadRef.current) {
+      return coordinationLoadRef.current;
+    }
+
+    coordinationLoadRef.current = (async () => {
+      const initResponse = await requestJson("/coordination/family/init", { method: "POST" });
+      const team = initResponse?.team;
+
+      if (!team?.id) {
+        throw new Error("Equipe de coordenação não disponível.");
+      }
+
+      const [agentsResponse, membersResponse] = await Promise.all([
+        requestJson(`/coordination/team/${team.id}/agents`),
+        requestJson("/coordination/family/members"),
+      ]);
+
+      const members = Array.isArray(membersResponse?.members) ? membersResponse.members : [];
+      const memberMap = new Map(members.map((member) => [member.id, member]));
+      const agents = Array.isArray(agentsResponse?.agents) ? agentsResponse.agents : [];
+
+      const normalizedAgents = agents.map((agent: { agent_id: string; role?: string }) => {
+        const member = memberMap.get(agent.agent_id);
+        return {
+          id: agent.agent_id,
+          name: member?.name || agent.agent_id,
+          role: member?.role || agent.role,
+        };
+      });
+
+      setCoordinationTeamId(team.id);
+      setCoordinationAgents(normalizedAgents);
+      return { teamId: team.id, agents: normalizedAgents };
+    })();
+
+    try {
+      return await coordinationLoadRef.current;
+    } finally {
+      coordinationLoadRef.current = null;
+    }
+  }, [enabled]);
 
   const loadConversations = useCallback(async () => {
     if (!enabled) return;
@@ -127,6 +227,18 @@ export function useChat(enabled = true) {
 
     loadConversations();
   }, [enabled, loadConversations]);
+
+  useEffect(() => {
+    if (!enabled) {
+      setCoordinationTeamId(null);
+      setCoordinationAgents([]);
+      return;
+    }
+
+    loadCoordinationData().catch((err) => {
+      console.error("Failed to load coordination agents:", err);
+    });
+  }, [enabled, loadCoordinationData]);
 
   useEffect(() => {
     if (!activeChat) return;
@@ -284,18 +396,53 @@ export function useChat(enabled = true) {
         }
       }
 
-      const routingSource = [trimmedContent, ...attachments.map((attachment) => attachment.name)].filter(Boolean).join(" ");
+      let coordinationData: CoordinationData = {
+        teamId: coordinationTeamId,
+        agents: coordinationAgents,
+      };
+      let selectedAgent = getCoordinationAgent(coordinationData.agents, "chocks");
+      let showHandoff = false;
+
+      coordinationData =
+        coordinationTeamId && coordinationAgents.length > 0
+          ? { teamId: coordinationTeamId, agents: coordinationAgents }
+          : await loadCoordinationData();
+
+      if (!coordinationData.teamId || coordinationData.agents.length === 0) {
+        throw new Error("Agentes de coordenação indisponíveis.");
+      }
+
+      const routingSource = [trimmedContent, ...attachments.map((attachment) => attachment.name)]
+        .filter(Boolean)
+        .join(" ");
       const previousAgentId = getLastAgentId(chat);
-      const routing = triageAgentFromMessage(routingSource, previousAgentId);
-      const selectedAgent = routing.primaryAgent;
-      const helperAgent = routing.helperAgent;
-      const userVisibleContent = routing.cleanedInput.trim();
-      const visibleUserContent = userVisibleContent || trimmedContent || "[arquivo anexado]";
+      const explicitAgentId = findExplicitCoordinationAgentId(routingSource, coordinationData.agents);
+      const suggestedAgentId = explicitAgentId
+        ? null
+        : await requestTriageAgentId({
+            input: routingSource,
+            agents: coordinationData.agents,
+            previousAgentId,
+          });
+      const routing = triageCoordinationAgent({
+        input: routingSource,
+        agents: coordinationData.agents,
+        previousAgentId,
+        suggestedAgentId,
+      });
+      const selectedAgentId = pickDefaultAgentId(coordinationData.agents, routing.primaryAgentId);
+      selectedAgent = getCoordinationAgent(coordinationData.agents, selectedAgentId);
+      const helperAgent = routing.helperAgentId
+        ? getCoordinationAgent(coordinationData.agents, routing.helperAgentId)
+        : null;
+      const visibleUserContent = routing.cleanedInput.trim() || trimmedContent || "[arquivo anexado]";
       const isFirstMessage = (chat.messages?.length || 0) === 0;
       const newTitle = isFirstMessage
         ? (visibleUserContent || attachments[0]?.name || "Nova conversa").substring(0, 30)
         : chat.title;
-      const showHandoff = selectedAgent.id !== previousAgentId || (isFirstMessage && selectedAgent.id !== "chocks");
+      showHandoff =
+        (previousAgentId && selectedAgent.id !== previousAgentId) ||
+        (!previousAgentId && isFirstMessage && selectedAgent.id !== "chocks");
 
       const userMsg: Message = {
         role: "user",
@@ -336,7 +483,8 @@ export function useChat(enabled = true) {
           body: JSON.stringify({
             chatId: optimisticChat.id,
             selectedAgentId: selectedAgent.id,
-            helperAgentId: helperAgent?.id,
+            helperAgentId: helperAgent?.id || null,
+            coordinationTeamId: coordinationData.teamId,
             messages: updatedMessages.slice(0, -1).map((message) => {
               if (message.role !== "user" || !Array.isArray(message.attachments) || message.attachments.length === 0) {
                 return message;
@@ -453,11 +601,11 @@ export function useChat(enabled = true) {
           const msgs = [...prev.messages];
           const last = msgs[msgs.length - 1];
           if (last?.role === "agent") {
-            const fallbackAgent = getAgentProfile(selectedAgent.id);
+            const fallbackAgent = getCoordinationAgent(coordinationData.agents, selectedAgent.id);
             last.agentId = last.agentId || fallbackAgent.id;
             last.helperAgentId = last.helperAgentId || helperAgent?.id;
-            last.handoffLabel = last.handoffLabel || (showHandoff ? `${fallbackAgent.name} assumiu a conversa` : undefined);
-            last.collaborationLabel = last.collaborationLabel || (helperAgent ? `${fallbackAgent.name} chamou ${helperAgent.name} para ajudar` : undefined);
+            last.handoffLabel =
+              last.handoffLabel || (showHandoff ? `${fallbackAgent.name} assumiu a conversa` : undefined);
             const aborted = err instanceof Error && err.name === "AbortError";
             last.content = aborted
               ? fullContent.trim() || "Resposta interrompida por voce."
@@ -490,7 +638,7 @@ export function useChat(enabled = true) {
         sendLockRef.current = false;
       }
     },
-    [activeChat, enabled, persistConversation],
+    [activeChat, coordinationAgents, coordinationTeamId, enabled, loadCoordinationData, persistConversation],
   );
 
   return {
