@@ -1,4 +1,4 @@
-import { getDb, hasDatabase } from "@/lib/server/db";
+import { dbQuery, hasDatabase } from "@/lib/server/db";
 
 const DEFAULT_AGENT_ID = "chocks";
 const DEFAULT_GREETINGS = [
@@ -29,8 +29,7 @@ export async function GET() {
 
   let greetings = DEFAULT_GREETINGS;
   try {
-    const db = getDb();
-    const res = await db.query<{ profile: unknown }>(
+    const res = await dbQuery<{ profile: unknown }>(
       `SELECT profile
        FROM public.coordination_agent_profiles
        WHERE agent_id = $1

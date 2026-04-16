@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import styles from "./MessageFeedback.module.css";
 
@@ -11,18 +11,32 @@ interface MessageFeedbackProps {
   conversationId: string;
   onSubmitFeedback?: (feedback: FeedbackType, text?: string) => Promise<void>;
   isLoading?: boolean;
+  initialFeedback?: FeedbackType;
 }
 
 export default function MessageFeedback({
+  messageId,
+  conversationId,
   onSubmitFeedback,
   isLoading = false,
+  initialFeedback = null,
 }: MessageFeedbackProps) {
-  const [currentFeedback, setCurrentFeedback] = useState<FeedbackType>(null);
+  const [currentFeedback, setCurrentFeedback] = useState<FeedbackType>(() => {
+    return initialFeedback === "like" || initialFeedback === "dislike" ? initialFeedback : null;
+  });
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (initialFeedback === "like" || initialFeedback === "dislike") {
+      setCurrentFeedback(initialFeedback);
+      setShowFeedbackForm(false);
+    }
+  }, [initialFeedback, conversationId, messageId]);
+
   const handleFeedback = async (feedback: FeedbackType) => {
+    const previous = currentFeedback;
     setCurrentFeedback(feedback);
     if (feedback === "dislike") {
       setShowFeedbackForm(true);
@@ -30,6 +44,9 @@ export default function MessageFeedback({
       setIsSubmitting(true);
       try {
         await onSubmitFeedback(feedback);
+      } catch (err) {
+        setCurrentFeedback(previous);
+        throw err;
       } finally {
         setIsSubmitting(false);
       }

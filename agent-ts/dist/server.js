@@ -5,7 +5,7 @@ import fssync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runAgent, streamAgent } from './llm.js';
-import { initDatabase } from './db.js';
+import { closePool, initDatabase } from './db.js';
 import { instinctEngine } from './instincts/instinct-engine.js';
 import { cacheHandler } from './instincts/cache-handler.js';
 import { detectEngagement, processEmotionEvent } from './instincts/emotion-triggers.js';
@@ -746,7 +746,52 @@ app.get('/files/raw', async (req, res) => {
     }
 });
 const port = process.env.PORT || 3001;
+let httpServer = null;
+let shutdownHandlersRegistered = false;
+let isShuttingDown = false;
+async function shutdown(signal, exitCode = 0) {
+    if (isShuttingDown)
+        return;
+    isShuttingDown = true;
+    console.log(`[SERVER] ${signal} received, shutting down gracefully...`);
+    stopBackgroundJobs();
+    if (httpServer) {
+        await new Promise((resolve) => {
+            httpServer?.close(() => resolve());
+        }).catch(() => null);
+        httpServer = null;
+    }
+    await closePool().catch(() => null);
+    process.exit(exitCode);
+}
+function registerShutdownHandlers() {
+    if (shutdownHandlersRegistered)
+        return;
+    shutdownHandlersRegistered = true;
+    process.on('SIGTERM', () => {
+        void shutdown('SIGTERM', 0);
+    });
+    process.on('SIGINT', () => {
+        void shutdown('SIGINT', 0);
+    });
+    // Common restart signal used by file-watchers.
+    process.on('SIGUSR2', () => {
+        void shutdown('SIGUSR2', 0);
+    });
+    process.on('uncaughtException', (err) => {
+        console.error('[SERVER] uncaughtException:', err);
+        void shutdown('uncaughtException', 1);
+    });
+    process.on('unhandledRejection', (reason) => {
+        console.error('[SERVER] unhandledRejection:', reason);
+        void shutdown('unhandledRejection', 1);
+    });
+    process.on('beforeExit', () => {
+        void closePool().catch(() => null);
+    });
+}
 async function startServer() {
+    registerShutdownHandlers();
     await initDatabase();
     // Initialize Fase 2 infrastructure
     const pipeline = initPermissionPipeline();
@@ -764,20 +809,9 @@ async function startServer() {
     app.use('/api/tokens', queryEngineRoutes);
     app.use('/api/costs', queryEngineRoutes);
     app.use('/api/agent', agentPersonalityRoutes);
-    app.listen(port, () => console.log(`Chocks listening on ${port}`));
-    // Graceful shutdown
-    process.on('SIGTERM', () => {
-        console.log('[SERVER] SIGTERM received, shutting down gracefully...');
-        stopBackgroundJobs();
-        process.exit(0);
-    });
-    process.on('SIGINT', () => {
-        console.log('[SERVER] SIGINT received, shutting down gracefully...');
-        stopBackgroundJobs();
-        process.exit(0);
-    });
+    httpServer = app.listen(port, () => console.log(`Chocks listening on ${port}`));
 }
-startServer().catch((error) => {
+startServer().catch(async (error) => {
     console.error('Failed to start Chocks:', error);
-    process.exit(1);
+    await shutdown('startup-error', 1);
 });

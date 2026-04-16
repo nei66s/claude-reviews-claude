@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 
 import type { SessionUser } from "./auth";
-import { findDbUserByEmail, getDb, hasDatabase } from "./db";
+import { dbQuery, findDbUserByEmail, hasDatabase } from "./db";
 
 // Cache para conversas com TTL
 type CacheEntry<T> = {
@@ -39,7 +39,13 @@ function invalidateConversationsCache(userId: string): void {
   conversationsCache.delete(userId);
 }
 
+export async function invalidateConversationCacheForUser(user: SessionUser) {
+  const ownerId = await resolveOwnerId(user);
+  invalidateConversationsCache(ownerId);
+}
+
 export type ChatMessage = {
+  id?: string;
   role: "user" | "agent";
   content: string;
   streaming?: boolean;
@@ -47,6 +53,7 @@ export type ChatMessage = {
   helperAgentId?: string | null;
   handoffLabel?: string | null;
   collaborationLabel?: string | null;
+  feedback?: "like" | "dislike" | null;
 };
 
 export type StoredConversation = {
@@ -487,7 +494,6 @@ export async function appendLog(
 
 export async function listConversations(user: SessionUser) {
   if (hasDatabase()) {
-    const db = getDb();
     const ownerId = await resolveOwnerId(user);
 
     // Verificar cache primeiro
@@ -496,7 +502,7 @@ export async function listConversations(user: SessionUser) {
       return cached;
     }
 
-    const conversationResult = await db.query<
+    const conversationResult = await dbQuery<
       Pick<StoredConversation, "id" | "title">
     >(
       `select id, title
@@ -514,35 +520,43 @@ export async function listConversations(user: SessionUser) {
       return [];
     }
 
-    const messageResult = await db.query<
+    const messageResult = await dbQuery<
       ChatMessage & {
+        id: string | number;
         conversation_id: string;
         sort_order: number;
         agentId: string | null;
         helperAgentId: string | null;
         handoffLabel: string | null;
         collaborationLabel: string | null;
+        feedback: string | null;
       }
     >(
-      `select conversation_id,
-              sort_order,
-              role,
-              content,
-              streaming,
-              agent_id as "agentId",
-              helper_agent_id as "helperAgentId",
-              handoff_label as "handoffLabel",
-              collaboration_label as "collaborationLabel"
-       from public.messages
-       where conversation_id = any($1::text[])
-       order by conversation_id asc, sort_order asc, id asc`,
-      [ids],
+      `select m.conversation_id,
+              m.id,
+              m.sort_order,
+              m.role,
+              m.content,
+              m.streaming,
+              m.agent_id as "agentId",
+              m.helper_agent_id as "helperAgentId",
+              m.handoff_label as "handoffLabel",
+              m.collaboration_label as "collaborationLabel",
+              mf.feedback as feedback
+       from public.messages m
+       left join public.message_feedback mf
+          on mf.message_id::text = m.id::text and mf.user_id = $2
+       where m.conversation_id = any($1::text[])
+       order by m.conversation_id asc, m.sort_order asc, m.id asc`,
+      [ids, ownerId],
     );
 
     const messagesByConversation = new Map<string, ChatMessage[]>();
     for (const row of messageResult.rows) {
       const list = messagesByConversation.get(row.conversation_id) ?? [];
+      const messageId = String(row.id);
       list.push({
+        id: messageId,
         role: row.role,
         content: row.content,
         streaming: row.streaming,
@@ -550,6 +564,7 @@ export async function listConversations(user: SessionUser) {
         helperAgentId: row.helperAgentId ?? undefined,
         handoffLabel: row.handoffLabel ?? undefined,
         collaborationLabel: row.collaborationLabel ?? undefined,
+        feedback: row.feedback === "like" || row.feedback === "dislike" ? row.feedback : null,
       });
       messagesByConversation.set(row.conversation_id, list);
     }
@@ -576,10 +591,9 @@ export async function createConversation(
   input: { id: string; title?: string },
 ) {
   if (hasDatabase()) {
-    const db = getDb();
     const ownerId = await resolveOwnerId(user);
     const title = input.title?.trim() || "Nova conversa";
-    await db.query(
+    await dbQuery(
       `insert into public.conversations (id, title, owner_id)
        values ($1, $2, $3)
        on conflict (id)
@@ -612,10 +626,9 @@ export async function createConversation(
 
 export async function upsertConversation(user: SessionUser, conversation: StoredConversation) {
   if (hasDatabase()) {
-    const db = getDb();
     const ownerId = await resolveOwnerId(user);
 
-    await db.query(
+    await dbQuery(
       `insert into public.conversations (id, title, owner_id)
        values ($1, $2, $3)
        on conflict (id)
@@ -623,12 +636,12 @@ export async function upsertConversation(user: SessionUser, conversation: Stored
       [conversation.id, conversation.title, ownerId],
     );
 
-    await db.query("delete from public.messages where conversation_id = $1", [
+    await dbQuery("delete from public.messages where conversation_id = $1", [
       conversation.id,
     ]);
 
     for (const [index, message] of conversation.messages.entries()) {
-      await db.query(
+      await dbQuery(
         `insert into public.messages (
            conversation_id,
            sort_order,
@@ -667,12 +680,95 @@ export async function upsertConversation(user: SessionUser, conversation: Stored
   await writeState(user.id, state);
 }
 
-export async function deleteConversation(user: SessionUser, conversationId: string) {
+export async function appendConversationMessages(
+  user: SessionUser,
+  conversationId: string,
+  title: string,
+  messages: ChatMessage[],
+): Promise<{ insertedMessageIds: string[] }> {
   if (hasDatabase()) {
-    const db = getDb();
     const ownerId = await resolveOwnerId(user);
 
-    await db.query(
+    await dbQuery(
+      `insert into public.conversations (id, title, owner_id)
+       values ($1, $2, $3)
+       on conflict (id)
+       do update set title = excluded.title, owner_id = excluded.owner_id, updated_at = now()`,
+      [conversationId, title, ownerId],
+    );
+
+    const orderResult = await dbQuery<{ max_sort_order: number }>(
+      `select coalesce(max(sort_order), -1) as max_sort_order
+       from public.messages
+       where conversation_id = $1`,
+      [conversationId],
+    );
+
+    const maxSortOrder = orderResult.rows[0]?.max_sort_order ?? -1;
+    const insertedMessageIds: string[] = [];
+
+    for (const [index, message] of messages.entries()) {
+      const insertResult = await dbQuery<{ id: string }>(
+        `insert into public.messages (
+           conversation_id,
+           sort_order,
+           role,
+           content,
+           streaming,
+           agent_id,
+           helper_agent_id,
+           handoff_label,
+           collaboration_label
+         )
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         returning id::text as id`,
+        [
+          conversationId,
+          maxSortOrder + index + 1,
+          message.role,
+          message.content,
+          Boolean(message.streaming),
+          message.agentId ?? null,
+          message.helperAgentId ?? null,
+          message.handoffLabel ?? null,
+          message.collaborationLabel ?? null,
+        ],
+      );
+
+      if (insertResult.rows[0]?.id) {
+        insertedMessageIds.push(insertResult.rows[0].id);
+      }
+    }
+
+    invalidateConversationsCache(ownerId);
+    await appendLog(user, "info", "Mensagens adicionadas", {
+      id: conversationId,
+      count: messages.length,
+    });
+
+    return { insertedMessageIds };
+  }
+
+  const state = await readState(user.id);
+  const existing = state.conversations.find((item) => item.id === conversationId);
+  const nextConversation: StoredConversation = existing
+    ? { ...existing, title, messages: [...existing.messages, ...messages] }
+    : { id: conversationId, title, messages: [...messages] };
+
+  state.conversations = [
+    nextConversation,
+    ...state.conversations.filter((item) => item.id !== conversationId),
+  ];
+  await writeState(user.id, state);
+  await appendLog(user, "info", "Mensagens adicionadas", { id: conversationId, count: messages.length });
+  return { insertedMessageIds: [] };
+}
+
+export async function deleteConversation(user: SessionUser, conversationId: string) {
+  if (hasDatabase()) {
+    const ownerId = await resolveOwnerId(user);
+
+    await dbQuery(
       `delete from public.conversations
        where id = $1 and owner_id = $2`,
       [conversationId, ownerId],
@@ -698,9 +794,8 @@ export async function renameConversation(
   const trimmedTitle = title.trim() || "Nova conversa";
 
   if (hasDatabase()) {
-    const db = getDb();
     const ownerId = await resolveOwnerId(user);
-    await db.query(
+    await dbQuery(
       `update public.conversations
        set title = $2, updated_at = now()
        where id = $1 and owner_id = $3`,
@@ -726,9 +821,8 @@ export async function duplicateConversation(
   nextId: string,
 ) {
   if (hasDatabase()) {
-    const db = getDb();
     const ownerId = await resolveOwnerId(user);
-    const conversationResult = await db.query<
+    const conversationResult = await dbQuery<
       { id: string; title: string }
     >(
       `select id, title
@@ -743,13 +837,13 @@ export async function duplicateConversation(
     }
 
     const copyTitle = `${sourceConversation.title || "Nova conversa"} (copia)`;
-    await db.query(
+    await dbQuery(
       `insert into public.conversations (id, title, owner_id)
        values ($1, $2, $3)`,
       [nextId, copyTitle, ownerId],
     );
 
-    const messages = await db.query<
+    const messages = await dbQuery<
       ChatMessage & { sort_order: number }
     >(
       `select sort_order,
@@ -767,7 +861,7 @@ export async function duplicateConversation(
     );
 
     for (const message of messages.rows) {
-      await db.query(
+      await dbQuery(
         `insert into public.messages (
            conversation_id,
            sort_order,

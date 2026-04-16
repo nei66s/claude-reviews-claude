@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Download, FileText, PanelsTopLeft } from "lucide-react";
 
 import { Artifact, extractWebSources, pickPrimaryArtifact } from "../lib/artifactDetection";
-import { Message, TraceEntry } from "../lib/api";
+import { Message, TraceEntry, requestJson } from "../lib/api";
 import { AgentProfile, getAgentProfile } from "../lib/familyRouting";
 import CodeBlock from "./CodeBlock";
 import MessageFeedback from "./MessageFeedback";
@@ -111,9 +111,7 @@ export default function MessageBubble({
   const primaryArtifact = isAgent ? pickPrimaryArtifact(message.content, message.trace) : null;
   const showWorkingState = isAgent && message.streaming && !message.content.trim();
   
-  const messageId =
-    message.id ||
-    `${conversationId || "conversation"}-${message.role}-${message.content.trim().slice(0, 24)}`.replace(/\s+/g, "-");
+  const messageId = message.id ? String(message.id) : "";
 
   return (
     <div className={`message ${message.role} ${message.streaming ? "is-streaming" : ""}`}>
@@ -273,11 +271,11 @@ export default function MessageBubble({
           <MessageFeedback
             messageId={messageId}
             conversationId={conversationId}
+            initialFeedback={message.feedback ?? null}
             onSubmitFeedback={async (feedback, text) => {
               try {
-                await fetch("/api/chat/feedback", {
+                await requestJson("/chat/feedback", {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     messageId: messageId,
                     conversationId: conversationId,

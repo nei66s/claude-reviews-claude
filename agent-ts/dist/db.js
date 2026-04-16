@@ -8,15 +8,58 @@ const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
     throw new Error('DATABASE_URL not set in environment');
 }
-const pool = new Pool({
-    connectionString: DATABASE_URL,
-    ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: false } : undefined,
-});
+function parsePositiveInt(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0)
+        return null;
+    return Math.floor(parsed);
+}
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+function isPgErrorWithCode(error) {
+    return typeof error === 'object' && error !== null && 'code' in error;
+}
+function isRetryableStartupError(error) {
+    if (!isPgErrorWithCode(error))
+        return false;
+    // 53300: too many connections; 57P03: cannot_connect_now (e.g. starting up)
+    return error.code === '53300' || error.code === '57P03';
+}
+function getPoolConfig() {
+    const isProd = process.env.NODE_ENV === 'production';
+    const max = parsePositiveInt(process.env.PG_POOL_MAX) ?? (isProd ? 10 : 1);
+    const idleTimeoutMillis = parsePositiveInt(process.env.PG_POOL_IDLE_TIMEOUT_MS) ?? (isProd ? 30_000 : 1_000);
+    const connectionTimeoutMillis = parsePositiveInt(process.env.PG_POOL_CONNECTION_TIMEOUT_MS) ?? 5_000;
+    return {
+        connectionString: DATABASE_URL,
+        ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: false } : undefined,
+        max,
+        idleTimeoutMillis,
+        connectionTimeoutMillis,
+    };
+}
+function getPool() {
+    if (!global.__chocksPgPool) {
+        global.__chocksPgPool = new Pool(getPoolConfig());
+        global.__chocksPgPool.on('error', (err) => {
+            console.error('[db] Pool error:', err);
+        });
+    }
+    return global.__chocksPgPool;
+}
+export async function closePool() {
+    const pool = global.__chocksPgPool;
+    global.__chocksPgPool = undefined;
+    if (pool) {
+        await pool.end().catch(() => null);
+    }
+}
 export async function query(text, params = []) {
-    return pool.query(text, params);
+    return getPool().query(text, params);
 }
 export async function withTransaction(fn) {
-    const client = await pool.connect();
+    const client = await getPool().connect();
     try {
         await client.query('BEGIN');
         const result = await fn(client);
@@ -32,7 +75,13 @@ export async function withTransaction(fn) {
     }
 }
 export async function initDatabase() {
-    await pool.query(`
+    const isProd = process.env.NODE_ENV === 'production';
+    const retries = parsePositiveInt(process.env.PG_INIT_RETRIES) ?? (isProd ? 0 : 12);
+    const baseDelayMs = parsePositiveInt(process.env.PG_INIT_RETRY_BASE_DELAY_MS) ?? 250;
+    const maxDelayMs = parsePositiveInt(process.env.PG_INIT_RETRY_MAX_DELAY_MS) ?? 5_000;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            await getPool().query(`
     CREATE TABLE IF NOT EXISTS app_users (
       id TEXT PRIMARY KEY,
       display_name TEXT NOT NULL,
@@ -56,9 +105,22 @@ export async function initDatabase() {
       content TEXT NOT NULL DEFAULT '',
       trace_json JSONB,
       streaming BOOLEAN NOT NULL DEFAULT FALSE,
+      agent_id TEXT,
+      helper_agent_id TEXT,
+      handoff_label TEXT,
+      collaboration_label TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE (conversation_id, sort_order)
     );
+
+    ALTER TABLE IF EXISTS messages
+      ADD COLUMN IF NOT EXISTS agent_id TEXT;
+    ALTER TABLE IF EXISTS messages
+      ADD COLUMN IF NOT EXISTS helper_agent_id TEXT;
+    ALTER TABLE IF EXISTS messages
+      ADD COLUMN IF NOT EXISTS handoff_label TEXT;
+    ALTER TABLE IF EXISTS messages
+      ADD COLUMN IF NOT EXISTS collaboration_label TEXT;
 
     CREATE TABLE IF NOT EXISTS message_attachments (
       id BIGSERIAL PRIMARY KEY,
@@ -145,16 +207,16 @@ export async function initDatabase() {
       FOREIGN KEY (user_id) REFERENCES app_users(id) ON DELETE CASCADE
     );
   `);
-    await pool.query(`
+            await getPool().query(`
     ALTER TABLE conversations ADD COLUMN IF NOT EXISTS owner_id TEXT REFERENCES app_users(id) ON DELETE CASCADE;
     ALTER TABLE agent_todos ADD COLUMN IF NOT EXISTS owner_id TEXT REFERENCES app_users(id) ON DELETE CASCADE;
   `);
-    await pool.query(`
+            await getPool().query(`
     INSERT INTO app_users (id, display_name, created_at, updated_at)
     VALUES ('legacy-local', 'Local legacy', NOW(), NOW())
     ON CONFLICT (id) DO NOTHING;
   `);
-    await pool.query(`
+            await getPool().query(`
     UPDATE conversations
     SET owner_id = 'legacy-local'
     WHERE owner_id IS NULL;
@@ -163,11 +225,11 @@ export async function initDatabase() {
     SET owner_id = 'legacy-local'
     WHERE owner_id IS NULL;
   `);
-    await pool.query(`
+            await getPool().query(`
     ALTER TABLE conversations ALTER COLUMN owner_id SET NOT NULL;
     ALTER TABLE agent_todos ALTER COLUMN owner_id SET NOT NULL;
   `);
-    await pool.query(`
+            await getPool().query(`
     CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages (conversation_id, sort_order);
     CREATE INDEX IF NOT EXISTS idx_attachments_message_id ON message_attachments (message_id, sort_order);
     CREATE INDEX IF NOT EXISTS idx_workflow_steps_conversation_id ON workflow_steps (conversation_id, sort_order);
@@ -182,8 +244,8 @@ export async function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_cost_logs_model ON cost_logs (model, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_cost_logs_hour ON cost_logs (created_at DESC);
   `);
-    // Coordination system tables (multi-agent coordination)
-    await pool.query(`
+            // Coordination system tables (multi-agent coordination)
+            await getPool().query(`
     CREATE TABLE IF NOT EXISTS coordination_teams (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL UNIQUE,
@@ -321,5 +383,19 @@ export async function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_mcp_access_worker ON mcp_tool_access(worker_agent_id, access_level);
     CREATE INDEX IF NOT EXISTS idx_mcp_calls_tool ON mcp_tool_calls(mcp_tool_id, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_mcp_calls_worker ON mcp_tool_calls(worker_agent_id, created_at DESC);
-  `);
+      `);
+            return;
+        }
+        catch (error) {
+            const shouldRetry = attempt < retries && isRetryableStartupError(error);
+            if (!shouldRetry)
+                throw error;
+            const expBackoff = Math.min(maxDelayMs, baseDelayMs * 2 ** attempt);
+            const jitter = Math.floor(Math.random() * 100);
+            const delayMs = expBackoff + jitter;
+            console.warn(`[db] Postgres not ready (${isPgErrorWithCode(error) ? error.code : 'unknown'}). Retrying init in ${delayMs}ms (${attempt + 1}/${retries + 1})...`);
+            await closePool();
+            await sleep(delayMs);
+        }
+    }
 }

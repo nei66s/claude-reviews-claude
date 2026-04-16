@@ -430,6 +430,9 @@ export function useChat(enabled = true) {
                   last.helperAgentId = last.helperAgentId || helperAgent?.id;
                   last.content = payload.output_text || fullContent;
                   last.streaming = false;
+                  if (typeof payload.messageId === "string" && payload.messageId.trim()) {
+                    last.id = payload.messageId.trim();
+                  }
                   if (Array.isArray(payload.trace)) {
                     last.trace = payload.trace as TraceEntry[];
                   }

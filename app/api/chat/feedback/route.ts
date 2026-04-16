@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/server/request";
 import { saveFeedback, getPsychologicalProfile } from "@/lib/server/psychological-profile";
-import { appendLog } from "@/lib/server/store";
+import { appendLog, invalidateConversationCacheForUser } from "@/lib/server/store";
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
       feedback,
       feedbackText,
     );
+
+    await invalidateConversationCacheForUser(user);
 
     // Buscar perfil atualizado
     const profile = await getPsychologicalProfile(user.id);

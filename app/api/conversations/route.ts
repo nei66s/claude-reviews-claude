@@ -6,6 +6,7 @@ import {
   listConversations,
 } from "@/lib/server/store";
 import { requireUser } from "@/lib/server/request";
+import { isDatabaseBusyError } from "@/lib/server/db";
 
 export async function GET(request: NextRequest) {
   const user = requireUser(request);
@@ -13,9 +14,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   }
 
-  const response = NextResponse.json({ conversations: await listConversations(user) });
-  response.headers.set("Cache-Control", "no-store");
-  return response;
+  try {
+    const response = NextResponse.json({ conversations: await listConversations(user) });
+    response.headers.set("Cache-Control", "no-store");
+    return response;
+  } catch (error) {
+    if (isDatabaseBusyError(error)) {
+      return NextResponse.json(
+        { error: "Banco de dados ocupado (muitos clientes). Tente novamente em alguns segundos." },
+        { status: 503 },
+      );
+    }
+    throw error;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -32,9 +43,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "id required" }, { status: 400 });
   }
 
-  return NextResponse.json({
-    conversation: await createConversation(user, { id, title }),
-  });
+  try {
+    return NextResponse.json({
+      conversation: await createConversation(user, { id, title }),
+    });
+  } catch (error) {
+    if (isDatabaseBusyError(error)) {
+      return NextResponse.json(
+        { error: "Banco de dados ocupado (muitos clientes). Tente novamente em alguns segundos." },
+        { status: 503 },
+      );
+    }
+    throw error;
+  }
 }
 
 export async function DELETE(request: NextRequest) {
@@ -50,7 +71,17 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "id required" }, { status: 400 });
   }
 
-  await deleteConversation(user, id);
-  return NextResponse.json({ ok: true });
+  try {
+    await deleteConversation(user, id);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (isDatabaseBusyError(error)) {
+      return NextResponse.json(
+        { error: "Banco de dados ocupado (muitos clientes). Tente novamente em alguns segundos." },
+        { status: 503 },
+      );
+    }
+    throw error;
+  }
 }
 

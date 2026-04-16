@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb, hasDatabase } from "@/lib/server/db";
+import { dbQuery, hasDatabase } from "@/lib/server/db";
 
 /**
  * Endpoint para popular dados mock de feedback para Doutora Kitty
@@ -14,18 +14,17 @@ export async function POST() {
       );
     }
 
-    const db = getDb();
     // Use a shared demo user ID that all accounts can use
     const userId = "demo-user";
 
     // 0. Ensure user exists
-    const userRes = await db.query(
+    const userRes = await dbQuery(
       `SELECT id FROM public.app_users WHERE id = $1`,
       [userId],
     );
 
     if (userRes.rows.length === 0) {
-      await db.query(
+      await dbQuery(
         `INSERT INTO public.app_users (id, display_name, created_at, updated_at) 
          VALUES ($1, $2, NOW(), NOW())`,
         [userId, "Demo User"],
@@ -33,7 +32,7 @@ export async function POST() {
     }
 
     // 1. Create feedback table if not exists
-    await db.query(`
+    await dbQuery(`
       CREATE TABLE IF NOT EXISTS public.message_feedback (
         id BIGSERIAL PRIMARY KEY,
         message_id BIGINT,
@@ -47,7 +46,7 @@ export async function POST() {
     `);
 
     // 2. Create profile table if not exists
-    await db.query(`
+    await dbQuery(`
       CREATE TABLE IF NOT EXISTS public.user_psychological_profiles (
         id BIGSERIAL PRIMARY KEY,
         user_id TEXT NOT NULL UNIQUE REFERENCES public.app_users(id) ON DELETE CASCADE,
@@ -82,7 +81,7 @@ export async function POST() {
 
     let insertedCount = 0;
     for (let i = 0; i < feedbacks.length; i++) {
-      const result = await db.query(
+      const result = await dbQuery(
         `INSERT INTO public.message_feedback (message_id, conversation_id, user_id, feedback, feedback_text, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
          ON CONFLICT DO NOTHING`,
@@ -92,7 +91,7 @@ export async function POST() {
     }
 
     // 4. Upsert psychological profile
-    await db.query(
+    await dbQuery(
       `INSERT INTO public.user_psychological_profiles 
        (user_id, tonal_preference, depth_preference, structure_preference, pace_preference, example_type, response_length, confidence_score, total_feedback, like_count, dislike_count, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())

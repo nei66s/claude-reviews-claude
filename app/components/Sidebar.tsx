@@ -89,6 +89,8 @@ export default function Sidebar({
               alt="Chocks"
               width={36}
               height={36}
+              priority
+              sizes="36px"
               style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "52% 45%" }}
             />
           </div>

@@ -17,24 +17,6 @@ export function SkeletonMessageBubble() {
   );
 }
 
-export function SkeletonTokenPanel() {
-  return (
-    <div className="token-cost-compact-bar">
-      <div className="token-cost-header-compact">
-        <div className="token-cost-title-compact">
-          <span className="skeleton skeleton-text" style={{ width: '120px' }} />
-        </div>
-        <div className="token-cost-details-compact">
-          <span className="skeleton skeleton-text" style={{ width: '80px' }} />
-        </div>
-      </div>
-      <div className="token-cost-graph-container">
-        <div className="skeleton skeleton-input" style={{ height: '28px' }} />
-      </div>
-    </div>
-  );
-}
-
 export function SkeletonCard() {
   return (
     <div className="card">

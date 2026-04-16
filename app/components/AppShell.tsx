@@ -7,7 +7,6 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import MessageBubble from "./MessageBubble";
 import TaskProgressPanel from "./TaskProgressPanel";
-import TokenCostPanel from "./TokenCostPanel";
 import FilesView from "./FilesView";
 import WorkflowView from "./WorkflowView";
 import MonitorView from "./MonitorView";
@@ -511,7 +510,6 @@ export default function AppShell({
               <div className={`view chat-view chat-layout ${selectedArtifacts.length > 0 ? "with-artifact" : ""}`}>
                 <div className="messages">
                   <div className="messages-inner">
-                    {user && activeChat?.id && <TokenCostPanel userId={user.id} chatId={activeChat.id} />}
                     {activeChat?.messages?.map((msg, idx) => (
                       <MessageBubble
                         key={idx}

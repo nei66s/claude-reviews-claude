@@ -8,7 +8,7 @@ import { NextRequest } from "next/server";
 import type { SessionUser } from "@/lib/server/auth";
 import { createToken } from "@/lib/server/auth";
 import type { ChatMessage } from "@/lib/server/store";
-import { appendLog, readAppSettings, upsertConversation, getWorkflowState } from "@/lib/server/store";
+import { appendConversationMessages, appendLog, readAppSettings, getWorkflowState } from "@/lib/server/store";
 import { requireUser } from "@/lib/server/request";
 import { chatToolDefinitions, runChatTool } from "@/lib/server/chat-tools";
 import { listFileEntries } from "@/lib/server/files";
@@ -458,22 +458,25 @@ async function persistAssistantReply(
       ? `${selectedAgent.name} chamou ${helperAgent.name} para ajudar`
       : null;
 
-  await upsertConversation(user, {
-    id: chatId,
-    title: prompt.slice(0, 30) || "Nova conversa",
-    messages: [
-      ...messages,
-      {
-        role: "agent",
-        content: reply,
-        streaming: false,
-        agentId: selectedAgentId,
-        helperAgentId,
-        handoffLabel,
-        collaborationLabel,
-      },
-    ],
-  });
+  const title = prompt.slice(0, 30) || "Nova conversa";
+  const { insertedMessageIds } = await appendConversationMessages(user, chatId, title, [
+    {
+      role: "user",
+      content: prompt,
+      streaming: false,
+    },
+    {
+      role: "agent",
+      content: reply,
+      streaming: false,
+      agentId: selectedAgentId,
+      helperAgentId,
+      handoffLabel,
+      collaborationLabel,
+    },
+  ]);
+
+  return insertedMessageIds[insertedMessageIds.length - 1] ?? null;
 }
 
 function toModelInput(messages: ChatMessage[]): OpenAI.Responses.ResponseInput {
@@ -1017,7 +1020,7 @@ export async function POST(request: NextRequest) {
   const directPdfResult = await getDirectPdfResult(user, chatId, prompt, previousAssistantText);
 
   if (directDesktopResult) {
-    await persistAssistantReply(
+    const assistantMessageId = await persistAssistantReply(
       user,
       chatId,
       prompt,
@@ -1042,6 +1045,7 @@ export async function POST(request: NextRequest) {
           encodeEvent("done", {
             output_text: directDesktopResult.outputText,
             trace: directDesktopResult.trace,
+            messageId: assistantMessageId,
             model: "direct-desktop-list",
           }),
         );
@@ -1059,7 +1063,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (directPdfResult) {
-    await persistAssistantReply(
+    const assistantMessageId = await persistAssistantReply(
       user,
       chatId,
       prompt,
@@ -1083,6 +1087,7 @@ export async function POST(request: NextRequest) {
           encodeEvent("done", {
             output_text: directPdfResult.outputText,
             trace: directPdfResult.trace,
+            messageId: assistantMessageId,
             model: "direct-pdf-export",
           }),
         );
@@ -1412,7 +1417,15 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encodeEvent("trace", memoryTrace));
         }
 
-        await persistAssistantReply(user, chatId, prompt, messages, finalText, selectedAgentId, helperAgentId);
+        const assistantMessageId = await persistAssistantReply(
+          user,
+          chatId,
+          prompt,
+          messages,
+          finalText,
+          selectedAgentId,
+          helperAgentId,
+        );
         await appendLog(user, "info", "Resposta enviada", {
           chatId,
           model,
@@ -1440,6 +1453,7 @@ export async function POST(request: NextRequest) {
                 },
               },
             ],
+            messageId: assistantMessageId,
             model,
           }),
         );
