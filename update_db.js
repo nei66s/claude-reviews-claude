@@ -10,7 +10,7 @@ async function run() {
     await client.connect();
     console.log('Connected to database.');
 
-    const checkQuery = \"SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'app_users' AND column_name = 'avatar';\";
+    const checkQuery = "SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'app_users' AND column_name = 'avatar';";
 
     const res = await client.query(checkQuery);
 
