@@ -1,5 +1,7 @@
-const { Client } = require('pg');
-require('dotenv').config();
+import { Client } from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 async function run() {
   const client = new Client({
