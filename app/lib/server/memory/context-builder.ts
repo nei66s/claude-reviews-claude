@@ -4,6 +4,7 @@ import { getUserProfile, listUserMemoryItemsByUserId } from "./repository";
 export type ContextPack = {
   userId: string;
   summaryShort: string;
+  summaryLong: string;
   keyFacts: unknown[];
   activeGoals: unknown[];
   interactionPreferences: Record<string, unknown>;
@@ -36,11 +37,15 @@ export async function buildContextPack(input: BuildContextInput): Promise<Contex
     listUserMemoryItemsByUserId(input.userId, { status: "active", limit: 200 }),
   ]);
 
-  const filtered = activeItems.filter((item) => includeTypes.includes(item.type)).slice(0, limit);
+  const filtered = activeItems
+    .filter((item) => includeTypes.includes(item.type))
+    .filter((item) => item.sensitivityLevel === "low" || item.sensitivityLevel === "medium")
+    .slice(0, limit);
 
   return {
     userId: input.userId,
     summaryShort: profile?.summaryShort ?? "",
+    summaryLong: profile?.summaryLong ?? "",
     keyFacts: profile?.keyFacts ?? [],
     activeGoals: profile?.activeGoals ?? [],
     interactionPreferences: profile?.interactionPreferences ?? {},

@@ -466,6 +466,47 @@ button:disabled,
       .ping-value { font-family: "JetBrains Mono", monospace; color: var(--text); font-size: 10px; min-width: 24px; text-align: right; }
       .ping-unit { font-size: 9px; opacity: 0.5; margin-left: 1px; }
 
+      /* Light theme: improve ping contrast */
+      @media (prefers-color-scheme: light) {
+        html:not([data-theme="dark"]) .topbar-ping {
+          background: rgba(0, 0, 0, 0.03);
+          border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        html:not([data-theme="dark"]) .ping-item {
+          background: rgba(255, 255, 255, 0.7);
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          color: var(--muted);
+        }
+
+        html:not([data-theme="dark"]) .ping-item svg {
+          stroke: var(--muted);
+        }
+
+        html:not([data-theme="dark"]) .ping-unit {
+          opacity: 0.7;
+        }
+      }
+
+      html[data-theme="light"] .topbar-ping {
+        background: rgba(0, 0, 0, 0.03);
+        border-color: rgba(0, 0, 0, 0.08);
+      }
+
+      html[data-theme="light"] .ping-item {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        color: var(--muted);
+      }
+
+      html[data-theme="light"] .ping-item svg {
+        stroke: var(--muted);
+      }
+
+      html[data-theme="light"] .ping-unit {
+        opacity: 0.7;
+      }
+
       * {
         box-sizing: border-box;
       }
@@ -3708,6 +3749,31 @@ button:disabled,
         backdrop-filter: blur(10px);
       }
 
+      /* Light theme: composer should not be dark */
+      @media (prefers-color-scheme: light) {
+        html:not([data-theme="dark"]) .chat-composer {
+          background: rgba(255, 255, 255, 0.92);
+          border-color: rgba(0, 0, 0, 0.12);
+          box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12);
+          backdrop-filter: blur(8px);
+        }
+
+        html:not([data-theme="dark"]) .chat-composer textarea::placeholder {
+          color: rgba(75, 85, 99, 0.85);
+        }
+      }
+
+      html[data-theme="light"] .chat-composer {
+        background: rgba(255, 255, 255, 0.92);
+        border-color: rgba(0, 0, 0, 0.12);
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(8px);
+      }
+
+      html[data-theme="light"] .chat-composer textarea::placeholder {
+        color: rgba(75, 85, 99, 0.85);
+      }
+
       .chat-composer textarea {
         width: 100%;
         min-height: 56px;
@@ -3728,52 +3794,6 @@ button:disabled,
         cursor: not-allowed;
       }
 
-      .input-blocked-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(139, 9, 9, 0.3);
-        border-radius: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        animation: overlayFadeIn 0.3s ease-out;
-        backdrop-filter: blur(2px);
-      }
-
-      @keyframes overlayFadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      .blocked-message {
-        font-size: 16px;
-        font-weight: 600;
-        color: #ff6b6b;
-        text-align: center;
-        padding: 20px;
-        text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
-        animation: messagePulse 0.6s ease-in-out infinite;
-      }
-
-      @keyframes messagePulse {
-        0%,
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        50% {
-          transform: scale(1.05);
-          opacity: 0.9;
-        }
-      }
 
       .chat-toolbar {
         display: flex;

@@ -17,21 +17,20 @@ import ChocksDanceVideo from "./ChocksDanceVideo";
 import ArtifactPanel from "./ArtifactPanel";
 import CommandPalette from "./CommandPalette";
 import WelcomeScreen from "./WelcomeScreen";
-import ToastViewport from "./ToastViewport";
-import DoutorKittyDashboard from "./DoutorKittyDashboard";
-import MemoryAdminView from "./MemoryAdminView";
-import MemoryGraphView from "./MemoryGraphView";
-import { CoordinationView } from "./CoordinationView";
-import EasterEggManager from "./EasterEggManager";
-import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
-import type { Artifact } from "../lib/artifactDetection";
-import { detectArtifacts } from "../lib/artifactDetection";
-import { Attachment, Message } from "../lib/api";
-import { useAuth } from "../lib/auth";
-import { useChat } from "../hooks/useChat";
-import { useChubakaHunger } from "../hooks/useChubakaHunger";
-import { CommandPaletteItem, useCommandPalette } from "../hooks/useCommandPalette";
-import { getWorkspaceFromPathname, getWorkspaceRoute, WorkspaceId } from "../lib/workspaces";
+  import ToastViewport from "./ToastViewport";
+  import DoutorKittyDashboard from "./DoutorKittyDashboard";
+  import MemoryAdminView from "./MemoryAdminView";
+  import MemoryGraphView from "./MemoryGraphView";
+  import { CoordinationView } from "./CoordinationView";
+  import EasterEggManager from "./EasterEggManager";
+  import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
+  import type { Artifact } from "../lib/artifactDetection";
+  import { detectArtifacts } from "../lib/artifactDetection";
+  import { Attachment, Message } from "../lib/api";
+  import { useAuth } from "../lib/auth";
+  import { useChat } from "../hooks/useChat";
+  import { CommandPaletteItem, useCommandPalette } from "../hooks/useCommandPalette";
+  import { getWorkspaceFromPathname, getWorkspaceRoute, WorkspaceId } from "../lib/workspaces";
 
 const MAX_ATTACHMENT_BYTES = 300 * 1024;
 const ALLOWED_ATTACHMENT_EXTENSIONS = [
@@ -88,8 +87,6 @@ export default function AppShell({
   const chatEnabled = !isLoading && !!user;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const { hungerLevel, addHungerFromAction, feedChubaka, isSleeping, putChubakaToSleep, wakeUpChubaka, isInputBlocked } = useChubakaHunger();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -273,7 +270,6 @@ export default function AppShell({
 
     if (prompt.trim() || attachments.length > 0) {
       sendMessage(prompt.trim(), attachments);
-      addHungerFromAction(); // Incrementa fome do Chubaka
       resetComposer();
     }
   };
@@ -441,11 +437,6 @@ export default function AppShell({
         }}
         activeWorkspace={activeWorkspace}
         onSelectWorkspace={navigateToWorkspace}
-        hungerLevel={hungerLevel}
-        onFeedChubaka={feedChubaka}
-        isSleeping={isSleeping}
-        onSleep={putChubakaToSleep}
-        onWakeUp={wakeUpChubaka}
       />
 
       <main className="main">
@@ -533,28 +524,20 @@ export default function AppShell({
                   <ArtifactPanel artifact={selectedArtifacts} onClose={() => setSelectedArtifacts([])} />
                 ) : null}
 
-                <div className="chat-composer-wrap">
-                  <div className="chat-composer-inner">
-                    <TaskProgressPanel
-                      trace={latestAgentMessageWithTrace?.trace}
-                      streaming={Boolean(latestAgentMessageWithTrace?.streaming || isThinking)}
-                    />
-                    {isInputBlocked && (
-                      <div className="input-blocked-overlay">
-                        <div className="blocked-message">
-                          😫 Chubaka está passando mal de fome! Aguarde 10 segundos...
-                        </div>
-                      </div>
-                    )}
-                    <div className="chat-composer">
-                      <textarea
-                        ref={textareaRef}
-                        value={prompt}
-                        onChange={handlePromptChange}
-                        placeholder="Responder..."
-                        onKeyDown={handleKeyDown}
-                        disabled={isInputBlocked}
+                  <div className="chat-composer-wrap">
+                    <div className="chat-composer-inner">
+                      <TaskProgressPanel
+                        trace={latestAgentMessageWithTrace?.trace}
+                        streaming={Boolean(latestAgentMessageWithTrace?.streaming || isThinking)}
                       />
+                      <div className="chat-composer">
+                        <textarea
+                          ref={textareaRef}
+                          value={prompt}
+                          onChange={handlePromptChange}
+                          placeholder="Responder..."
+                          onKeyDown={handleKeyDown}
+                        />
                       <CommandAutocomplete
                         isOpen={showCommandMenu}
                         selectedIndex={commandSelectedIndex}

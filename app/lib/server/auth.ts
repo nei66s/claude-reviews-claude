@@ -20,6 +20,12 @@ type AuthConfig = {
   secret: string;
 };
 
+type LoginAccount = {
+  email: string;
+  password: string;
+  displayName: string;
+};
+
 function encodeBase64Url(input: string) {
   return Buffer.from(input, "utf8").toString("base64url");
 }
@@ -43,6 +49,22 @@ function getAuthConfig(): AuthConfig | null {
     password,
     displayName,
     secret,
+  };
+}
+
+function getSecondaryLoginAccount(): LoginAccount | null {
+  const email = process.env.SECONDARY_EMAIL?.trim();
+  const password = process.env.SECONDARY_PASSWORD?.trim();
+  const displayName = process.env.SECONDARY_DISPLAY_NAME?.trim() || "Secondary User";
+
+  if (!email || !password) {
+    return null;
+  }
+
+  return {
+    email,
+    password,
+    displayName,
   };
 }
 
@@ -75,19 +97,29 @@ export async function authenticate(email: string, password: string) {
     throw new Error("Auth is not configured. Set ADMIN_EMAIL, ADMIN_PASSWORD and AUTH_SECRET.");
   }
 
-  if (
-    normalizedEmail !== config.email.toLowerCase() ||
-    normalizedPassword !== config.password
-  ) {
+  const accounts: LoginAccount[] = [config];
+  const secondaryAccount = getSecondaryLoginAccount();
+  if (secondaryAccount) {
+    accounts.push(secondaryAccount);
+  }
+
+  const matchedAccount = accounts.find(
+    (account) =>
+      normalizedEmail === account.email.toLowerCase() &&
+      normalizedPassword === account.password,
+  );
+
+  if (!matchedAccount) {
     return null;
   }
 
-  const dbUser = await findDbUserByEmail(config.email).catch(() => null);
+  const dbUser = await findDbUserByEmail(matchedAccount.email).catch(() => null);
+  const isAdminAccount = matchedAccount.email.toLowerCase() === config.email.toLowerCase();
 
   return {
-    id: dbUser?.id ?? "local-admin",
-    email: dbUser?.email ?? config.email,
-    displayName: dbUser?.display_name ?? config.displayName,
+    id: dbUser?.id ?? (isAdminAccount ? "local-admin" : matchedAccount.email),
+    email: dbUser?.email ?? matchedAccount.email,
+    displayName: dbUser?.display_name ?? matchedAccount.displayName,
   } satisfies SessionUser;
 }
 

@@ -11,6 +11,73 @@ interface ProfileData {
   avatar?: string;
 }
 
+const AVATAR_MAX_BYTES = 500 * 1024;
+const AVATAR_MAX_DIMENSION = 1024;
+const AVATAR_MIN_JPEG_QUALITY = 0.45;
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => resolve((event.target?.result as string) || "");
+    reader.onerror = () => reject(new Error("Erro ao ler arquivo"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(dataUrl: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Não foi possível processar a imagem"));
+    image.src = dataUrl;
+  });
+}
+
+function getDataUrlByteSize(dataUrl: string) {
+  const parts = dataUrl.split(",");
+  const base64Payload = parts[1] || "";
+  const paddingLength = base64Payload.endsWith("==") ? 2 : base64Payload.endsWith("=") ? 1 : 0;
+  return Math.floor((base64Payload.length * 3) / 4) - paddingLength;
+}
+
+async function optimizeAvatar(file: File): Promise<string> {
+  const originalDataUrl = await fileToDataUrl(file);
+  if (file.size <= AVATAR_MAX_BYTES && getDataUrlByteSize(originalDataUrl) <= AVATAR_MAX_BYTES) {
+    return originalDataUrl;
+  }
+
+  const image = await loadImage(originalDataUrl);
+  const longestSide = Math.max(image.width, image.height);
+  const scale = longestSide > AVATAR_MAX_DIMENSION ? AVATAR_MAX_DIMENSION / longestSide : 1;
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Não foi possível processar a imagem");
+  }
+
+  context.drawImage(image, 0, 0, width, height);
+
+  let quality = 0.9;
+  let compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
+
+  while (quality > AVATAR_MIN_JPEG_QUALITY && getDataUrlByteSize(compressedDataUrl) > AVATAR_MAX_BYTES) {
+    quality -= 0.1;
+    compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
+  }
+
+  if (getDataUrlByteSize(compressedDataUrl) > AVATAR_MAX_BYTES) {
+    throw new Error("Foto muito grande (máximo 500KB)");
+  }
+
+  return compressedDataUrl;
+}
+
 const pageStyle: React.CSSProperties = {
   minHeight: "100vh",
   display: "flex",
@@ -224,15 +291,9 @@ export default function ProfilePage() {
     }));
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validar tamanho (máximo 500KB)
-    if (file.size > 500000) {
-      setMessage({ type: "error", text: "Foto muito grande (máximo 500KB)" });
-      return;
-    }
 
     // Validar tipo de arquivo
     if (!file.type.startsWith("image/")) {
@@ -240,22 +301,20 @@ export default function ProfilePage() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
+    try {
+      const optimizedAvatar = await optimizeAvatar(file);
       setProfile((prev) => ({
         ...prev,
-        avatar: base64,
+        avatar: optimizedAvatar,
       }));
       setMessage(null);
-
-      // Fazer upload imediato
-      await uploadAvatar(base64);
-    };
-    reader.onerror = () => {
-      setMessage({ type: "error", text: "Erro ao ler arquivo" });
-    };
-    reader.readAsDataURL(file);
+      await uploadAvatar(optimizedAvatar);
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Erro ao processar foto",
+      });
+    }
   };
 
   const uploadAvatar = async (base64: string) => {

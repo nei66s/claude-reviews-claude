@@ -128,7 +128,7 @@ export type DbUser = {
 
 export async function findDbUserByEmail(email: string) {
   const result = await dbQuery<DbUser>(
-    `select id, email, display_name
+    `select id, email, display_name, avatar
      from public.app_users
      where lower(email) = lower($1)
      limit 1`,

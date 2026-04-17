@@ -63,7 +63,6 @@
           - generic [ref=e92]: 😊 Saciado
           - generic [ref=e93]:
             - button "🍪 Cuki" [ref=e94]
-            - button "😴 Mimir" [ref=e95]
     - main [ref=e96]:
       - generic [ref=e97]:
         - generic [ref=e98]: Demo Conversation for Doutora Kitty

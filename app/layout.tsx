@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "./lib/auth";
 
 export const metadata: Metadata = {
-  title: "Chocks by Pimpotasma — Seu Agente Pessoal",
+  title: "Pimpotasma",
   description: "Assistente pessoal inteligente da Pimpotasma com ferramentas, workflows e automação",
 };
 

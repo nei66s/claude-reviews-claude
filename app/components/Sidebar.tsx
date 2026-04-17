@@ -4,7 +4,6 @@ import Image from "next/image";
 import { Chat } from "../lib/api";
 import { useMemo, useState } from "react";
 import { WorkspaceId } from "../lib/workspaces";
-import ChubakaHungerBar from "./ChubakaHungerBar";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -18,11 +17,6 @@ interface SidebarProps {
   onNewChat: () => void;
   activeWorkspace: WorkspaceId;
   onSelectWorkspace: (id: WorkspaceId) => void;
-  hungerLevel?: number;
-  onFeedChubaka?: () => void;
-  isSleeping?: boolean;
-  onSleep?: () => void;
-  onWakeUp?: () => void;
 }
 
 export default function Sidebar({ 
@@ -37,11 +31,6 @@ export default function Sidebar({
   onNewChat,
   activeWorkspace,
   onSelectWorkspace,
-  hungerLevel = 0,
-  onFeedChubaka,
-  isSleeping = false,
-  onSleep,
-  onWakeUp
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -247,22 +236,8 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Profile Footer */}
-      <div className="sidebar-v2-footer">
-        {/* Chubaka Hunger Bar */}
-        {!collapsed && (
-          <div style={{ marginBottom: "12px" }}>
-            <ChubakaHungerBar 
-              hungerLevel={hungerLevel} 
-              onFeed={onFeedChubaka}
-              compact={true}
-              isSleeping={isSleeping}
-              onSleep={onSleep}
-              onWakeUp={onWakeUp}
-            />
-          </div>
-        )}
-      </div>
+      {/* Footer */}
+      <div className="sidebar-v2-footer" />
     </aside>
   );
 }

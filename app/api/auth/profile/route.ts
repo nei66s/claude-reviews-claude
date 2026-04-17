@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/server/request";
 import { hasDatabase, updateDbUser } from "@/lib/server/db";
 
+const AVATAR_MAX_BYTES = 500 * 1024;
+
+function getBase64ImageByteSize(dataUrl: string) {
+  const commaIndex = dataUrl.indexOf(",");
+  const base64Payload = commaIndex >= 0 ? dataUrl.slice(commaIndex + 1) : dataUrl;
+  return Buffer.byteLength(base64Payload, "base64");
+}
+
 export async function PUT(request: NextRequest) {
   const user = requireUser(request);
   if (!user) {
@@ -20,18 +28,25 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validar avatar se fornecido (máximo 500KB, base64)
-    if (avatar && typeof avatar === "string") {
-      if (avatar.length > 500000) {
+    const cleanName = displayName.trim();
+    const cleanAvatar = avatar && typeof avatar === "string" ? avatar.trim() : null;
+
+    // Validar avatar se fornecido (máximo 500KB em bytes reais da imagem)
+    if (cleanAvatar && cleanAvatar.startsWith("data:")) {
+      if (!cleanAvatar.startsWith("data:image/")) {
+        return NextResponse.json(
+          { error: "Arquivo deve ser uma imagem" },
+          { status: 400 }
+        );
+      }
+
+      if (getBase64ImageByteSize(cleanAvatar) > AVATAR_MAX_BYTES) {
         return NextResponse.json(
           { error: "Foto muito grande (máximo 500KB)" },
           { status: 400 }
         );
       }
     }
-
-    const cleanName = displayName.trim();
-    const cleanAvatar = avatar && typeof avatar === "string" ? avatar.trim() : null;
 
     // Se houver banco de dados, atualizar lá também
     let updatedDbUser = null;

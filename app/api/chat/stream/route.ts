@@ -17,6 +17,7 @@ import { getPsychologicalProfile, generateProfilePrompt, type PsychologicalProfi
 import { orchestrateMemoryCandidates } from "@/lib/server/memory/orchestrator";
 import { extractMemoryCandidates } from "@/lib/server/memory/extract-memory-candidates";
 import { isMemoryOrchestratorEnabled } from "@/lib/server/memory/flags";
+import { buildContextPack, type ContextPack } from "@/lib/server/memory/context-builder";
 
 export const runtime = "nodejs";
 
@@ -621,6 +622,7 @@ function buildInstructions(
   fullAccess: boolean,
   permissionMode: string,
   memoryMode: string,
+  memoryContext: ContextPack | null,
   workflow?: Awaited<ReturnType<typeof import('@/lib/server/store').getWorkflowState>>,
   psychProfile?: PsychologicalProfile | null,
   selectedAgent?: CoordinationMember | null,
@@ -665,6 +667,18 @@ Confiança desta análise: ${Math.round(psychProfile.confidenceScore * 100)}%
 (Baseado em ${psychProfile.totalFeedback} respostas avaliadas: ${psychProfile.likeCount} positivas, ${psychProfile.dislikeCount} negativas)`;
   }
 
+  let memorySection = "";
+  if (memoryContext && shouldIncludeMemoryContext(memoryContext)) {
+    memorySection = `
+
+## MEMÓRIA DO USUÁRIO (Perfil consolidado + itens ativos)
+- Antes de perguntar algo ao usuário, confira esta seção e use os fatos aqui quando aplicável.
+- Se houver conflito/ambiguidade, peça confirmação.
+- Não mencione "memória", "orchestrator" ou camadas internas ao usuário; use a informação naturalmente.
+
+${formatMemoryContextForPrompt(memoryContext)}`;
+  }
+
   const agentSection = buildCoordinationAgentInstructions(selectedAgent ?? null);
 
   return `${BASE_INSTRUCTIONS}
@@ -672,9 +686,69 @@ Confiança desta análise: ${Math.round(psychProfile.confidenceScore * 100)}%
 Filesystem mode: ${fullAccess ? "full computer access enabled by the user" : "restricted to current workspace"}.
 Permission mode: ${permissionMode}.
 Memory mode: ${memoryMode}.
-Obsidian vault path: obsidian-vault/ inside the current workspace.${profileSection}${workflowSection}${
+Obsidian vault path: obsidian-vault/ inside the current workspace.${memorySection}${profileSection}${workflowSection}${
     agentSection ? `\n\n${agentSection}` : ""
   }`;
+}
+
+function shouldIncludeMemoryContext(memoryContext: ContextPack) {
+  return Boolean(
+    (memoryContext.summaryShort || "").trim() ||
+      (memoryContext.summaryLong || "").trim() ||
+      (Array.isArray(memoryContext.keyFacts) && memoryContext.keyFacts.length) ||
+      (Array.isArray(memoryContext.activeGoals) && memoryContext.activeGoals.length) ||
+      (Array.isArray(memoryContext.knownConstraints) && memoryContext.knownConstraints.length) ||
+      (memoryContext.interactionPreferences && Object.keys(memoryContext.interactionPreferences).length) ||
+      (Array.isArray(memoryContext.memoryItems) && memoryContext.memoryItems.length),
+  );
+}
+
+function safeJson(value: unknown) {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "";
+  }
+}
+
+function clampText(text: string, maxLen: number) {
+  const normalized = String(text || "").trim().replace(/\s+/g, " ");
+  if (!normalized) return "";
+  return normalized.length > maxLen ? `${normalized.slice(0, maxLen - 1)}…` : normalized;
+}
+
+function formatMemoryContextForPrompt(memoryContext: ContextPack) {
+  const lines: string[] = [];
+
+  const summaryShort = clampText(memoryContext.summaryShort, 500);
+  const summaryLong = clampText(memoryContext.summaryLong, 900);
+
+  if (summaryShort) lines.push(`summaryShort: ${summaryShort}`);
+  if (summaryLong) lines.push(`summaryLong: ${summaryLong}`);
+
+  if (Array.isArray(memoryContext.keyFacts) && memoryContext.keyFacts.length) {
+    lines.push(`keyFacts: ${clampText(safeJson(memoryContext.keyFacts), 700)}`);
+  }
+  if (Array.isArray(memoryContext.activeGoals) && memoryContext.activeGoals.length) {
+    lines.push(`activeGoals: ${clampText(safeJson(memoryContext.activeGoals), 700)}`);
+  }
+  if (memoryContext.interactionPreferences && Object.keys(memoryContext.interactionPreferences).length) {
+    lines.push(`interactionPreferences: ${clampText(safeJson(memoryContext.interactionPreferences), 700)}`);
+  }
+  if (Array.isArray(memoryContext.knownConstraints) && memoryContext.knownConstraints.length) {
+    lines.push(`knownConstraints: ${clampText(safeJson(memoryContext.knownConstraints), 700)}`);
+  }
+
+  if (Array.isArray(memoryContext.memoryItems) && memoryContext.memoryItems.length) {
+    lines.push("memoryItems:");
+    for (const item of memoryContext.memoryItems.slice(0, 12)) {
+      const label = [item.type, item.category].filter(Boolean).join("/");
+      const content = clampText(item.content, 220);
+      lines.push(`- ${label}: ${content}`);
+    }
+  }
+
+  return lines.join("\n");
 }
 
 function workflowHasOpenSteps(
@@ -1385,8 +1459,19 @@ export async function POST(request: NextRequest) {
       const toolOutputCache = new Map<string, string>();
 
       try {
-        // Buscar perfil psicológico do usuário
-        const psychProfile = await getPsychologicalProfile(user.id).catch(() => null);
+        const [psychProfile, memoryContext] = await Promise.all([
+          // Buscar perfil psicológico do usuário
+          getPsychologicalProfile(user.id).catch(() => null),
+          // Montar contexto de memória (perfil consolidado + itens ativos)
+          isMemoryOrchestratorEnabled() && settings.memoryMode !== "off"
+            ? buildContextPack({
+                userId: user.id,
+                agentType: selectedAgentId ?? undefined,
+                taskType: "chat",
+                limitItems: 12,
+              }).catch(() => null)
+            : Promise.resolve(null),
+        ]);
 
         const workflowRequiresTools = workflowHasOpenSteps(activeWorkflow ?? undefined);
         const strictToolRequirement = workflowRequiresTools;
@@ -1417,6 +1502,7 @@ export async function POST(request: NextRequest) {
               settings.fullAccess,
               settings.permissionMode,
               settings.memoryMode,
+              memoryContext,
               activeWorkflow ?? undefined,
               psychProfile,
               selectedAgent,

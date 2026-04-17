@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { authenticate, createToken, isAuthConfigured } from "@/lib/server/auth";
 import { appendLog } from "@/lib/server/store";
+import { findDbUserByEmail, hasDatabase } from "@/lib/server/db";
 
 export async function POST(request: NextRequest) {
   if (!isAuthConfigured()) {
@@ -23,11 +24,24 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  let avatar = null;
+  if (hasDatabase()) {
+    try {
+      const dbUser = await findDbUserByEmail(user.email).catch(() => null);
+      avatar = dbUser?.avatar ?? null;
+    } catch {
+      // Continue without avatar if DB fails
+    }
+  }
+
   await appendLog(user, "info", "Login realizado", { email: user.email });
 
   return NextResponse.json({
     token: createToken(user),
-    user,
+    user: {
+      ...user,
+      avatar,
+    },
   });
 }
 
