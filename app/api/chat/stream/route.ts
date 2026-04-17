@@ -35,6 +35,14 @@ type CoordinationData = {
   members: CoordinationMember[];
 };
 
+const DEFAULT_BACKEND_URL = "http://127.0.0.1:3001";
+
+function getBackendUrl() {
+  const raw = process.env.BACKEND_URL?.trim();
+  if (!raw) return DEFAULT_BACKEND_URL;
+  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
 /** Strip bare JSON objects/arrays the model sometimes leaks into response text. */
 function cleanText(text: string): string {
   const technicalLine =
@@ -175,8 +183,8 @@ function pickCoordinationAgentId(members: CoordinationMember[], preferredId: str
   return chocks?.id ?? members[0]?.id ?? "chocks";
 }
 
-async function fetchCoordinationData(origin: string): Promise<CoordinationData> {
-  const initResponse = await fetch(`${origin}/api/coordination/family/init`, {
+async function fetchCoordinationData(backendUrl: string): Promise<CoordinationData> {
+  const initResponse = await fetch(`${backendUrl}/api/coordination/family/init`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
@@ -193,7 +201,7 @@ async function fetchCoordinationData(origin: string): Promise<CoordinationData> 
     throw new Error("Equipe de coordenação indisponível.");
   }
 
-  const membersResponse = await fetch(`${origin}/api/coordination/family/members`);
+  const membersResponse = await fetch(`${backendUrl}/api/coordination/family/members`);
   if (!membersResponse.ok) {
     const errorText = await membersResponse.text().catch(() => "");
     throw new Error(errorText || "Falha ao carregar membros da coordenação.");
@@ -209,7 +217,7 @@ async function fetchCoordinationData(origin: string): Promise<CoordinationData> 
 }
 
 async function sendCoordinationMessage(params: {
-  origin: string;
+  backendUrl: string;
   teamId: string;
   fromAgentId: string;
   toAgentId: string | null;
@@ -217,7 +225,7 @@ async function sendCoordinationMessage(params: {
   content: string;
   metadata?: Record<string, unknown>;
 }) {
-  const response = await fetch(`${params.origin}/api/coordination/team/${params.teamId}/send`, {
+  const response = await fetch(`${params.backendUrl}/api/coordination/team/${params.teamId}/send`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1167,8 +1175,8 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => null);
   const chatId = typeof body?.chatId === "string" ? body.chatId.trim() : "";
-  const origin = new URL(request.url).origin;
-  const coordinationData = await fetchCoordinationData(origin);
+  const backendUrl = getBackendUrl();
+  const coordinationData = await fetchCoordinationData(backendUrl);
   const requestedAgentId = typeof body?.selectedAgentId === "string" ? body.selectedAgentId.trim() : null;
   const selectedAgentId = pickCoordinationAgentId(coordinationData.members, requestedAgentId);
   const selectedAgent = getCoordinationMember(coordinationData.members, selectedAgentId);
@@ -1193,7 +1201,7 @@ export async function POST(request: NextRequest) {
   }
 
   await sendCoordinationMessage({
-    origin,
+    backendUrl,
     teamId: coordinationTeamId,
     fromAgentId: user.id,
     toAgentId: selectedAgentId,
@@ -1242,7 +1250,7 @@ export async function POST(request: NextRequest) {
       }).catch(() => null);
     }, 0);
     await sendCoordinationMessage({
-      origin,
+      backendUrl,
       teamId: coordinationTeamId,
       fromAgentId: selectedAgentId,
       toAgentId: user.id,
@@ -1319,7 +1327,7 @@ export async function POST(request: NextRequest) {
       }).catch(() => null);
     }, 0);
     await sendCoordinationMessage({
-      origin,
+      backendUrl,
       teamId: coordinationTeamId,
       fromAgentId: selectedAgentId,
       toAgentId: user.id,
@@ -1705,7 +1713,7 @@ export async function POST(request: NextRequest) {
           }).catch(() => null);
         }, 0);
         await sendCoordinationMessage({
-          origin,
+          backendUrl,
           teamId: coordinationTeamId,
           fromAgentId: selectedAgentId,
           toAgentId: user.id,

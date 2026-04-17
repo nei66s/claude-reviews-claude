@@ -13,10 +13,12 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: "3000",
+        BACKEND_URL: "http://127.0.0.1:3001",
       },
       env_production: {
         NODE_ENV: "production",
         PORT: "3000",
+        BACKEND_URL: "http://127.0.0.1:3001",
       },
     },
     {
