@@ -1,0 +1,3 @@
+{
+  "/api/memory/users/[id]/graph/route": "app/api/memory/users/[id]/graph/route.js"
+}

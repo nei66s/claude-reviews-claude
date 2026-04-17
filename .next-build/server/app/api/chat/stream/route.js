@@ -1,0 +1,11 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/chat/stream/route.js")
+R.c("server/chunks/app_lib_server_memory_00i_rnf._.js")
+R.c("server/chunks/app_lib_server_0c2r8hw._.js")
+R.c("server/chunks/app_lib_server_store_ts_01gpwuc._.js")
+R.c("server/chunks/[root-of-the-server]__11j~5mn._.js")
+R.c("server/chunks/_0uhnnd~._.js")
+R.c("server/chunks/node_modules_openai_13pw41v._.js")
+R.c("server/chunks/[root-of-the-server]__0sox1mt._.js")
+R.c("server/chunks/_next-internal_server_app_api_chat_stream_route_actions_0ef7us3.js")
+R.m(61829)
+module.exports=R.m(61829).exports

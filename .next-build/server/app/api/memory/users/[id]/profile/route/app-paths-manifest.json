@@ -1,0 +1,3 @@
+{
+  "/api/memory/users/[id]/profile/route": "app/api/memory/users/[id]/profile/route.js"
+}

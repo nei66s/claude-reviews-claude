@@ -1,0 +1,3 @@
+{
+  "/api/memory/users/[id]/audit/route": "app/api/memory/users/[id]/audit/route.js"
+}
