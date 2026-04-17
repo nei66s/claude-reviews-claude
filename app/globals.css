@@ -2668,11 +2668,6 @@ button:disabled,
         position: relative;
       }
 
-      .message.agent:hover .message-feedback-wrapper {
-        opacity: 1;
-        pointer-events: auto;
-      }
-
       .message.user .message-row {
         justify-content: flex-end;
       }
@@ -2913,11 +2908,12 @@ button:disabled,
       }
 
       .message-feedback-wrapper {
-        margin-top: 12px;
-        padding: 0 0 0 0;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        pointer-events: none;
+        display: none;
+      }
+
+      .bubble-feedback {
+        margin-left: auto;
+        align-self: center;
       }
 
       .bubble-attachments {
@@ -2930,12 +2926,13 @@ button:disabled,
       /* 🐕 Chocks Header - Personal & Cute */
       .chocks-header {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         gap: 10px;
         flex-wrap: wrap;
         margin-bottom: 10px;
         padding-bottom: 8px;
         border-bottom: 1.5px solid rgba(16, 185, 129, 0.25);
+        position: relative;
       }
 
       .agent-title-group {

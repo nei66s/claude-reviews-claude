@@ -168,6 +168,30 @@ export default function MessageBubble({
                   <span className="agent-support-name">{helperAgentProfile.name}</span>
                 </div>
               ) : null}
+              {messageId && conversationId && (
+                <div className="bubble-feedback">
+                  <MessageFeedback
+                    messageId={messageId}
+                    conversationId={conversationId}
+                    initialFeedback={message.feedback ?? null}
+                    onSubmitFeedback={async (feedback) => {
+                      try {
+                        await requestJson("/chat/feedback", {
+                          method: "POST",
+                          body: JSON.stringify({
+                            messageId: messageId,
+                            conversationId: conversationId,
+                            feedback,
+                            feedbackText: null,
+                          }),
+                        });
+                      } catch (error) {
+                        console.error("Failed to submit feedback:", error);
+                      }
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -294,31 +318,6 @@ export default function MessageBubble({
           <SourcesList trace={message.trace} />
         </div>
       </div>
-      
-      {isAgent && messageId && conversationId && (
-        <div className="message-feedback-wrapper">
-          <MessageFeedback
-            messageId={messageId}
-            conversationId={conversationId}
-            initialFeedback={message.feedback ?? null}
-            onSubmitFeedback={async (feedback, text) => {
-              try {
-                await requestJson("/chat/feedback", {
-                  method: "POST",
-                  body: JSON.stringify({
-                    messageId: messageId,
-                    conversationId: conversationId,
-                    feedback,
-                    feedbackText: text,
-                  }),
-                });
-              } catch (error) {
-                console.error("Failed to submit feedback:", error);
-              }
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }
