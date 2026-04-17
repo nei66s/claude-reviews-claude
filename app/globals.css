@@ -5504,3 +5504,316 @@ body {
     width: 100%;
   }
 }
+
+/* ===== MOBILE-FIRST RESPONSIVE STYLES ===== */
+
+/* Safe Areas para notch/Dynamic Island */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+  .safe-area-bottom {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  .safe-area-left {
+    padding-left: max(0px, env(safe-area-inset-left));
+  }
+  .safe-area-right {
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* Remove tap highlight em botões */
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Smooth scroll em iOS */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Inputs e textareas: font-size 16px para evitar zoom automático */
+input,
+textarea,
+select {
+  font-size: 16px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Remove outline padrão de inputs em iOS */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  border-radius: 8px;
+}
+
+/* ===== MOBILE VIEW (< 640px) ===== */
+@media (max-width: 639px) {
+  /* Esconder elementos desktop */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Body e html para mobile */
+  html,
+  body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Container principal: flex column */
+  .app,
+  .shell,
+  .app-shell-container,
+  .app-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Sidebar: drawer em mobile */
+  .sidebar,
+  aside,
+  [class*="sidebar"] {
+    position: fixed !important;
+    left: -280px !important;
+    top: 0 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    z-index: 50 !important;
+    background: var(--sidebar) !important;
+    border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0 !important;
+    transition: left 0.3s ease !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .sidebar.open,
+  .sidebar[data-open="true"] {
+    left: 0 !important;
+  }
+
+  /* Topbar: sticky */
+  .topbar,
+  .top-bar,
+  header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Conteúdo: flex fill com scroll */
+  .content,
+  main,
+  [class*="content"]:not(.topbar),
+  [class*="main"]:not(.topbar) {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+  }
+
+  /* Buttons: altura mínima 44px */
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  a.button {
+    min-height: 44px !important;
+    padding: 12px 16px !important;
+    border-radius: var(--border-radius-md) !important;
+    font-size: 16px !important;
+  }
+
+  /* Inputs: altura mínima 44px */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="number"],
+  textarea,
+  select {
+    min-height: 44px !important;
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    border-radius: var(--border-radius-md) !important;
+    width: 100% !important;
+  }
+
+  /* Textarea */
+  textarea {
+    min-height: 100px !important;
+    resize: vertical !important;
+  }
+
+  /* Padding consistente em mobile */
+  .container {
+    padding: var(--gap-lg) var(--gap-lg) !important;
+  }
+
+  /* Grid: 1 coluna em mobile */
+  [class*="grid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Modal: fullscreen em mobile */
+  [role="dialog"],
+  .modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    z-index: 60 !important;
+  }
+
+  /* Overlay: fullscreen */
+  [class*="overlay"],
+  .backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 50 !important;
+  }
+
+  /* Dropdown/Popover: bottom sheet em mobile */
+  [role="menu"],
+  [role="listbox"],
+  .dropdown {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-width: none !important;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0 !important;
+    max-height: 80vh !important;
+    z-index: 55 !important;
+  }
+
+  /* Feedback: sem hover, usar active */
+  button:active,
+  [role="button"]:active {
+    opacity: 0.7 !important;
+    transition: all 0.15s ease !important;
+  }
+
+  /* Tipografia responsiva */
+  h1 {
+    font-size: 24px !important;
+    line-height: 1.3 !important;
+  }
+
+  h2 {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+  }
+
+  h3 {
+    font-size: 18px !important;
+  }
+
+  body {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Sem horizontal scroll */
+  body,
+  html {
+    overflow-x: hidden !important;
+  }
+
+  /* Touchable targets: mínimo 44x44px */
+  [class*="button"],
+  [class*="toggle"],
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+
+/* FORCE MOBILE LAYOUT - Final cascade override for desktop .app definition */
+@media (max-width: 639px) {
+  .app {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: unset !important;
+    grid-template-rows: unset !important;
+  }
+  
+  .app.sidebar-collapsed {
+    grid-template-columns: unset !important;
+  }
+}
+
+/* ===== TABLET VIEW (640px - 1024px) ===== */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .mobile-only {
+    display: none !important;
+  }
+
+  .sidebar {
+    position: static !important;
+    left: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    border-radius: 0 !important;
+  }
+
+  [role="dialog"],
+  .modal {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90% !important;
+    max-width: 600px !important;
+    height: auto !important;
+    max-height: 90vh !important;
+    border-radius: var(--border-radius-lg) !important;
+  }
+}
+
+/* ===== DESKTOP VIEW (1024px+) ===== */
+@media (min-width: 1024px) {
+  .mobile-only {
+    display: none !important;
+  }
+
+  .sidebar {
+    position: static !important;
+  }
+
+  button:hover,
+  [role="button"]:hover {
+    opacity: 0.9 !important;
+  }
+}
