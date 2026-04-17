@@ -50,7 +50,7 @@ function buildErrorMessage(response: Response, body: string) {
   }
 
   if (contentType.includes("text/html") || trimmedBody.startsWith("<!DOCTYPE html")) {
-    return `API request failed with ${response.status} ${response.statusText}. Check that the Chokito backend is running on ${process.env.NEXT_PUBLIC_CHOKITO_API_ORIGIN || "http://127.0.0.1:3000"} and that the Next app is running on a different port.`;
+    return `API request failed with ${response.status} ${response.statusText}. The response looks like HTML, which often means the request hit the Next app (or an intermediate proxy) instead of the Chokito API. Check that the Chokito backend is running and that /api is correctly routed to it.`;
   }
 
   if (trimmedBody) {
