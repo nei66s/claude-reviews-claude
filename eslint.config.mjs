@@ -7,6 +7,8 @@ export default defineConfig([
   ...nextTypeScript,
   {
     ignores: [
+      ".next/**",
+      ".next-build/**",
       ".chocks-local/**",
       "agent-ts/**",
       "prototype-ts/**",
