@@ -24,7 +24,6 @@ const DEFAULT_IDENTITY: AgentIdentity = {
 };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __chocksAgentIdentityTableEnsured: Promise<void> | undefined;
 }
 

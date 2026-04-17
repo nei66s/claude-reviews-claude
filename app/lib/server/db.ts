@@ -28,7 +28,6 @@ export function isDatabaseBusyError(error: unknown) {
 
 declare global {
   var __chocksPgPool: Pool | undefined;
-  // eslint-disable-next-line no-var
   var __chocksPgPoolShutdownHandlersRegistered: boolean | undefined;
 }
 
@@ -100,7 +99,7 @@ export async function dbQuery<T extends QueryResultRow = QueryResultRow>(
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const db = getDb();
-      return (await db.query<T>(text, params as any[])) as QueryResult<T>;
+      return (await db.query<T>(text, params)) as QueryResult<T>;
     } catch (error) {
       const shouldRetry = attempt < retries && isDatabaseBusyError(error);
       if (!shouldRetry) throw error;

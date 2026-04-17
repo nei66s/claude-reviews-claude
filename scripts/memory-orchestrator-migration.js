@@ -1,5 +1,8 @@
-const fs = require("node:fs");
-const path = require("node:path");
+async function loadNodeModules() {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  return { fs, path };
+}
 
 async function loadDeps() {
   const nextEnv = await import("@next/env");
@@ -28,7 +31,7 @@ function maskDbUrl(url) {
   }
 }
 
-function readMigrationSql() {
+function readMigrationSql({ fs, path }) {
   const migrationPath = path.join(
     process.cwd(),
     "app",
@@ -61,6 +64,7 @@ async function main() {
   const args = new Set(process.argv.slice(2));
   const checkOnly = args.has("--check");
 
+  const nodeModules = await loadNodeModules();
   const { loadEnvConfig, Pool } = await loadDeps();
   loadEnvConfig(process.cwd());
 
@@ -92,7 +96,7 @@ async function main() {
       return;
     }
 
-    const { migrationPath, sql } = readMigrationSql();
+    const { migrationPath, sql } = readMigrationSql(nodeModules);
     console.log(`⚙️ Aplicando migration: ${migrationPath}`);
     await pool.query(sql);
 

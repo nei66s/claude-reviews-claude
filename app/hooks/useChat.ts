@@ -12,6 +12,12 @@ type CoordinationAgentProfile = {
   role?: string;
 };
 
+type CoordinationFamilyMember = {
+  id: string;
+  name?: string;
+  role?: string;
+};
+
 type CoordinationData = {
   teamId: string | null;
   agents: CoordinationAgentProfile[];
@@ -168,8 +174,10 @@ export function useChat(enabled = true) {
         requestJson("/coordination/family/members"),
       ]);
 
-      const members = Array.isArray(membersResponse?.members) ? membersResponse.members : [];
-      const memberMap = new Map(members.map((member) => [member.id, member]));
+      const members = Array.isArray(membersResponse?.members)
+        ? (membersResponse.members as CoordinationFamilyMember[])
+        : [];
+      const memberMap = new Map<string, CoordinationFamilyMember>(members.map((member) => [member.id, member]));
       const agents = Array.isArray(agentsResponse?.agents) ? agentsResponse.agents : [];
 
       const normalizedAgents = agents.map((agent: { agent_id: string; role?: string }) => {

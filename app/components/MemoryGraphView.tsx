@@ -1,7 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type MutableRefObject } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MutableRefObject,
+  type ReactElement,
+} from "react";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "../lib/auth";
@@ -111,7 +119,7 @@ const ForceGraph2D = dynamic(
   props: ForceGraphProps<NodeType, LinkType> & {
     ref?: MutableRefObject<ForceGraphMethods<NodeType, LinkType> | undefined>;
   },
-) => JSX.Element;
+) => ReactElement;
 
 function formatDate(value: string | null | undefined) {
   if (!value) return "";
@@ -316,7 +324,7 @@ export default function MemoryGraphView() {
 
   const canInspectOtherUsers = user?.id === "local-admin";
 
-  const fgRef = useRef<ForceGraphMethods<GraphNode, GraphLink>>();
+  const fgRef = useRef<ForceGraphMethods<GraphNode, GraphLink> | undefined>(undefined);
 
   const [forces, setForces] = useState(() => ({
     centripetal: 0.02,
