@@ -8,6 +8,8 @@ export const workspaceRouteById = {
   audit: "/audit",
   coordination: "/coordination",
   "doutora-kitty": "/doutora-kitty",
+  "memory-admin": "/memory-admin",
+  "memory-graph": "/memory-graph",
 } as const;
 
 export type WorkspaceId = keyof typeof workspaceRouteById;

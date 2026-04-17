@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       temperature: 0,
     });
 
-    outputText = extractOutputText(response as Record<string, unknown>);
+    outputText = extractOutputText(response as unknown as Record<string, unknown>);
   } catch (error) {
     console.error("[Coordination Triage] OpenAI error:", error);
     return NextResponse.json({ agentId: null });

@@ -19,6 +19,8 @@ import CommandPalette from "./CommandPalette";
 import WelcomeScreen from "./WelcomeScreen";
 import ToastViewport from "./ToastViewport";
 import DoutorKittyDashboard from "./DoutorKittyDashboard";
+import MemoryAdminView from "./MemoryAdminView";
+import MemoryGraphView from "./MemoryGraphView";
 import { CoordinationView } from "./CoordinationView";
 import EasterEggManager from "./EasterEggManager";
 import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
@@ -476,6 +478,8 @@ export default function AppShell({
           {activeWorkspace === "monitor" && <MonitorView />}
           {activeWorkspace === "audit" && <AuditView />}
           {activeWorkspace === "code" && <PluginsView />}
+          {activeWorkspace === "memory-admin" && <MemoryAdminView />}
+          {activeWorkspace === "memory-graph" && <MemoryGraphView />}
           {activeWorkspace === "doutora-kitty" && (
             <DoutorKittyDashboard interpretation={kittyInterpretation} isLoading={kittyIsLoading} />
           )}

@@ -75,7 +75,13 @@ export default function Sidebar({
     )},
     { id: "doutora-kitty", label: "Doutora Kitty", color: "#ec4899", emoji: "🩺", icon: (
       <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"></path><path d="M12 6v12"></path><path d="M6 12h12"></path></svg>
-    )}
+    )},
+    { id: "memory-admin", label: "Memória (Admin)", color: "#f97316", emoji: "🧠", icon: (
+      <svg viewBox="0 0 24 24"><path d="M8 6a3 3 0 0 1 6 0v1"></path><path d="M6 9a3 3 0 0 1 3-3"></path><path d="M18 9a3 3 0 0 0-3-3"></path><path d="M9 7v10"></path><path d="M15 7v10"></path><path d="M6 12a3 3 0 0 0 3 3"></path><path d="M18 12a3 3 0 0 1-3 3"></path><path d="M8 19h8"></path></svg>
+    )},
+    { id: "memory-graph", label: "Grafo de Memória", color: "#0ea5e9", emoji: "🕸️", icon: (
+      <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.2"></circle><circle cx="18" cy="7" r="2.2"></circle><circle cx="18" cy="17" r="2.2"></circle><path d="M8 12h6"></path><path d="M16.3 8.3 8.7 11.2"></path><path d="M16.3 15.7 8.7 12.8"></path></svg>
+    )},
   ];
 
   return (

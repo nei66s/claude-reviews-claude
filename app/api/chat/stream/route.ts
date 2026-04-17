@@ -7,12 +7,16 @@ import { NextRequest } from "next/server";
 
 import type { SessionUser } from "@/lib/server/auth";
 import { createToken } from "@/lib/server/auth";
+import { hasDatabase } from "@/lib/server/db";
 import type { ChatMessage } from "@/lib/server/store";
 import { appendConversationMessages, appendLog, readAppSettings, getWorkflowState } from "@/lib/server/store";
 import { requireUser } from "@/lib/server/request";
 import { chatToolDefinitions, runChatTool } from "@/lib/server/chat-tools";
 import { listFileEntries } from "@/lib/server/files";
 import { getPsychologicalProfile, generateProfilePrompt, type PsychologicalProfile } from "@/lib/server/psychological-profile";
+import { orchestrateMemoryCandidates } from "@/lib/server/memory/orchestrator";
+import { extractMemoryCandidates } from "@/lib/server/memory/extract-memory-candidates";
+import { isMemoryOrchestratorEnabled } from "@/lib/server/memory/flags";
 
 export const runtime = "nodejs";
 
@@ -551,7 +555,7 @@ async function persistAssistantReply(
   selectedAgentId: string,
   selectedAgentName: string | null,
 ) {
-  if (!chatId) return;
+  if (!chatId) return { userMessageId: null, assistantMessageId: null };
 
   const previousAgentId =
     [...messages].reverse().find((message) => message?.role === "agent")?.agentId || "chocks";
@@ -580,7 +584,9 @@ async function persistAssistantReply(
     },
   ]);
 
-  return insertedMessageIds[insertedMessageIds.length - 1] ?? null;
+  const userMessageId = insertedMessageIds[0] ?? null;
+  const assistantMessageId = insertedMessageIds[insertedMessageIds.length - 1] ?? null;
+  return { userMessageId, assistantMessageId };
 }
 
 function toModelInput(messages: ChatMessage[]): OpenAI.Responses.ResponseInput {
@@ -875,6 +881,67 @@ async function maybeAutoCaptureMemory(params: {
   } as const;
 }
 
+async function maybeAutoCaptureMemoryOrchestrator(params: {
+  user: SessionUser;
+  chatId: string;
+  prompt: string;
+  recentUserTexts: string[];
+  sourceMessageId: number | null;
+  apiKey: string;
+  model: string;
+  actor: string;
+}) {
+  if (!isMemoryOrchestratorEnabled()) {
+    return;
+  }
+  if (!hasDatabase()) {
+    return;
+  }
+
+  const { candidates, stats } = await extractMemoryCandidates({
+    input: {
+      sourceConversationId: params.chatId,
+      sourceMessageId: params.sourceMessageId,
+      userPrompt: params.prompt,
+      recentUserTexts: params.recentUserTexts,
+      createdBy: "chat_stream_deterministic_v1",
+    },
+    apiKey: params.apiKey,
+    llmModel: process.env.OPENAI_MEMORY_EXTRACTION_MODEL?.trim() || params.model,
+    maxTotalCandidates: 5,
+    maxLlmAccepted: 3,
+  });
+
+  console.info(`[MemoryOrchestrator] heuristic extractor ran; generated=${stats.heuristicGenerated}`);
+  if (stats.llmAttempted) {
+    console.info(
+      `[MemoryOrchestrator] LLM extractor ran; accepted=${stats.llmAccepted} discarded=${stats.llmDiscarded}`,
+    );
+  }
+  if (stats.llmAttempted && stats.llmFailed) {
+    console.warn("[MemoryOrchestrator] LLM extractor failed; falling back to heuristic-only candidates.");
+  }
+  console.info(`[MemoryOrchestrator] combined candidates ready; total=${stats.combinedTotal}`);
+
+  if (candidates.length === 0) {
+    return;
+  }
+
+  try {
+    await orchestrateMemoryCandidates({
+      userId: params.user.id,
+      candidates: candidates.map((candidate) => ({ id: crypto.randomUUID(), ...candidate })),
+      actor: params.actor,
+      reason: "chat_stream_auto",
+      compileProfile: true,
+    });
+  } catch (error) {
+    // Nunca quebrar o chat por falha de memória.
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn("[MemoryOrchestrator] orchestration failed; falling back to chat only:", message);
+  }
+}
+
 function buildFallbackFinalTextFromTrace(traceEntries: unknown[]) {
   let completedTools = 0;
   const errorMessages: string[] = [];
@@ -1143,7 +1210,7 @@ export async function POST(request: NextRequest) {
   const directPdfResult = await getDirectPdfResult(user, chatId, prompt, previousAssistantText);
 
   if (directDesktopResult) {
-    const assistantMessageId = await persistAssistantReply(
+    const persisted = await persistAssistantReply(
       user,
       chatId,
       prompt,
@@ -1152,6 +1219,28 @@ export async function POST(request: NextRequest) {
       selectedAgentId,
       selectedAgentName,
     );
+    const assistantMessageId = persisted.assistantMessageId;
+    const sourceMessageId = (() => {
+      const parsed = Number(persisted.userMessageId);
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    })();
+    const recentUserTexts = messages
+      .filter((message) => message?.role === "user" && typeof message?.content === "string")
+      .map((message) => message.content)
+      .slice(0, -1);
+
+    setTimeout(() => {
+      void maybeAutoCaptureMemoryOrchestrator({
+        user,
+        chatId,
+        prompt,
+        recentUserTexts,
+        sourceMessageId,
+        apiKey,
+        model,
+        actor: selectedAgentName || selectedAgentId,
+      }).catch(() => null);
+    }, 0);
     await sendCoordinationMessage({
       origin,
       teamId: coordinationTeamId,
@@ -1198,7 +1287,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (directPdfResult) {
-    const assistantMessageId = await persistAssistantReply(
+    const persisted = await persistAssistantReply(
       user,
       chatId,
       prompt,
@@ -1207,6 +1296,28 @@ export async function POST(request: NextRequest) {
       selectedAgentId,
       selectedAgentName,
     );
+    const assistantMessageId = persisted.assistantMessageId;
+    const sourceMessageId = (() => {
+      const parsed = Number(persisted.userMessageId);
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    })();
+    const recentUserTexts = messages
+      .filter((message) => message?.role === "user" && typeof message?.content === "string")
+      .map((message) => message.content)
+      .slice(0, -1);
+
+    setTimeout(() => {
+      void maybeAutoCaptureMemoryOrchestrator({
+        user,
+        chatId,
+        prompt,
+        recentUserTexts,
+        sourceMessageId,
+        apiKey,
+        model,
+        actor: selectedAgentName || selectedAgentId,
+      }).catch(() => null);
+    }, 0);
     await sendCoordinationMessage({
       origin,
       teamId: coordinationTeamId,
@@ -1562,7 +1673,7 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encodeEvent("trace", memoryTrace));
         }
 
-        const assistantMessageId = await persistAssistantReply(
+        const persisted = await persistAssistantReply(
           user,
           chatId,
           prompt,
@@ -1571,6 +1682,28 @@ export async function POST(request: NextRequest) {
           selectedAgentId,
           selectedAgentName,
         );
+        const assistantMessageId = persisted.assistantMessageId;
+        const sourceMessageId = (() => {
+          const parsed = Number(persisted.userMessageId);
+          return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+        })();
+        const recentUserTexts = messages
+          .filter((message) => message?.role === "user" && typeof message?.content === "string")
+          .map((message) => message.content)
+          .slice(0, -1);
+
+        setTimeout(() => {
+          void maybeAutoCaptureMemoryOrchestrator({
+            user,
+            chatId,
+            prompt,
+            recentUserTexts,
+            sourceMessageId,
+            apiKey,
+            model,
+            actor: selectedAgentName || selectedAgentId,
+          }).catch(() => null);
+        }, 0);
         await sendCoordinationMessage({
           origin,
           teamId: coordinationTeamId,
