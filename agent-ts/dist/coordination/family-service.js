@@ -2,36 +2,40 @@
  * Pimpotasma Swarm Service
  * Create and manage family-based workflows
  */
-import { createTeam, registerAgent, startCoordinationWorkflow, addWorkflowSteps, getTeam, getAllTeams, } from './index.js';
+import { createTeam, registerAgent, startCoordinationWorkflow, addWorkflowSteps, getTeam, getAllTeams, getTeamAgents, } from './index.js';
 import { getFamilyAgent, getFamilyAgentNames, } from './family-agents.js';
 /**
  * Create the main "family-pimpotasma" team if it doesn't exist
  */
 export async function ensureFamilyTeamExists() {
     try {
-        // Check if family team already exists
         const teams = await getAllTeams();
         const existingTeam = teams.find((t) => t.name === 'family-pimpotasma');
+        const ensureFamilyAgentsRegistered = async (teamId) => {
+            const currentAgents = await getTeamAgents(teamId);
+            const currentIds = new Set(currentAgents.map((agent) => agent.agent_id));
+            const baseFamily = getFamilyAgentNames().filter((member) => member !== 'chocks');
+            for (const member of baseFamily) {
+                if (currentIds.has(member))
+                    continue;
+                const agent = getFamilyAgent(member);
+                if (agent) {
+                    await registerAgent(teamId, member, agent.role);
+                }
+            }
+        };
         if (existingTeam) {
+            await ensureFamilyAgentsRegistered(existingTeam.id);
             return existingTeam;
         }
-        // Create the team if it doesn't exist
-        const teamId = await createTeam('family-pimpotasma', 'chocks', // Chocks is the main coordinator
-        {
-            description: 'A família Pimpotasma — Betinha, Pimpim, Bento, Kitty, Chubaka, e mais',
+        const teamId = await createTeam('family-pimpotasma', 'chocks', {
+            description: 'A família Pimpotasma — Betinha, Pimpim, Bento, Kitty, Chubas, e mais',
         });
         const team = await getTeam(teamId);
         if (!team) {
             throw new Error(`Failed to load newly created team: ${teamId}`);
         }
-        // Register base family members
-        const baseFamily = ['pimpim', 'betinha', 'bento', 'kitty', 'chubaka', 'repeteco', 'jorginho', 'tunico'];
-        for (const member of baseFamily) {
-            const agent = getFamilyAgent(member);
-            if (agent) {
-                await registerAgent(teamId, `${member}@family`, agent.role);
-            }
-        }
+        await ensureFamilyAgentsRegistered(teamId);
         return team;
     }
     catch (error) {
@@ -85,7 +89,7 @@ export const WORKFLOW_TEMPLATES = {
             { agent: 'pimpim', task: 'Define visão e estratégia do lançamento' },
             { agent: 'betinha', task: 'Valida viabilidade financeira e operacional' },
             { agent: 'kitty', task: 'Cria comunicação visual e branding' },
-            { agent: 'chubaka', task: 'Testa e aprova qualidade do produto' },
+            { agent: 'chubas', task: 'Testa e aprova qualidade do produto' },
             { agent: 'bento', task: 'Code review e análise de riscos' },
             { agent: 'jorginho', task: 'Valida segurança e conformidade' },
         ],
@@ -151,6 +155,7 @@ export function listFamilyMembers() {
     return getFamilyAgentNames().map((name) => {
         const agent = getFamilyAgent(name);
         return {
+            id: name,
             name: agent?.name,
             role: agent?.role,
             personality: agent?.personality,
