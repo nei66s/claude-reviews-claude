@@ -6,11 +6,12 @@ import { cacheHandler } from './instincts/cache-handler.js'
 import { emotionalStateManager } from './instincts/emotions.js'
 import { buildEmotionalPromptModifier } from './instincts/emotion-responses.js'
 import { AGENT_IDENTITY, PERSONALITY_TRAITS, PERSONALITY_QUIRKS } from './personality.js'
+import { FAMILY_AGENTS } from './coordination/family-agents.js'
 
 dotenv.config()
 
 const OPENAI_KEY = process.env.OPENAI_API_KEY
-const MODEL = process.env.OPENAI_MODEL || 'gpt-5'
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4o'
 const MAX_TOOL_LOOPS = Number(process.env.MAX_TOOL_LOOPS || 6)
 const SYSTEM_PROMPT = `
 🦜 **Você é ${AGENT_IDENTITY.name}** — O papagaio programador fofo, jovem e dedicado do time!
@@ -71,9 +72,14 @@ type AgentContext = {
   permissionMode?: PermissionMode
   latestUserMessage?: string
   approvedTools?: string[]
+  selectedAgentId?: string
+  helperAgentId?: string
 }
 
 function buildSystemPrompt(context?: AgentContext) {
+  const dynamicAgent = context?.selectedAgentId ? FAMILY_AGENTS[context.selectedAgentId] : null
+  const basePrompt = dynamicAgent ? dynamicAgent.systemPrompt : SYSTEM_PROMPT
+  
   const chatLabel = context?.chatId ? `Current conversation id: ${context.chatId}` : 'Current conversation id: global'
   const userLabel = context?.userId ? `Current owner id: ${context.userId}` : 'Current owner id: legacy-local'
   const accessLabel = context?.fullAccess
@@ -89,7 +95,7 @@ function buildSystemPrompt(context?: AgentContext) {
   // 🎭 Add emotional tone to system prompt
   const emotionalModifier = buildEmotionalPromptModifier()
   
-  return `${SYSTEM_PROMPT}\n\n${chatLabel}\n${userLabel}\n${accessLabel}\n${permissionLabel}\n\n${emotionalModifier}\nWorkflow tools are scoped to the current conversation automatically.`
+  return `${basePrompt}\n\n${chatLabel}\n${userLabel}\n${accessLabel}\n${permissionLabel}\n\n${emotionalModifier}\nWorkflow tools are scoped to the current conversation automatically.`
 }
 
 export async function runAgent(
@@ -101,221 +107,263 @@ export async function runAgent(
   const client = new OpenAI({ apiKey: OPENAI_KEY })
   const trace: ToolTraceEntry[] = []
 
-  let response: any = await client.responses.create({
+  let response = await client.chat.completions.create({
     model: MODEL,
-    input: [
+    messages: [
       { role: 'system', content: buildSystemPrompt(context) },
       ...messages,
     ] as any,
     tools: toolDefinitions as any,
+    tool_choice: 'auto',
     parallel_tool_calls: false,
   })
 
   for (let i = 0; i < MAX_TOOL_LOOPS; i += 1) {
-    const toolCalls: any[] = (response.output || []).filter((item: any) => item.type === 'function_call')
-    if (toolCalls.length === 0) return { response, trace }
+    const message = response.choices[0].message
+    const toolCalls = message.tool_calls || []
+    
+    if (toolCalls.length === 0) {
+      return { 
+        response: { 
+          output_text: message.content || '',
+          id: response.id
+        }, 
+        trace 
+      }
+    }
 
-    const toolOutputs: Array<{ type: 'function_call_output'; call_id: string; output: string }> = []
+    const toolOutputs: any[] = []
     for (const call of toolCalls) {
       trace.push({
         type: 'tool_call',
-        name: call.name,
-        call_id: call.call_id,
-        arguments: call.arguments || '',
+        name: call.function.name,
+        call_id: call.id,
+        arguments: call.function.arguments || '',
       })
+
       let args: any = {}
       try {
-        args = JSON.parse(call.arguments || '{}')
+        args = JSON.parse(call.function.arguments || '{}')
       } catch (err) {
         const output = JSON.stringify({ ok: false, error: `invalid JSON arguments: ${String(err)}` })
-        trace.push({ type: 'tool_output', call_id: call.call_id, output })
+        trace.push({ type: 'tool_output', call_id: call.id, output })
         toolOutputs.push({
-          type: 'function_call_output',
-          call_id: call.call_id,
-          output,
+          role: 'tool',
+          tool_call_id: call.id,
+          content: output,
         })
         continue
       }
 
       try {
-        const result = await runTool(call.name, args, context)
+        const result = await runTool(call.function.name, args, context)
         const output = JSON.stringify(result)
-        trace.push({ type: 'tool_output', call_id: call.call_id, output })
+        trace.push({ type: 'tool_output', call_id: call.id, output })
         toolOutputs.push({
-          type: 'function_call_output',
-          call_id: call.call_id,
-          output,
+          role: 'tool',
+          tool_call_id: call.id,
+          content: output,
         })
       } catch (err) {
         const output = JSON.stringify({ ok: false, error: String(err) })
-        trace.push({ type: 'tool_output', call_id: call.call_id, output })
+        trace.push({ type: 'tool_output', call_id: call.id, output })
         toolOutputs.push({
-          type: 'function_call_output',
-          call_id: call.call_id,
-          output,
+          role: 'tool',
+          tool_call_id: call.id,
+          content: output,
         })
       }
     }
 
-    response = await client.responses.create({
+    response = await client.chat.completions.create({
       model: MODEL,
-      previous_response_id: response.id,
-      input: toolOutputs as any,
+      messages: [
+        { role: 'system', content: buildSystemPrompt(context) },
+        ...messages,
+        message,
+        ...toolOutputs
+      ] as any,
+      tools: toolDefinitions as any,
     })
   }
 
-  return { response, trace }
-}
-
-type StreamCallbacks = {
-  onTextDelta?: (delta: string) => void
-  onTrace?: (entry: ToolTraceEntry) => void
-}
-
-async function createResponseStream(
-  body: Record<string, unknown>,
-  callbacks: StreamCallbacks,
-) {
-  if (!OPENAI_KEY) throw new Error('OPENAI_API_KEY not set in environment')
-
-  const response = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENAI_KEY}`,
-    },
-    body: JSON.stringify({ ...body, stream: true }),
-  })
-
-  if (!response.ok || !response.body) {
-    const text = await response.text()
-    throw new Error(`Responses stream failed: ${response.status} ${text}`)
+  const finalMessage = response.choices[0].message
+  return { 
+    response: { 
+      output_text: finalMessage.content || '',
+      id: response.id
+    }, 
+    trace 
   }
-
-  let buffer = ''
-  let completedResponse: any = null
-
-  for await (const chunk of response.body as any) {
-    buffer += chunk.toString()
-
-    while (buffer.includes('\n\n')) {
-      const boundary = buffer.indexOf('\n\n')
-      const rawEvent = buffer.slice(0, boundary)
-      buffer = buffer.slice(boundary + 2)
-
-      const lines = rawEvent.split('\n')
-      const dataLines = lines.filter(line => line.startsWith('data:')).map(line => line.slice(5).trim())
-      if (dataLines.length === 0) continue
-
-      const data = dataLines.join('\n')
-      if (data === '[DONE]') continue
-
-      let payload: any
-      try {
-        payload = JSON.parse(data)
-      } catch {
-        continue
-      }
-
-      if (payload.type === 'response.output_text.delta' && typeof payload.delta === 'string') {
-        callbacks.onTextDelta?.(payload.delta)
-      }
-
-      if (payload.type === 'response.completed' && payload.response) {
-        completedResponse = payload.response
-      }
-    }
-  }
-
-  if (!completedResponse) throw new Error('No completed response received from stream')
-  return completedResponse
 }
 
 export async function streamAgent(
   messages: Array<{ role: string; content: string }>,
   context: AgentContext | undefined,
-  callbacks: StreamCallbacks,
+  callbacks: {
+    onTextDelta?: (delta: string) => void
+    onTrace?: (entry: ToolTraceEntry) => void
+  },
 ) {
   if (!OPENAI_KEY) throw new Error('OPENAI_API_KEY not set in environment')
 
+  const client = new OpenAI({ apiKey: OPENAI_KEY })
   const trace: ToolTraceEntry[] = []
-  let response: any = await createResponseStream(
-    {
-      model: MODEL,
-      input: [
-        { role: 'system', content: buildSystemPrompt(context) },
-        ...messages,
-      ] as any,
-      tools: toolDefinitions as any,
-      parallel_tool_calls: false,
-    },
-    callbacks,
-  )
+  
+  let currentMessages: any[] = [
+    { role: 'system', content: buildSystemPrompt(context) },
+    ...messages,
+  ]
 
   for (let i = 0; i < MAX_TOOL_LOOPS; i += 1) {
-    const toolCalls: any[] = (response.output || []).filter((item: any) => item.type === 'function_call')
-    if (toolCalls.length === 0) return { response, trace }
+    const stream = await client.chat.completions.create({
+      model: MODEL,
+      messages: currentMessages,
+      tools: toolDefinitions as any,
+      tool_choice: 'auto',
+      stream: true,
+    })
 
-    const toolOutputs: Array<{ type: 'function_call_output'; call_id: string; output: string }> = []
-    for (const call of toolCalls) {
+    let fullContent = ''
+    let toolCalls: any[] = []
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta
+      if (delta?.content) {
+        fullContent += delta.content
+        callbacks.onTextDelta?.(delta.content)
+      }
+
+      if (delta?.tool_calls) {
+        for (const tcDelta of delta.tool_calls) {
+          if (tcDelta.index !== undefined) {
+            if (!toolCalls[tcDelta.index]) {
+              toolCalls[tcDelta.index] = { id: '', function: { name: '', arguments: '' } }
+            }
+            const tc = toolCalls[tcDelta.index]
+            if (tcDelta.id) tc.id = tcDelta.id
+            if (tcDelta.function?.name) tc.function.name = tcDelta.function.name
+            if (tcDelta.function?.arguments) tc.function.arguments += tcDelta.function.arguments
+          }
+        }
+      }
+    }
+
+    // Add assistant message to history
+    const assistantMessage: any = { role: 'assistant', content: fullContent || null }
+    if (toolCalls.length > 0) {
+      assistantMessage.tool_calls = toolCalls
+        .filter(tc => tc.id) // Ensure we only include complete calls
+        .map(tc => ({
+          id: tc.id,
+          type: 'function',
+          function: tc.function
+        }))
+    }
+    currentMessages.push(assistantMessage)
+
+    if (toolCalls.length === 0) {
+      return { 
+        response: { output_text: fullContent }, 
+        trace 
+      }
+    }
+
+    // Process tool calls
+    for (const call of assistantMessage.tool_calls) {
       const callEntry: ToolTraceEntry = {
         type: 'tool_call',
-        name: call.name,
-        call_id: call.call_id,
-        arguments: call.arguments || '',
+        name: call.function.name,
+        call_id: call.id,
+        arguments: call.function.arguments,
       }
       trace.push(callEntry)
       callbacks.onTrace?.(callEntry)
 
       let args: any = {}
       try {
-        args = JSON.parse(call.arguments || '{}')
+        args = JSON.parse(call.function.arguments || '{}')
       } catch (err) {
         const output = JSON.stringify({ ok: false, error: `invalid JSON arguments: ${String(err)}` })
-        const outputEntry: ToolTraceEntry = { type: 'tool_output', call_id: call.call_id, output }
+        const outputEntry: ToolTraceEntry = { type: 'tool_output', call_id: call.id, output }
         trace.push(outputEntry)
         callbacks.onTrace?.(outputEntry)
-        toolOutputs.push({
-          type: 'function_call_output',
-          call_id: call.call_id,
-          output,
+        currentMessages.push({
+          role: 'tool',
+          tool_call_id: call.id,
+          content: output,
         })
         continue
       }
 
       try {
-        const result = await runTool(call.name, args, context)
+        const result = await runTool(call.function.name, args, context)
         const output = JSON.stringify(result)
-        const outputEntry: ToolTraceEntry = { type: 'tool_output', call_id: call.call_id, output }
+        const outputEntry: ToolTraceEntry = { type: 'tool_output', call_id: call.id, output }
         trace.push(outputEntry)
         callbacks.onTrace?.(outputEntry)
-        toolOutputs.push({
-          type: 'function_call_output',
-          call_id: call.call_id,
-          output,
+        currentMessages.push({
+          role: 'tool',
+          tool_call_id: call.id,
+          content: output,
         })
       } catch (err) {
         const output = JSON.stringify({ ok: false, error: String(err) })
-        const outputEntry: ToolTraceEntry = { type: 'tool_output', call_id: call.call_id, output }
+        const outputEntry: ToolTraceEntry = { type: 'tool_output', call_id: call.id, output }
         trace.push(outputEntry)
         callbacks.onTrace?.(outputEntry)
-        toolOutputs.push({
-          type: 'function_call_output',
-          call_id: call.call_id,
-          output,
+        currentMessages.push({
+          role: 'tool',
+          tool_call_id: call.id,
+          content: output,
         })
       }
     }
-
-    response = await createResponseStream(
-      {
-        model: MODEL,
-        previous_response_id: response.id,
-        input: toolOutputs,
-      },
-      callbacks,
-    )
   }
 
-  return { response, trace }
+  return { 
+    response: { output_text: currentMessages[currentMessages.length - 1].content || '' }, 
+    trace 
+  }
+}
+
+export async function triageAgent(params: {
+  input: string
+  agents: Array<{ id: string; name: string; role?: string }>
+  previousAgentId: string | null
+}) {
+  if (!OPENAI_KEY) return { agentId: null }
+
+  const client = new OpenAI({ apiKey: OPENAI_KEY })
+  const agentList = params.agents.map(a => `${a.id}: ${a.name}${a.role ? ` (${a.role})` : ''}`).join('\n')
+  
+  const prompt = `
+Você é um despachante de mensagens para um time de agentes de IA.
+Sua tarefa é ler a mensagem do usuário e decidir qual agente deve responder.
+
+Agentes disponíveis:
+${agentList}
+
+Último agente que respondeu: ${params.previousAgentId || 'Nenhum'}
+
+Mensagem do usuário:
+"${params.input}"
+
+Responda APENAS o ID do agente escolhido (ex: "chocks", "betinha"). Se não tiver certeza, ou se a conversa for geral, escolha "chocks".
+`.trim()
+
+  try {
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini', // Use a cheaper/faster model for triage
+      messages: [{ role: 'system', content: prompt }],
+      max_tokens: 20,
+      temperature: 0,
+    })
+
+    const agentId = response.choices[0]?.message?.content?.trim().toLowerCase()
+    return { agentId: params.agents.some(a => a.id === agentId) ? agentId : null }
+  } catch (error) {
+    console.error('Triage failed:', error)
+    return { agentId: null }
+  }
 }

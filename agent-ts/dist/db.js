@@ -93,9 +93,13 @@ export async function initDatabase() {
       id TEXT PRIMARY KEY,
       owner_id TEXT REFERENCES app_users(id) ON DELETE CASCADE,
       title TEXT NOT NULL,
+      active_agent TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    ALTER TABLE IF EXISTS conversations
+      ADD COLUMN IF NOT EXISTS active_agent TEXT;
 
     CREATE TABLE IF NOT EXISTS messages (
       id BIGSERIAL PRIMARY KEY,

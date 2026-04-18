@@ -9,13 +9,7 @@ import type { SessionUser } from "@/lib/server/auth";
 import { createToken } from "@/lib/server/auth";
 import { hasDatabase } from "@/lib/server/db";
 import type { ChatMessage } from "@/lib/server/store";
-import { 
-  appendConversationMessages, 
-  appendLog, 
-  readAppSettings, 
-  getWorkflowState,
-  getConversationById 
-} from "@/lib/server/store";
+import { appendConversationMessages, appendLog, readAppSettings, getWorkflowState } from "@/lib/server/store";
 import { requireUser } from "@/lib/server/request";
 import { chatToolDefinitions, runChatTool } from "@/lib/server/chat-tools";
 import { listFileEntries } from "@/lib/server/files";
@@ -65,7 +59,7 @@ function cleanText(text: string): string {
     .trim();
 }
 
-const DEFAULT_MODEL = "gpt-4o";
+const DEFAULT_MODEL = "gpt-5";
 const DEFAULT_REASONING_EFFORT = "low";
 const DEFAULT_TEXT_VERBOSITY = "low";
 const DEFAULT_MAX_OUTPUT_TOKENS = 4000;
@@ -181,22 +175,9 @@ function getCoordinationMember(members: CoordinationMember[], agentId: string | 
   return members.find((member) => member.id === safeId) ?? null;
 }
 
-function pickCoordinationAgentId(
-  members: CoordinationMember[], 
-  preferredId: string | null,
-  activeAgentId?: string | null,
-  lastAgentId?: string | null
-) {
+function pickCoordinationAgentId(members: CoordinationMember[], preferredId: string | null) {
   if (preferredId && members.some((member) => member.id === preferredId)) {
     return preferredId;
-  }
-  
-  if (activeAgentId && members.some((m) => m.id === activeAgentId)) {
-    return activeAgentId;
-  }
-
-  if (lastAgentId && members.some((m) => m.id === lastAgentId)) {
-    return lastAgentId;
   }
 
   const chocks = members.find((member) => member.id === "chocks");
@@ -204,7 +185,7 @@ function pickCoordinationAgentId(
 }
 
 async function fetchCoordinationData(backendUrl: string): Promise<CoordinationData> {
-  const initResponse = await fetch(`${backendUrl}/coordination/family/init`, {
+  const initResponse = await fetch(`${backendUrl}/api/coordination/family/init`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
@@ -221,7 +202,7 @@ async function fetchCoordinationData(backendUrl: string): Promise<CoordinationDa
     throw new Error("Equipe de coordenação indisponível.");
   }
 
-  const membersResponse = await fetch(`${backendUrl}/coordination/family/members`);
+  const membersResponse = await fetch(`${backendUrl}/api/coordination/family/members`);
   if (!membersResponse.ok) {
     const errorText = await membersResponse.text().catch(() => "");
     throw new Error(errorText || "Falha ao carregar membros da coordenação.");
@@ -245,7 +226,7 @@ async function sendCoordinationMessage(params: {
   content: string;
   metadata?: Record<string, unknown>;
 }) {
-  const response = await fetch(`${params.backendUrl}/coordination/team/${params.teamId}/send`, {
+  const response = await fetch(`${params.backendUrl}/api/coordination/team/${params.teamId}/send`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -610,20 +591,31 @@ async function persistAssistantReply(
       handoffLabel,
       collaborationLabel: null,
     },
-  ], selectedAgentId);
+  ]);
 
   const userMessageId = insertedMessageIds[0] ?? null;
   const assistantMessageId = insertedMessageIds[insertedMessageIds.length - 1] ?? null;
   return { userMessageId, assistantMessageId };
 }
 
-function toModelInput(messages: ChatMessage[]) {
+function toModelInput(messages: ChatMessage[]): OpenAI.Responses.ResponseInput {
   return messages
     .filter((message) => typeof message.content === "string" && message.content.trim())
     .map((message) => ({
+      type: "message" as const,
       role: message.role === "agent" ? ("assistant" as const) : ("user" as const),
-      content: message.content,
-    }));
+      content: [
+        message.role === "agent"
+          ? {
+              type: "output_text" as const,
+              text: message.content,
+            }
+          : {
+              type: "input_text" as const,
+              text: message.content,
+            },
+      ],
+    })) as OpenAI.Responses.ResponseInput;
 }
 
 function buildInstructions(
@@ -1158,83 +1150,81 @@ async function createResponseStream(
   body: Record<string, unknown>,
   onTextDelta: (delta: string) => void,
 ) {
-  const client = new OpenAI({ apiKey });
-  
-  // Convert body to standard chat completions format if necessary
-  // The caller already prepares tools and tool_choice
-  
-  const stream = await client.chat.completions.create({
-    model: body.model as string,
-    messages: body.input as any,
-    ...(body.tools
-      ? {
-          tools: (body.tools as any[]).map((tool: any) => {
-            // Normalize old format {type: 'function', name, description, parameters}
-            // to OpenAI v4 format {type: 'function', function: {name, description, parameters}}
-            if (tool.type === "function" && !tool.function) {
-              const { type, name, description, parameters, ...rest } = tool;
-              return {
-                type,
-                function: { name, description, parameters, ...rest },
-              };
-            }
-            return tool;
-          }),
-        }
-      : {}),
-    ...(body.tool_choice ? { tool_choice: body.tool_choice as any } : {}),
-    stream: true,
-    max_tokens: body.max_output_tokens as number,
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ ...body, stream: true }),
   });
 
-  let fullContent = "";
-  let toolCalls: any[] = [];
-  let lastChunk: any = null;
+  if (!response.ok || !response.body) {
+    const text = await response.text();
+    throw new Error(`Responses stream failed: ${response.status} ${text}`);
+  }
 
-  for await (const chunk of stream) {
-    lastChunk = chunk;
-    const delta = chunk.choices[0]?.delta;
-    
-    if (delta?.content) {
-      fullContent += delta.content;
-      onTextDelta(delta.content);
-    }
+  let buffer = "";
+  let completedResponse: Record<string, unknown> | null = null;
 
-    if (delta?.tool_calls) {
-      for (const tcDelta of delta.tool_calls) {
-        if (tcDelta.index !== undefined) {
-          if (!toolCalls[tcDelta.index]) {
-            toolCalls[tcDelta.index] = { id: "", function: { name: "", arguments: "" } };
-          }
-          const tc = toolCalls[tcDelta.index];
-          if (tcDelta.id) tc.id = tcDelta.id;
-          if (tcDelta.function?.name) tc.function.name = tcDelta.function.name;
-          if (tcDelta.function?.arguments) tc.function.arguments += tcDelta.function.arguments;
+  const reader = response.body.getReader();
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += Buffer.from(value).toString("utf8");
+
+    while (buffer.includes("\n\n")) {
+      const boundary = buffer.indexOf("\n\n");
+      const rawEvent = buffer.slice(0, boundary);
+      buffer = buffer.slice(boundary + 2);
+
+      const lines = rawEvent.split("\n");
+      const dataLines = lines
+        .filter((line) => line.startsWith("data:"))
+        .map((line) => line.slice(5).trim());
+
+      if (dataLines.length === 0) continue;
+
+      const data = dataLines.join("\n");
+      if (data === "[DONE]") continue;
+
+      try {
+        const payload = JSON.parse(data) as { type?: string; delta?: string; response?: Record<string, unknown> };
+        if (payload.type === "response.output_text.delta" && typeof payload.delta === "string") {
+          onTextDelta(payload.delta);
         }
+        if (
+          (payload.type === "response.completed" || payload.type === "response.incomplete") &&
+          payload.response
+        ) {
+          completedResponse = payload.response;
+        }
+      } catch {
+        continue;
       }
     }
   }
 
-  // Create a response object that looks like what the rest of the code expects
-  const response = {
-    id: lastChunk?.id || `res_${Date.now()}`,
-    output_text: fullContent,
-    output: toolCalls
-      .filter(tc => tc.id)
-      .map(tc => ({
-        type: "function_call",
-        name: tc.function.name,
-        call_id: tc.id,
-        arguments: tc.function.arguments,
-      })),
-    status: lastChunk?.choices[0]?.finish_reason === "length" ? "incomplete" : "completed"
-  };
+  if (!completedResponse) {
+    throw new Error("No completed response received from stream");
+  }
 
-  if (response.status === "incomplete") {
+  const status = (completedResponse as Record<string, unknown>).status;
+  if (status === "incomplete") {
+    // Emit a visible warning delta so the user sees a truncation notice
     onTextDelta("\n\n_(resposta truncada por limite de tokens — tente novamente ou simplifique o pedido)_");
   }
 
-  return response;
+  return completedResponse as {
+    id: string;
+    output?: Array<{
+      type: string;
+      name?: string;
+      call_id?: string;
+      arguments?: string;
+    }>;
+    output_text?: string;
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -1262,23 +1252,14 @@ export async function POST(request: NextRequest) {
   const backendUrl = getBackendUrl();
   const coordinationData = await fetchCoordinationData(backendUrl);
   const requestedAgentId = typeof body?.selectedAgentId === "string" ? body.selectedAgentId.trim() : null;
-  const messages = Array.isArray(body?.messages) ? (body.messages as ChatMessage[]) : [];
-  
-  const chat = chatId ? await getConversationById(user, chatId).catch(() => null) : null;
-  const lastAgentId = [...messages].reverse().find((m: any) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId;
-
-  const selectedAgentId = pickCoordinationAgentId(
-    coordinationData.members, 
-    requestedAgentId, 
-    chat?.activeAgent, 
-    lastAgentId
-  );
+  const selectedAgentId = pickCoordinationAgentId(coordinationData.members, requestedAgentId);
   const selectedAgent = getCoordinationMember(coordinationData.members, selectedAgentId);
   const selectedAgentName = selectedAgent?.name || selectedAgentId;
   const coordinationTeamId =
     typeof body?.coordinationTeamId === "string" && body.coordinationTeamId.trim()
       ? body.coordinationTeamId.trim()
       : coordinationData.teamId;
+  const messages = Array.isArray(body?.messages) ? (body.messages as ChatMessage[]) : [];
   const previousAssistantText = getPreviousAssistantText(messages);
   const lastUserMessage = [...messages]
     .reverse()
@@ -1360,7 +1341,7 @@ export async function POST(request: NextRequest) {
       totalMs: Date.now() - startedAt,
     }).catch(() => null);
 
-    const desktopReadable = new ReadableStream<Uint8Array>({
+    const readable = new ReadableStream<Uint8Array>({
       start(controller) {
         for (const traceEntry of directDesktopResult.trace) {
           controller.enqueue(encodeEvent("trace", traceEntry));
@@ -1378,7 +1359,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new Response(desktopReadable, {
+    return new Response(readable, {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
@@ -1436,7 +1417,7 @@ export async function POST(request: NextRequest) {
       totalMs: Date.now() - startedAt,
     }).catch(() => null);
 
-    const pdfReadable = new ReadableStream<Uint8Array>({
+    const readable = new ReadableStream<Uint8Array>({
       start(controller) {
         for (const traceEntry of directPdfResult.trace) {
           controller.enqueue(encodeEvent("trace", traceEntry));
@@ -1454,7 +1435,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new Response(pdfReadable, {
+    return new Response(readable, {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
@@ -1471,7 +1452,7 @@ export async function POST(request: NextRequest) {
   const activeWorkflow = chatId ? await getWorkflowState(user, chatId).catch(() => null) : null;
 
   const readable = new ReadableStream<Uint8Array>({
-    start: async (controller) => {
+    async start(controller) {
       let finalText = "";
       let firstTokenAt: number | null = null;
       const traceEntries: unknown[] = [];
@@ -1479,7 +1460,9 @@ export async function POST(request: NextRequest) {
 
       try {
         const [psychProfile, memoryContext] = await Promise.all([
+          // Buscar perfil psicológico do usuário
           getPsychologicalProfile(user.id).catch(() => null),
+          // Montar contexto de memória (perfil consolidado + itens ativos)
           isMemoryOrchestratorEnabled() && settings.memoryMode !== "off"
             ? buildContextPack({
                 userId: user.id,
@@ -1490,29 +1473,13 @@ export async function POST(request: NextRequest) {
             : Promise.resolve(null),
         ]);
 
-        let currentMessages: any[] = [
-          {
-            role: "system",
-            content: buildInstructions(
-              settings.fullAccess,
-              settings.permissionMode,
-              settings.memoryMode,
-              memoryContext,
-              activeWorkflow ?? undefined,
-              psychProfile,
-              selectedAgent,
-            ),
-          },
-          ...modelInput,
-        ];
-
         const workflowRequiresTools = workflowHasOpenSteps(activeWorkflow ?? undefined);
         const strictToolRequirement = workflowRequiresTools;
 
         controller.enqueue(
           encodeEvent("trace", {
             type: "model",
-            label: "OpenAI Chat",
+            label: "OpenAI Responses",
             state: "pending",
             subtitle: "Preparando resposta com tool calls.",
             payload: {
@@ -1531,10 +1498,26 @@ export async function POST(request: NextRequest) {
           apiKey,
           {
             model,
-            input: currentMessages,
+            instructions: buildInstructions(
+              settings.fullAccess,
+              settings.permissionMode,
+              settings.memoryMode,
+              memoryContext,
+              activeWorkflow ?? undefined,
+              psychProfile,
+              selectedAgent,
+            ),
+            input: modelInput,
             tools: chatToolDefinitions,
             tool_choice: strictToolRequirement ? "required" : "auto",
+            parallel_tool_calls: false,
             max_output_tokens: maxOutputTokens,
+            reasoning: {
+              effort: reasoningEffort,
+            },
+            text: {
+              verbosity: textVerbosity,
+            },
           },
           (delta) => {
             if (!firstTokenAt) {
@@ -1544,7 +1527,7 @@ export async function POST(request: NextRequest) {
           },
         );
 
-        if (strictToolRequirement && (!response.output || response.output.length === 0)) {
+        if (strictToolRequirement && !hasFunctionCalls(response)) {
           const latestWorkflowForRetry = chatId ? await getWorkflowState(user, chatId).catch(() => null) : null;
           const enforceTrace = {
             type: "model",
@@ -1555,17 +1538,25 @@ export async function POST(request: NextRequest) {
           traceEntries.push(enforceTrace);
           controller.enqueue(encodeEvent("trace", enforceTrace));
 
-          const nudgeText = buildTargetedWorkflowNudge(latestWorkflowForRetry, traceEntries);
-          currentMessages.push({ role: "assistant", content: response.output_text || null });
-          currentMessages.push({ role: "user", content: nudgeText });
-
           response = await createResponseStream(
             apiKey,
             {
               model,
-              input: currentMessages,
+              previous_response_id: response.id,
+              input: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "input_text",
+                      text: buildTargetedWorkflowNudge(latestWorkflowForRetry, traceEntries),
+                    },
+                  ],
+                },
+              ],
               tools: chatToolDefinitions,
               tool_choice: "required",
+              parallel_tool_calls: false,
             },
             (delta) => {
               if (!firstTokenAt) {
@@ -1593,17 +1584,25 @@ export async function POST(request: NextRequest) {
               traceEntries.push(nudgeTrace);
               controller.enqueue(encodeEvent("trace", nudgeTrace));
 
-              const nudgeText = buildTargetedWorkflowNudge(latestWorkflowForLoop, traceEntries);
-              currentMessages.push({ role: "assistant", content: response.output_text || null });
-              currentMessages.push({ role: "user", content: nudgeText });
-
               response = await createResponseStream(
                 apiKey,
                 {
                   model,
-                  input: currentMessages,
+                  previous_response_id: response.id,
+                  input: [
+                    {
+                      role: "user",
+                      content: [
+                        {
+                          type: "input_text",
+                          text: buildTargetedWorkflowNudge(latestWorkflowForLoop, traceEntries),
+                        },
+                      ],
+                    },
+                  ],
                   tools: chatToolDefinitions,
                   tool_choice: "required",
+                  parallel_tool_calls: false,
                 },
                 (delta) => {
                   if (!firstTokenAt) {
@@ -1617,16 +1616,7 @@ export async function POST(request: NextRequest) {
             break;
           }
 
-          // Add assistant's tool calls to messages
-          currentMessages.push({
-            role: "assistant",
-            content: response.output_text || null,
-            tool_calls: toolCalls.map((tc) => ({
-              id: tc.call_id,
-              type: "function",
-              function: { name: tc.name, arguments: tc.arguments },
-            })),
-          });
+          const toolOutputs: Array<{ type: "function_call_output"; call_id: string; output: string }> = [];
 
           for (const call of toolCalls) {
             const callId = typeof call.call_id === "string" ? call.call_id : crypto.randomUUID();
@@ -1648,7 +1638,7 @@ export async function POST(request: NextRequest) {
               };
               traceEntries.push(cacheTrace);
               controller.enqueue(encodeEvent("trace", cacheTrace));
-              currentMessages.push({ role: "tool", tool_call_id: callId, content: cachedOutput });
+              toolOutputs.push({ type: "function_call_output", call_id: callId, output: cachedOutput });
               continue;
             }
 
@@ -1682,7 +1672,7 @@ export async function POST(request: NextRequest) {
               };
               traceEntries.push(outputTrace);
               controller.enqueue(encodeEvent("trace", outputTrace));
-              currentMessages.push({ role: "tool", tool_call_id: callId, content: output });
+              toolOutputs.push({ type: "function_call_output", call_id: callId, output });
               continue;
             }
 
@@ -1699,7 +1689,7 @@ export async function POST(request: NextRequest) {
               };
               traceEntries.push(outputTrace);
               controller.enqueue(encodeEvent("trace", outputTrace));
-              currentMessages.push({ role: "tool", tool_call_id: callId, content: output });
+              toolOutputs.push({ type: "function_call_output", call_id: callId, output });
             } catch (error) {
               const normalizedError = normalizeUserFacingToolError(
                 error instanceof Error ? error.message : String(error),
@@ -1719,7 +1709,7 @@ export async function POST(request: NextRequest) {
               };
               traceEntries.push(outputTrace);
               controller.enqueue(encodeEvent("trace", outputTrace));
-              currentMessages.push({ role: "tool", tool_call_id: callId, content: output });
+              toolOutputs.push({ type: "function_call_output", call_id: callId, output });
             }
           }
 
@@ -1727,9 +1717,11 @@ export async function POST(request: NextRequest) {
             apiKey,
             {
               model,
-              input: currentMessages,
+              previous_response_id: response.id,
+              input: toolOutputs,
               tools: chatToolDefinitions,
               tool_choice: strictToolRequirement ? "required" : "auto",
+              parallel_tool_calls: false,
             },
             (delta) => {
               if (!firstTokenAt) {
@@ -1806,7 +1798,6 @@ export async function POST(request: NextRequest) {
             actor: selectedAgentName || selectedAgentId,
           }).catch(() => null);
         }, 0);
-
         await sendCoordinationMessage({
           backendUrl,
           teamId: coordinationTeamId,
@@ -1819,7 +1810,6 @@ export async function POST(request: NextRequest) {
             direction: "agent_to_user",
           },
         });
-
         await appendLog(user, "info", "Resposta enviada", {
           chatId,
           model,

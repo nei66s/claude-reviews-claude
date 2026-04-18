@@ -59,6 +59,7 @@ export type ChatMessage = {
 export type StoredConversation = {
   id: string;
   title: string;
+  activeAgent?: string | null;
   messages: ChatMessage[];
 };
 
@@ -503,9 +504,9 @@ export async function listConversations(user: SessionUser) {
     }
 
     const conversationResult = await dbQuery<
-      Pick<StoredConversation, "id" | "title">
+      Pick<StoredConversation, "id" | "title" | "activeAgent">
     >(
-      `select id, title
+      `select id, title, active_agent as "activeAgent"
        from public.conversations
        where owner_id = $1
        order by updated_at desc, created_at desc`,
@@ -570,9 +571,10 @@ export async function listConversations(user: SessionUser) {
     }
 
     const result = conversationResult.rows.map(
-      (conversation: Pick<StoredConversation, "id" | "title">) => ({
+      (conversation: Pick<StoredConversation, "id" | "title" | "activeAgent">) => ({
         id: conversation.id,
         title: conversation.title,
+        activeAgent: conversation.activeAgent,
         messages: messagesByConversation.get(conversation.id) ?? [],
       }),
     );
@@ -594,11 +596,11 @@ export async function createConversation(
     const ownerId = await resolveOwnerId(user);
     const title = input.title?.trim() || "Nova conversa";
     await dbQuery(
-      `insert into public.conversations (id, title, owner_id)
-       values ($1, $2, $3)
+      `insert into public.conversations (id, title, owner_id, active_agent)
+       values ($1, $2, $3, $4)
        on conflict (id)
-       do update set title = excluded.title, owner_id = excluded.owner_id, updated_at = now()`,
-      [input.id, title, ownerId],
+       do update set title = excluded.title, owner_id = excluded.owner_id, active_agent = excluded.active_agent, updated_at = now()`,
+      [input.id, title, ownerId, null],
     );
     invalidateConversationsCache(ownerId);
     await appendLog(user, "info", "Conversa criada", { id: input.id });
@@ -624,16 +626,53 @@ export async function createConversation(
   return conversation;
 }
 
+export async function getConversationById(user: SessionUser, id: string): Promise<StoredConversation | null> {
+  if (hasDatabase()) {
+    const ownerId = await resolveOwnerId(user);
+    const result = await dbQuery<Pick<StoredConversation, "id" | "title" | "activeAgent">>(
+      `select id, title, active_agent as "activeAgent" from public.conversations where id = $1 and owner_id = $2 limit 1`,
+      [id, ownerId]
+    );
+    const row = result.rows[0];
+    if (!row) return null;
+
+    const messages = await dbQuery<ChatMessage & { id: any }>(
+      `select id, role, content, streaming, agent_id as "agentId", helper_agent_id as "helperAgentId", handoff_label as "handoffLabel", collaboration_label as "collaborationLabel"
+       from public.messages where conversation_id = $1 order by sort_order asc, id asc`,
+      [id]
+    );
+
+    return {
+      id: row.id,
+      title: row.title,
+      activeAgent: row.activeAgent,
+      messages: messages.rows.map(m => ({
+        id: String(m.id),
+        role: m.role,
+        content: m.content,
+        streaming: Boolean(m.streaming),
+        agentId: m.agentId ?? undefined,
+        helperAgentId: m.helperAgentId ?? undefined,
+        handoffLabel: m.handoffLabel ?? undefined,
+        collaborationLabel: m.collaborationLabel ?? undefined
+      }))
+    };
+  }
+
+  const state = await readState(user.id);
+  return state.conversations.find(c => c.id === id) ?? null;
+}
+
 export async function upsertConversation(user: SessionUser, conversation: StoredConversation) {
   if (hasDatabase()) {
     const ownerId = await resolveOwnerId(user);
 
     await dbQuery(
-      `insert into public.conversations (id, title, owner_id)
-       values ($1, $2, $3)
+      `insert into public.conversations (id, title, owner_id, active_agent)
+       values ($1, $2, $3, $4)
        on conflict (id)
-       do update set title = excluded.title, owner_id = excluded.owner_id, updated_at = now()`,
-      [conversation.id, conversation.title, ownerId],
+       do update set title = excluded.title, owner_id = excluded.owner_id, active_agent = excluded.active_agent, updated_at = now()`,
+      [conversation.id, conversation.title, ownerId, conversation.activeAgent ?? null],
     );
 
     await dbQuery("delete from public.messages where conversation_id = $1", [
@@ -685,16 +724,17 @@ export async function appendConversationMessages(
   conversationId: string,
   title: string,
   messages: ChatMessage[],
+  activeAgentId?: string | null,
 ): Promise<{ insertedMessageIds: string[] }> {
   if (hasDatabase()) {
     const ownerId = await resolveOwnerId(user);
 
     await dbQuery(
-      `insert into public.conversations (id, title, owner_id)
-       values ($1, $2, $3)
+      `insert into public.conversations (id, title, owner_id, active_agent)
+       values ($1, $2, $3, $4)
        on conflict (id)
-       do update set title = excluded.title, owner_id = excluded.owner_id, updated_at = now()`,
-      [conversationId, title, ownerId],
+       do update set title = excluded.title, owner_id = excluded.owner_id, active_agent = coalesce($4, conversations.active_agent), updated_at = now()`,
+      [conversationId, title, ownerId, activeAgentId ?? null],
     );
 
     const orderResult = await dbQuery<{ max_sort_order: number }>(

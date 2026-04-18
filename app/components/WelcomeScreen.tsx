@@ -13,7 +13,6 @@ interface WelcomeScreenProps {
   onPromptChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onSend: () => void;
-  onMemorize: () => void;
   onOpenFilePicker: () => void;
   onNavigate: (ws: WorkspaceId) => void;
   onSetPrompt: (value: string) => void;
@@ -45,7 +44,6 @@ export default function WelcomeScreen({
   onPromptChange,
   onKeyDown,
   onSend,
-  onMemorize,
   onOpenFilePicker,
   onNavigate,
   onSetPrompt,
@@ -194,19 +192,7 @@ export default function WelcomeScreen({
                     <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                   </svg>
                 </button>
-                <button
-                  className="welcome-v2-composer-mem"
-                  type="button"
-                  onClick={onMemorize}
-                  disabled={isThinking || (!prompt.trim() && attachments.length === 0)}
-                  title="Salvar na memória"
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12" />
-                    <path d="M12 6v6l4 2" />
-                  </svg>
-                  <span>Mem</span>
-                </button>
+
                 {isThinking && <span className="welcome-v2-thinking">Executando...</span>}
               </div>
               <button

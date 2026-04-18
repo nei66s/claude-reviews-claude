@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Sem rewrites globais: rotas internas do Next (`/api/*`) não devem ser
-  // redirecionadas por variáveis de ambiente (incluindo `NEXT_PUBLIC_*`).
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://127.0.0.1:3001/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

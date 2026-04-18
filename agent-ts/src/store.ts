@@ -11,12 +11,17 @@ export type StoredMessage = {
   trace?: any[]
   streaming?: boolean
   attachments?: StoredAttachment[]
+  agentId?: string
+  helperAgentId?: string
+  handoffLabel?: string
+  collaborationLabel?: string
 }
 
 export type StoredConversation = {
   id: string
   ownerId?: string
   title: string
+  activeAgent?: string
   messages: StoredMessage[]
 }
 
@@ -47,6 +52,7 @@ type ConversationRow = {
   conversation_id: string
   owner_id: string
   title: string
+  active_agent: string | null
   created_at: string
   updated_at: string
   message_order: number | null
@@ -54,6 +60,10 @@ type ConversationRow = {
   content: string | null
   trace_json: any
   streaming: boolean | null
+  agent_id: string | null
+  helper_agent_id: string | null
+  handoff_label: string | null
+  collaboration_label: string | null
   attachment_name: string | null
   attachment_order: number | null
 }
@@ -84,6 +94,7 @@ function normalizeConversation(input: any): StoredConversation {
   if (!id) throw new Error('conversation.id required')
 
   const title = String(input?.title || 'Nova conversa').trim() || 'Nova conversa'
+  const activeAgent = typeof input?.activeAgent === 'string' ? input.activeAgent : undefined
   const ownerId = typeof input?.ownerId === 'string' && input.ownerId.trim() ? input.ownerId.trim() : undefined
   const messages = Array.isArray(input?.messages)
     ? input.messages.map((message: any) => ({
@@ -91,6 +102,10 @@ function normalizeConversation(input: any): StoredConversation {
         content: String(message?.content || ''),
         trace: Array.isArray(message?.trace) ? message.trace : [],
         streaming: !!message?.streaming,
+        agentId: message?.agentId,
+        helperAgentId: message?.helperAgentId,
+        handoffLabel: message?.handoffLabel,
+        collaborationLabel: message?.collaborationLabel,
         attachments: Array.isArray(message?.attachments)
           ? message.attachments
               .map((attachment: any) => ({ name: String(attachment?.name || '').trim() }))
@@ -99,7 +114,7 @@ function normalizeConversation(input: any): StoredConversation {
       }))
     : []
 
-  return { id, ownerId, title, messages }
+  return { id, ownerId, title, activeAgent, messages }
 }
 
 function assembleConversations(rows: ConversationRow[]) {
@@ -113,6 +128,7 @@ function assembleConversations(rows: ConversationRow[]) {
         id: row.conversation_id,
         ownerId: row.owner_id,
         title: row.title,
+        activeAgent: row.active_agent || undefined,
         messages: [],
       }
       conversations.set(row.conversation_id, conversation)
@@ -129,6 +145,10 @@ function assembleConversations(rows: ConversationRow[]) {
         content: row.content || '',
         trace: Array.isArray(row.trace_json) ? row.trace_json : [],
         streaming: !!row.streaming,
+        agentId: row.agent_id || undefined,
+        helperAgentId: row.helper_agent_id || undefined,
+        handoffLabel: row.handoff_label || undefined,
+        collaborationLabel: row.collaboration_label || undefined,
         attachments: [],
       }
       conversationMessages.set(row.message_order, message)
@@ -150,6 +170,7 @@ export async function listConversations(ownerId: string) {
       c.id AS conversation_id,
       c.owner_id,
       c.title,
+      c.active_agent,
       c.created_at,
       c.updated_at,
       m.sort_order AS message_order,
@@ -157,6 +178,10 @@ export async function listConversations(ownerId: string) {
       m.content,
       m.trace_json,
       m.streaming,
+      m.agent_id,
+      m.helper_agent_id,
+      m.handoff_label,
+      m.collaboration_label,
       a.name AS attachment_name,
       a.sort_order AS attachment_order
     FROM conversations c
@@ -175,6 +200,7 @@ export async function getConversationById(id: string, ownerId: string) {
       c.id AS conversation_id,
       c.owner_id,
       c.title,
+      c.active_agent,
       c.created_at,
       c.updated_at,
       m.sort_order AS message_order,
@@ -182,6 +208,10 @@ export async function getConversationById(id: string, ownerId: string) {
       m.content,
       m.trace_json,
       m.streaming,
+      m.agent_id,
+      m.helper_agent_id,
+      m.handoff_label,
+      m.collaboration_label,
       a.name AS attachment_name,
       a.sort_order AS attachment_order
     FROM conversations c
@@ -198,19 +228,23 @@ export async function getConversationById(id: string, ownerId: string) {
 async function insertConversationSnapshot(client: pg.PoolClient, conversation: StoredConversation, user: StoredUser) {
   await ensureUser(client, user)
   await client.query(`
-    INSERT INTO conversations (id, owner_id, title, created_at, updated_at)
-    VALUES ($1, $2, $3, NOW(), NOW())
+    INSERT INTO conversations (id, owner_id, title, active_agent, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, NOW(), NOW())
     ON CONFLICT (id)
-    DO UPDATE SET owner_id = EXCLUDED.owner_id, title = EXCLUDED.title, updated_at = NOW()
-  `, [conversation.id, user.id, conversation.title])
+    DO UPDATE SET 
+      owner_id = EXCLUDED.owner_id, 
+      title = EXCLUDED.title, 
+      active_agent = EXCLUDED.active_agent,
+      updated_at = NOW()
+  `, [conversation.id, user.id, conversation.title, conversation.activeAgent || null])
 
   await client.query(`DELETE FROM messages WHERE conversation_id = $1`, [conversation.id])
 
   for (let index = 0; index < conversation.messages.length; index += 1) {
     const message = cloneMessage(conversation.messages[index])
     const insertMessageResult = await client.query<{ id: string }>(`
-      INSERT INTO messages (conversation_id, sort_order, role, content, trace_json, streaming)
-      VALUES ($1, $2, $3, $4, $5::jsonb, $6)
+      INSERT INTO messages (conversation_id, sort_order, role, content, trace_json, streaming, agent_id, helper_agent_id, handoff_label, collaboration_label)
+      VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10)
       RETURNING id
     `, [
       conversation.id,
@@ -219,6 +253,10 @@ async function insertConversationSnapshot(client: pg.PoolClient, conversation: S
       message.content,
       JSON.stringify(message.trace || []),
       !!message.streaming,
+      message.agentId || null,
+      message.helperAgentId || null,
+      message.handoffLabel || null,
+      message.collaborationLabel || null,
     ])
 
     const messageId = insertMessageResult.rows[0].id

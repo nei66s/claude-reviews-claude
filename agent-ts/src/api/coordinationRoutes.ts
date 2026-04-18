@@ -23,6 +23,7 @@ import {
   deleteTeam,
 } from '../coordination/index.js'
 import { spawnWorker, getTeamWorkers } from '../coordination/spawner.js'
+import { triageAgent } from '../llm.js'
 import {
   ensureFamilyTeamExists,
   createFamilyWorkflow,
@@ -296,6 +297,24 @@ router.post('/family/workflow-template/:templateKey', async (req: Request, res: 
     res.json({ success: true, workflow })
   } catch (error) {
     console.error('Failed to create workflow from template', error)
+    res.status(500).json({ error: String(error) })
+  }
+})
+
+// Triage agent for a message
+router.post('/triage', async (req: Request, res: Response) => {
+  try {
+    const { input, agents, previousAgentId } = req.body
+
+    if (!input || !agents || !Array.isArray(agents)) {
+      return res.status(400).json({ error: 'Missing input or agents array' })
+    }
+
+    const { agentId } = await triageAgent({ input, agents, previousAgentId })
+
+    res.json({ agentId })
+  } catch (error) {
+    console.error('Failed to triage agent', error)
     res.status(500).json({ error: String(error) })
   }
 })

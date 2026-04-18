@@ -166,13 +166,7 @@ export default function AppShell({
         category: "Files",
         icon: "F",
       },
-      {
-        id: "action:memorize",
-        label: "Memorizar contexto",
-        description: "Envia a mensagem atual para a memória do Obsidian.",
-        category: "Memory",
-        icon: "M",
-      },
+
       ...allCommands.map((command) => ({
         id: `slash:${command.name}`,
         label: `/${command.name}`,
@@ -274,21 +268,7 @@ export default function AppShell({
     }
   };
 
-  const handleMemorize = () => {
-    if (isThinking) return;
 
-    const trimmedPrompt = prompt.trim();
-    if (!trimmedPrompt && attachments.length === 0) {
-      return;
-    }
-
-    const memoryPrompt = ["Memorize isso no Obsidian e mantenha a resposta curta.", trimmedPrompt || ""]
-      .filter(Boolean)
-      .join("\n\n");
-
-    sendMessage(memoryPrompt, attachments);
-    resetComposer();
-  };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (showCommandMenu && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
@@ -390,10 +370,7 @@ export default function AppShell({
       return;
     }
 
-    if (item.id === "action:memorize") {
-      handleMemorize();
-      return;
-    }
+
 
     if (item.id.startsWith("slash:")) {
       const commandName = item.id.replace("slash:", "");
@@ -482,7 +459,6 @@ export default function AppShell({
                 onPromptChange={handlePromptChange}
                 onKeyDown={handleKeyDown}
                 onSend={handleSend}
-                onMemorize={handleMemorize}
                 onOpenFilePicker={openFilePicker}
                 onNavigate={navigateToWorkspace}
                 onSetPrompt={setPrompt}
@@ -556,15 +532,7 @@ export default function AppShell({
                           <div className="status">{isThinking ? "Executando etapas..." : ""}</div>
                         </div>
                         <div className="chat-toolbar-right">
-                          <button
-                            className="toolbar-memory"
-                            type="button"
-                            onClick={handleMemorize}
-                            disabled={isThinking || (!prompt.trim() && attachments.length === 0)}
-                            title="Salvar isso na memoria"
-                          >
-                            Mem
-                          </button>
+
                           <button className={`toolbar-send ${isThinking ? "cancel" : ""}`} onClick={handleSend}>
                             {isThinking ? "x" : "^"}
                           </button>

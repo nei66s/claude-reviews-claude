@@ -10,6 +10,7 @@
 import { Router } from 'express';
 import { createTeam, getInbox, markAsRead, sendMessage, getTeam, getAllTeams, registerAgent, updateAgentStatus, getMessageHistory, deleteTeam, } from '../coordination/index.js';
 import { spawnWorker, getTeamWorkers } from '../coordination/spawner.js';
+import { triageAgent } from '../llm.js';
 import { ensureFamilyTeamExists, createFamilyWorkflow, createWorkflowFromTemplate, listFamilyMembers, WORKFLOW_TEMPLATES, } from '../coordination/family-service.js';
 const router = Router();
 // Create a new team
@@ -241,6 +242,21 @@ router.post('/family/workflow-template/:templateKey', async (req, res) => {
     }
     catch (error) {
         console.error('Failed to create workflow from template', error);
+        res.status(500).json({ error: String(error) });
+    }
+});
+// Triage agent for a message
+router.post('/triage', async (req, res) => {
+    try {
+        const { input, agents, previousAgentId } = req.body;
+        if (!input || !agents || !Array.isArray(agents)) {
+            return res.status(400).json({ error: 'Missing input or agents array' });
+        }
+        const { agentId } = await triageAgent({ input, agents, previousAgentId });
+        res.json({ agentId });
+    }
+    catch (error) {
+        console.error('Failed to triage agent', error);
         res.status(500).json({ error: String(error) });
     }
 });

@@ -14,7 +14,40 @@ const DEFAULT_CONFIG = {
     errorCleanupAgeHours: 168, // 7 days
     errorEscalationIntervalMs: 60000, // Every minute
     errorEscalationThresholdRetries: 3, // After 3 retries, escalate
+    backfillTitlesIntervalMs: 600000, // Every 10 minutes
 };
+// Registry of all background jobs
+const registeredJobs = [
+    {
+        name: 'RetriesHandler',
+        getIntervalMs: c => c.retryCheckIntervalMs,
+        execute: handlePendingRetries
+    },
+    {
+        name: 'WorkflowCleanup',
+        getIntervalMs: c => c.workflowCleanupIntervalMs,
+        execute: handleWorkflowCleanup
+    },
+    {
+        name: 'ErrorCleanup',
+        getIntervalMs: c => c.errorCleanupIntervalMs,
+        execute: handleErrorCleanup
+    },
+    {
+        name: 'ErrorEscalation',
+        getIntervalMs: c => c.errorEscalationIntervalMs,
+        execute: handleErrorEscalation
+    },
+    {
+        name: 'BackfillConversationTitles',
+        getIntervalMs: c => c.backfillTitlesIntervalMs,
+        execute: async () => {
+            // Lazy import so that the job file is only loaded when needed
+            const { runBackfillTitlesJob } = await import('./backfillTitlesJob.js');
+            await runBackfillTitlesJob();
+        }
+    }
+];
 let jobs = [];
 let isRunning = false;
 /**
@@ -28,46 +61,22 @@ export async function startBackgroundJobs(config = {}) {
     }
     isRunning = true;
     console.log('[JOBS] Starting background jobs...');
-    // Retry job
-    const retryJob = setInterval(async () => {
-        try {
-            await handlePendingRetries(finalConfig);
+    for (const jobDef of registeredJobs) {
+        const intervalMs = jobDef.getIntervalMs(finalConfig);
+        if (intervalMs <= 0) {
+            console.log(`[JOBS] Skipping ${jobDef.name} (interval <= 0)`);
+            continue;
         }
-        catch (error) {
-            console.error('[JOBS] Error in retry job:', error);
-        }
-    }, finalConfig.retryCheckIntervalMs);
-    jobs.push(retryJob);
-    // Workflow cleanup job
-    const workflowCleanupJob = setInterval(async () => {
-        try {
-            await handleWorkflowCleanup(finalConfig);
-        }
-        catch (error) {
-            console.error('[JOBS] Error in workflow cleanup job:', error);
-        }
-    }, finalConfig.workflowCleanupIntervalMs);
-    jobs.push(workflowCleanupJob);
-    // Error cleanup job
-    const errorCleanupJob = setInterval(async () => {
-        try {
-            await handleErrorCleanup(finalConfig);
-        }
-        catch (error) {
-            console.error('[JOBS] Error in error cleanup job:', error);
-        }
-    }, finalConfig.errorCleanupIntervalMs);
-    jobs.push(errorCleanupJob);
-    // Error escalation job
-    const escalationJob = setInterval(async () => {
-        try {
-            await handleErrorEscalation(finalConfig);
-        }
-        catch (error) {
-            console.error('[JOBS] Error in escalation job:', error);
-        }
-    }, finalConfig.errorEscalationIntervalMs);
-    jobs.push(escalationJob);
+        const timer = setInterval(async () => {
+            try {
+                await jobDef.execute(finalConfig);
+            }
+            catch (error) {
+                console.error(`[JOBS] Error in ${jobDef.name}:`, error);
+            }
+        }, intervalMs);
+        jobs.push(timer);
+    }
     console.log('[JOBS] ✅ Background jobs started');
 }
 /**

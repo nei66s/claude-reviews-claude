@@ -18,6 +18,7 @@ interface BackgroundJobConfig {
   errorCleanupAgeHours: number // Age threshold for error cleanup
   errorEscalationIntervalMs: number // How often to check for escalation
   errorEscalationThresholdRetries: number // Retry count before escalation
+  backfillTitlesIntervalMs: number // How often to backfill missing conversation titles
 }
 
 const DEFAULT_CONFIG: BackgroundJobConfig = {
@@ -28,7 +29,47 @@ const DEFAULT_CONFIG: BackgroundJobConfig = {
   errorCleanupAgeHours: 168, // 7 days
   errorEscalationIntervalMs: 60000, // Every minute
   errorEscalationThresholdRetries: 3, // After 3 retries, escalate
+  backfillTitlesIntervalMs: 600000, // Every 10 minutes
 }
+
+interface JobDefinition {
+  name: string
+  getIntervalMs: (config: BackgroundJobConfig) => number
+  execute: (config: BackgroundJobConfig) => Promise<void>
+}
+
+// Registry of all background jobs
+const registeredJobs: JobDefinition[] = [
+  {
+    name: 'RetriesHandler',
+    getIntervalMs: c => c.retryCheckIntervalMs,
+    execute: handlePendingRetries
+  },
+  {
+    name: 'WorkflowCleanup',
+    getIntervalMs: c => c.workflowCleanupIntervalMs,
+    execute: handleWorkflowCleanup
+  },
+  {
+    name: 'ErrorCleanup',
+    getIntervalMs: c => c.errorCleanupIntervalMs,
+    execute: handleErrorCleanup
+  },
+  {
+    name: 'ErrorEscalation',
+    getIntervalMs: c => c.errorEscalationIntervalMs,
+    execute: handleErrorEscalation
+  },
+  {
+    name: 'BackfillConversationTitles',
+    getIntervalMs: c => c.backfillTitlesIntervalMs,
+    execute: async () => {
+      // Lazy import so that the job file is only loaded when needed
+      const { runBackfillTitlesJob } = await import('./backfillTitlesJob.js')
+      await runBackfillTitlesJob()
+    }
+  }
+]
 
 let jobs: NodeJS.Timeout[] = []
 let isRunning = false
@@ -47,49 +88,24 @@ export async function startBackgroundJobs(config: Partial<BackgroundJobConfig> =
   isRunning = true
   console.log('[JOBS] Starting background jobs...')
 
-  // Retry job
-  const retryJob = setInterval(async () => {
-    try {
-      await handlePendingRetries(finalConfig)
-    } catch (error) {
-      console.error('[JOBS] Error in retry job:', error)
+  for (const jobDef of registeredJobs) {
+    const intervalMs = jobDef.getIntervalMs(finalConfig)
+    
+    if (intervalMs <= 0) {
+      console.log(`[JOBS] Skipping ${jobDef.name} (interval <= 0)`)
+      continue
     }
-  }, finalConfig.retryCheckIntervalMs)
 
-  jobs.push(retryJob)
+    const timer = setInterval(async () => {
+      try {
+        await jobDef.execute(finalConfig)
+      } catch (error) {
+        console.error(`[JOBS] Error in ${jobDef.name}:`, error)
+      }
+    }, intervalMs)
 
-  // Workflow cleanup job
-  const workflowCleanupJob = setInterval(async () => {
-    try {
-      await handleWorkflowCleanup(finalConfig)
-    } catch (error) {
-      console.error('[JOBS] Error in workflow cleanup job:', error)
-    }
-  }, finalConfig.workflowCleanupIntervalMs)
-
-  jobs.push(workflowCleanupJob)
-
-  // Error cleanup job
-  const errorCleanupJob = setInterval(async () => {
-    try {
-      await handleErrorCleanup(finalConfig)
-    } catch (error) {
-      console.error('[JOBS] Error in error cleanup job:', error)
-    }
-  }, finalConfig.errorCleanupIntervalMs)
-
-  jobs.push(errorCleanupJob)
-
-  // Error escalation job
-  const escalationJob = setInterval(async () => {
-    try {
-      await handleErrorEscalation(finalConfig)
-    } catch (error) {
-      console.error('[JOBS] Error in escalation job:', error)
-    }
-  }, finalConfig.errorEscalationIntervalMs)
-
-  jobs.push(escalationJob)
+    jobs.push(timer)
+  }
 
   console.log('[JOBS] ✅ Background jobs started')
 }

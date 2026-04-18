@@ -5,11 +5,11 @@ import fssync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runAgent, streamAgent } from './llm.js';
-import { closePool, initDatabase } from './db.js';
+import { query, closePool, initDatabase } from './db.js';
 import { instinctEngine } from './instincts/instinct-engine.js';
 import { cacheHandler } from './instincts/cache-handler.js';
 import { detectEngagement, processEmotionEvent } from './instincts/emotion-triggers.js';
-import { createConversation, deleteConversation, duplicateConversation, getWorkflowState, listConversations, renameConversation, saveConversationSnapshot, } from './store.js';
+import { createConversation, deleteConversation, duplicateConversation, getConversationById, getWorkflowState, listConversations, renameConversation, saveConversationSnapshot, } from './store.js';
 import { getToolStatuses, runTool } from './tools.js';
 import { moderateText } from './moderation.js';
 import { initPermissionPipeline, getPermissionPipeline } from './permissions/index.js';
@@ -403,6 +403,25 @@ app.delete('/conversations/:id', async (req, res) => {
         res.status(500).json({ error: String(err) });
     }
 });
+app.post('/chat/feedback', async (req, res) => {
+    const { messageId, feedback, rating, value } = req.body;
+    if (!messageId)
+        return res.status(400).json({ error: 'messageId required' });
+    const finalFeedback = feedback ?? rating ?? value;
+    try {
+        const user = getRequestUser(req);
+        await query(`UPDATE messages m
+       SET feedback = $1
+       FROM conversations c
+       WHERE m.id = $2
+         AND m.conversation_id = c.id
+         AND c.owner_id = $3`, [finalFeedback, messageId, user.id]);
+        res.json({ ok: true });
+    }
+    catch (err) {
+        res.status(500).json({ error: String(err) });
+    }
+});
 app.post('/chat', async (req, res) => {
     const messages = req.body?.messages;
     const chatId = typeof req.body?.chatId === 'string' ? req.body.chatId : undefined;
@@ -440,6 +459,12 @@ app.post('/chat', async (req, res) => {
         }
         const user = getRequestUser(req);
         const latestUserMessage = getLastUserMessageText(messages);
+        // Resolve agent with priority: body > database > default
+        const selectedAgentId = typeof req.body?.selectedAgentId === 'string' ? req.body.selectedAgentId : undefined;
+        const helperAgentId = typeof req.body?.helperAgentId === 'string' ? req.body.helperAgentId : undefined;
+        const chat = chatId ? await getConversationById(chatId, user.id) : null;
+        const lastAgentId = messages.slice().reverse().find((m) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId;
+        const resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks';
         // 🧠 Check instincts BEFORE calling LLM (< 50ms vs 2-5s)
         const userInputTokens = Math.ceil(userText.length * 0.25);
         const instinctResponse = await instinctEngine.process({
@@ -471,7 +496,34 @@ app.post('/chat', async (req, res) => {
             permissionMode: getPermissionMode(req),
             latestUserMessage,
             approvedTools: getApprovedTools(req),
+            selectedAgentId: resolvedAgentId,
+            helperAgentId,
         });
+        let assistantMessageId;
+        if (chatId) {
+            const isFirstMessage = messages.length === 0;
+            const showHandoff = resolvedAgentId !== lastAgentId || (isFirstMessage && resolvedAgentId !== 'chocks');
+            const friendlyName = resolvedAgentId.charAt(0).toUpperCase() + resolvedAgentId.slice(1);
+            const handoffLabel = showHandoff ? `${friendlyName} assumiu a conversa` : null;
+            const fullMessages = [
+                ...messages,
+                {
+                    role: 'agent',
+                    content: result.response.output_text,
+                    agentId: resolvedAgentId,
+                    helperAgentId: helperAgentId,
+                    handoffLabel: handoffLabel,
+                    trace: result.trace
+                }
+            ];
+            const savedChat = await saveConversationSnapshot({
+                id: chatId,
+                title: req.body.title || 'Conversa',
+                activeAgent: resolvedAgentId,
+                messages: fullMessages
+            }, user);
+            assistantMessageId = savedChat?.messages?.[savedChat.messages.length - 1]?.id;
+        }
         // Track token usage
         if (chatId) {
             const inputTokens = Math.ceil(messages.reduce((sum, m) => sum + (m.content?.length || 0), 0) * 0.25);
@@ -491,7 +543,10 @@ app.post('/chat', async (req, res) => {
         }
         res.json({
             output_text: result.response.output_text,
-            response: result.response,
+            response: {
+                ...result.response,
+                messageId: assistantMessageId || null
+            },
             trace: result.trace,
         });
     }
@@ -550,6 +605,12 @@ app.post('/chat/stream', async (req, res) => {
         }
         const user = getRequestUser(req);
         const latestUserMessage = getLastUserMessageText(messages);
+        // Resolve agent with priority: body > database > default
+        const selectedAgentId = typeof req.body?.selectedAgentId === 'string' ? req.body.selectedAgentId : undefined;
+        const helperAgentId = typeof req.body?.helperAgentId === 'string' ? req.body.helperAgentId : undefined;
+        const chat = chatId ? await getConversationById(chatId, user.id) : null;
+        const lastAgentId = messages.slice().reverse().find((m) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId;
+        const resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks';
         const result = await streamAgent(messages, {
             chatId,
             userId: user.id,
@@ -558,10 +619,37 @@ app.post('/chat/stream', async (req, res) => {
             permissionMode: getPermissionMode(req),
             latestUserMessage,
             approvedTools: getApprovedTools(req),
+            selectedAgentId: resolvedAgentId,
+            helperAgentId,
         }, {
             onTextDelta: (delta) => sendEvent('text-delta', { delta }),
             onTrace: (entry) => sendEvent('trace', entry),
         });
+        let assistantMessageId;
+        if (chatId) {
+            const isFirstMessage = messages.length === 0;
+            const showHandoff = resolvedAgentId !== lastAgentId || (isFirstMessage && resolvedAgentId !== 'chocks');
+            const friendlyName = resolvedAgentId.charAt(0).toUpperCase() + resolvedAgentId.slice(1);
+            const handoffLabel = showHandoff ? `${friendlyName} assumiu a conversa` : null;
+            const fullMessages = [
+                ...messages,
+                {
+                    role: 'agent',
+                    content: result.response.output_text,
+                    agentId: resolvedAgentId,
+                    helperAgentId: helperAgentId,
+                    handoffLabel: handoffLabel,
+                    trace: result.trace
+                }
+            ];
+            const savedChat = await saveConversationSnapshot({
+                id: chatId,
+                title: req.body.title || 'Conversa',
+                activeAgent: resolvedAgentId,
+                messages: fullMessages
+            }, user);
+            assistantMessageId = savedChat?.messages?.[savedChat.messages.length - 1]?.id;
+        }
         // Track token usage
         if (chatId) {
             const inputTokens = Math.ceil(messages.reduce((sum, m) => sum + (m.content?.length || 0), 0) * 0.25);
@@ -571,6 +659,7 @@ app.post('/chat/stream', async (req, res) => {
         sendEvent('done', {
             output_text: result.response.output_text,
             trace: result.trace,
+            messageId: assistantMessageId || null
         });
         res.end();
     }
@@ -802,13 +891,13 @@ async function startServer() {
     // Start background jobs (retry handler, cleanup, escalation)
     await startBackgroundJobs();
     // Mount API routes
-    app.use('/api/permissions', permissionsRoutes);
-    app.use('/api/audit', auditRoutes);
-    app.use('/api/coordination', coordinationRoutes);
-    app.use('/api/coordination', coordinationExtendedRoutes);
-    app.use('/api/tokens', queryEngineRoutes);
-    app.use('/api/costs', queryEngineRoutes);
-    app.use('/api/agent', agentPersonalityRoutes);
+    app.use('/permissions', permissionsRoutes);
+    app.use('/audit', auditRoutes);
+    app.use('/coordination', coordinationRoutes);
+    app.use('/coordination', coordinationExtendedRoutes);
+    app.use('/tokens', queryEngineRoutes);
+    app.use('/costs', queryEngineRoutes);
+    app.use('/agent', agentPersonalityRoutes);
     httpServer = app.listen(port, () => console.log(`Chocks listening on ${port}`));
 }
 startServer().catch(async (error) => {
