@@ -1256,7 +1256,7 @@ export async function POST(request: NextRequest) {
       .reverse()
       .find(
         (m) =>
-          (m?.role === "agent" || m?.role === "assistant") &&
+          (m?.role === "agent") &&
           typeof (m as ChatMessage).agentId === "string" &&
           (m as ChatMessage).agentId,
       )?.agentId ?? null;
@@ -1484,7 +1484,7 @@ export async function POST(request: NextRequest) {
             : Promise.resolve(null),
         ]);
 
-        const currentMessages: Array<{ role: string; content: string }> = [
+        const currentMessages: ChatCompletionMessageParam[] = [
           {
             role: "system",
             content: buildInstructions(
