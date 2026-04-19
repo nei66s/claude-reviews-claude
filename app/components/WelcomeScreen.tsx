@@ -7,6 +7,7 @@ import { WorkspaceId } from "../lib/workspaces";
 import { Attachment } from "../lib/api";
 import ChocksIdentityCard from "./ChocksIdentityCard";
 import PimpotasmaTeamCard from "./PimpotasmaTeamCard";
+import { isTauri } from "../lib/desktop";
 
 interface WelcomeScreenProps {
   prompt: string;
@@ -229,6 +230,32 @@ export default function WelcomeScreen({
             ))}
           </div>
         </div>
+
+        {/* Download Section (Visible only in Browser) */}
+        {!isTauri() && (
+          <div className="welcome-v2-section download-section">
+             <div className="welcome-v2-section-label">Acesso Nativo</div>
+             <a 
+                href="https://pimpotasma.com.br/download/pimpotasma.exe" 
+                className="welcome-v2-download-btn"
+                title="Baixar versão nativa para Windows"
+              >
+                <div className="download-btn-content">
+                  <div className="download-btn-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </div>
+                  <div className="download-btn-text">
+                    <span className="download-btn-title">Baixar App Desktop</span>
+                    <span className="download-btn-subtitle">Para Windows (Acesso nativo a arquivos e CMD)</span>
+                  </div>
+                </div>
+              </a>
+          </div>
+        )}
 
         {/* Workspace Explore */}
         <div className="welcome-v2-section">

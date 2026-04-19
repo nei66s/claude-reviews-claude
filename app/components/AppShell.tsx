@@ -422,6 +422,7 @@ export default function AppShell({
           hasMessages={hasMessages}
           userName={user?.displayName || "Admin Pimpotasma"}
           userAvatar={user?.avatar}
+          isDesktop={typeof window !== 'undefined' && (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__ !== undefined}
           onClearChat={() => {
             if (activeChat?.id) {
               void deleteChat(activeChat.id);

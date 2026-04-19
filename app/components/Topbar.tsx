@@ -13,6 +13,7 @@ interface TopbarProps {
   onOpenSettings: () => void;
   userName?: string;
   userAvatar?: string | null;
+  isDesktop?: boolean;
 }
 
 export default function Topbar({
@@ -23,6 +24,7 @@ export default function Topbar({
   onOpenSettings,
   userName,
   userAvatar,
+  isDesktop = false,
 }: TopbarProps) {
   const router = useRouter();
   const [fullAccess, setFullAccess] = useState(false);
@@ -104,6 +106,12 @@ export default function Topbar({
             {!userAvatar && getInitials(userName)}
           </div>
           <div className="topbar-user-name">{userName}</div>
+          {isDesktop && (
+            <div className="desktop-badge" title="Rodando nativamente no Desktop">
+              <span className="desktop-badge-dot"></span>
+              Desktop
+            </div>
+          )}
         </button>
       )}
       <div className="topbar-actions">

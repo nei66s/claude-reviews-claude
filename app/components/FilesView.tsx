@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestJson, TraceEntry } from "../lib/api";
 import FileActionModal from "./FileActionModal";
 import "../styles/file-action-modal.css";
+import { isTauri, listLocalFiles, readLocalTextFile, writeLocalTextFile } from "../lib/desktop";
 
 interface FileEntry {
   name?: string;
@@ -154,6 +155,20 @@ export default function FilesView() {
   const loadFiles = useCallback(async (targetPath: string) => {
     setLoading(true);
     try {
+      if (isTauri()) {
+        const localEntries = await listLocalFiles(targetPath === "." ? undefined : targetPath);
+        // Em modo Tauri, o targetPath inicial pode ser a Home, então pegamos o path do primeiro item ou mantemos
+        const resolvedPath = localEntries.length > 0 
+            ? targetPath === "." ? localEntries[0].path.split("/").slice(0, -1).join("/") : targetPath
+            : targetPath;
+
+        setEntries(localEntries);
+        setCurrentPath(resolvedPath);
+        setPathInput(resolvedPath);
+        setFullAccess(true);
+        return;
+      }
+
       const data = await requestJson(`/files/list?path=${encodeURIComponent(targetPath)}`);
       setEntries(Array.isArray(data.entries) ? data.entries : []);
       setCurrentPath(typeof data?.currentPath === "string" ? data.currentPath : targetPath);
@@ -191,6 +206,18 @@ export default function FilesView() {
   const openPreview = useCallback(async (targetPath: string) => {
     setPreview({ kind: "loading", path: targetPath });
     try {
+      if (isTauri()) {
+          const content = await readLocalTextFile(targetPath);
+          setPreview({
+              kind: "text",
+              path: targetPath,
+              content: content || "",
+              editable: true,
+          });
+          setEditorValue(content || "");
+          return;
+      }
+
       const data = await requestJson(`/files/read?path=${encodeURIComponent(targetPath)}`);
       if (data?.kind === "text") {
         setPreview({
@@ -349,6 +376,21 @@ export default function FilesView() {
 
   const savePreview = async () => {
     if (preview.kind !== "text" || !preview.editable) return;
+    
+    if (isTauri()) {
+        try {
+            setBusyAction("write");
+            await writeLocalTextFile(preview.path, editorValue);
+            setFeedback("Arquivo salvo no PC.");
+            setPreview({ ...preview, content: editorValue });
+        } catch (err) {
+            setFeedback(err instanceof Error ? err.message : "Erro ao salvar.");
+        } finally {
+            setBusyAction(null);
+        }
+        return;
+    }
+
     await runFileAction(
       "write",
       { path: preview.path, content: editorValue },
