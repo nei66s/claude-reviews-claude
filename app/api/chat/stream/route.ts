@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import OpenAI from "openai";
+import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
 import { NextRequest } from "next/server";
 
 import type { SessionUser } from "@/lib/server/auth";
@@ -768,13 +769,6 @@ function workflowHasOpenSteps(
   return workflow.steps.some((step) => step.status !== "completed");
 }
 
-function hasFunctionCalls(response: {
-  output?: Array<{
-    type: string;
-  }>;
-}) {
-  return Array.isArray(response.output) && response.output.some((item) => item.type === "function_call");
-}
 
 function promptExplicitlyRequestsMemory(prompt: string) {
   const normalized = normalizePrompt(prompt);
@@ -1160,36 +1154,29 @@ async function createResponseStream(
 ) {
   const client = new OpenAI({ apiKey });
   
-  // Convert body to standard chat completions format if necessary
-  // The caller already prepares tools and tool_choice
-  
+  const tools = Array.isArray(body.tools) ? (body.tools as ChatCompletionTool[]) : undefined;
+
   const stream = await client.chat.completions.create({
-    model: body.model as string,
-    messages: body.input as any,
-    ...(body.tools
+    model: String(body.model),
+    messages: body.input as ChatCompletionMessageParam[],
+    ...(tools
       ? {
-          tools: (body.tools as any[]).map((tool: any) => {
-            // Normalize old format {type: 'function', name, description, parameters}
-            // to OpenAI v4 format {type: 'function', function: {name, description, parameters}}
-            if (tool.type === "function" && !tool.function) {
-              const { type, name, description, parameters, ...rest } = tool;
-              return {
-                type,
-                function: { name, description, parameters, ...rest },
-              };
+          tools: tools.map((tool) => {
+            if (tool.type === "function" && !("function" in tool)) {
+              return tool as ChatCompletionTool;
             }
             return tool;
           }),
         }
       : {}),
-    ...(body.tool_choice ? { tool_choice: body.tool_choice as any } : {}),
+    ...(body.tool_choice ? { tool_choice: body.tool_choice as "auto" | "required" } : {}),
     stream: true,
-    max_tokens: body.max_output_tokens as number,
+    max_tokens: Number(body.max_output_tokens),
   });
 
   let fullContent = "";
-  let toolCalls: any[] = [];
-  let lastChunk: any = null;
+  const toolCalls: Array<{ id: string; function: { name: string; arguments: string } }> = [];
+  let lastChunk: OpenAI.Chat.Completions.ChatCompletionChunk | null = null;
 
   for await (const chunk of stream) {
     lastChunk = chunk;
@@ -1215,7 +1202,6 @@ async function createResponseStream(
     }
   }
 
-  // Create a response object that looks like what the rest of the code expects
   const response = {
     id: lastChunk?.id || `res_${Date.now()}`,
     output_text: fullContent,
@@ -1265,7 +1251,15 @@ export async function POST(request: NextRequest) {
   const messages = Array.isArray(body?.messages) ? (body.messages as ChatMessage[]) : [];
   
   const chat = chatId ? await getConversationById(user, chatId).catch(() => null) : null;
-  const lastAgentId = [...messages].reverse().find((m: any) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId;
+  const lastAgentId =
+    [...messages]
+      .reverse()
+      .find(
+        (m) =>
+          (m?.role === "agent" || m?.role === "assistant") &&
+          typeof (m as ChatMessage).agentId === "string" &&
+          (m as ChatMessage).agentId,
+      )?.agentId ?? null;
 
   const selectedAgentId = pickCoordinationAgentId(
     coordinationData.members, 
