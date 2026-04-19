@@ -1490,7 +1490,7 @@ export async function POST(request: NextRequest) {
             : Promise.resolve(null),
         ]);
 
-        let currentMessages: any[] = [
+        const currentMessages: Array<{ role: string; content: string }> = [
           {
             role: "system",
             content: buildInstructions(

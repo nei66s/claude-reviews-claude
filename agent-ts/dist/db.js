@@ -210,6 +210,53 @@ export async function initDatabase() {
       UNIQUE (user_id, chat_id),
       FOREIGN KEY (user_id) REFERENCES app_users(id) ON DELETE CASCADE
     );
+
+    -- Memory Orchestrator
+    CREATE TABLE IF NOT EXISTS user_memory_items (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+      type TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL,
+      normalized_value TEXT NOT NULL DEFAULT '',
+      source_conversation_id TEXT,
+      source_message_id BIGINT,
+      confidence_score DECIMAL(3, 2) NOT NULL DEFAULT 0,
+      relevance_score DECIMAL(3, 2) NOT NULL DEFAULT 0,
+      sensitivity_level TEXT NOT NULL DEFAULT 'low',
+      status TEXT NOT NULL DEFAULT 'candidate',
+      valid_from TIMESTAMPTZ,
+      valid_until TIMESTAMPTZ,
+      created_by TEXT NOT NULL DEFAULT 'system',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS user_profile (
+      user_id TEXT PRIMARY KEY REFERENCES app_users(id) ON DELETE CASCADE,
+      summary_short TEXT NOT NULL DEFAULT '',
+      summary_long TEXT NOT NULL DEFAULT '',
+      interaction_preferences JSONB NOT NULL DEFAULT '{}',
+      recurring_topics JSONB NOT NULL DEFAULT '[]',
+      active_goals JSONB NOT NULL DEFAULT '[]',
+      known_constraints JSONB NOT NULL DEFAULT '[]',
+      key_facts JSONB NOT NULL DEFAULT '[]',
+      profile_version INTEGER NOT NULL DEFAULT 1,
+      last_compiled_at TIMESTAMPTZ,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS memory_audit_log (
+      id BIGSERIAL PRIMARY KEY,
+      memory_item_id TEXT NOT NULL,
+      user_id TEXT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+      action TEXT NOT NULL,
+      previous_status TEXT,
+      new_status TEXT,
+      reason TEXT NOT NULL DEFAULT '',
+      actor TEXT NOT NULL DEFAULT 'system',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
             await getPool().query(`
     ALTER TABLE conversations ADD COLUMN IF NOT EXISTS owner_id TEXT REFERENCES app_users(id) ON DELETE CASCADE;
@@ -387,6 +434,13 @@ export async function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_mcp_access_worker ON mcp_tool_access(worker_agent_id, access_level);
     CREATE INDEX IF NOT EXISTS idx_mcp_calls_tool ON mcp_tool_calls(mcp_tool_id, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_mcp_calls_worker ON mcp_tool_calls(worker_agent_id, created_at DESC);
+
+    -- Memory Orchestrator indices
+    CREATE INDEX IF NOT EXISTS idx_user_memory_items_user_status ON user_memory_items(user_id, status, updated_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_user_memory_items_type ON user_memory_items(type);
+    CREATE INDEX IF NOT EXISTS idx_user_memory_items_normalized ON user_memory_items(user_id, normalized_value);
+    CREATE INDEX IF NOT EXISTS idx_memory_audit_log_user_item ON memory_audit_log(user_id, memory_item_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_memory_audit_log_created ON memory_audit_log(created_at DESC);
       `);
             return;
         }

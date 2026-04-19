@@ -636,7 +636,7 @@ export async function getConversationById(user: SessionUser, id: string): Promis
     const row = result.rows[0];
     if (!row) return null;
 
-    const messages = await dbQuery<ChatMessage & { id: any }>(
+    const messages = await dbQuery<ChatMessage & { id: string | number }>(
       `select id, role, content, streaming, agent_id as "agentId", helper_agent_id as "helperAgentId", handoff_label as "handoffLabel", collaboration_label as "collaborationLabel"
        from public.messages where conversation_id = $1 order by sort_order asc, id asc`,
       [id]

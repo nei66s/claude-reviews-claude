@@ -2,12 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "http://127.0.0.1:3001/:path*",
-      },
-    ];
+    return {
+      afterFiles: [
+        {
+          source: "/api/:path*",
+          destination: "http://127.0.0.1:3001/:path*",
+        },
+      ],
+    };
   },
 };
 

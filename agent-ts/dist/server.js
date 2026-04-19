@@ -24,6 +24,7 @@ import coordinationRoutes from './api/coordinationRoutes.js';
 import coordinationExtendedRoutes from './api/coordinationExtendedRoutes.js';
 import queryEngineRoutes from './api/queryEngineRoutes.js';
 import agentPersonalityRoutes from './api/agentPersonalityRoutes.js';
+import memoryRoutes from './api/memoryRoutes.js';
 import { recordUsage } from './tokenManager.js';
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -898,6 +899,7 @@ async function startServer() {
     app.use('/tokens', queryEngineRoutes);
     app.use('/costs', queryEngineRoutes);
     app.use('/agent', agentPersonalityRoutes);
+    app.use('/memory', memoryRoutes);
     httpServer = app.listen(port, () => console.log(`Chocks listening on ${port}`));
 }
 startServer().catch(async (error) => {
