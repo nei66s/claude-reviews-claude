@@ -1161,15 +1161,14 @@ async function createResponseStream(
     messages: body.input as ChatCompletionMessageParam[],
     ...(tools
       ? {
-          tools: tools.map((tool) => {
-            const anyTool = tool as any;
-            if (anyTool.type === "function" && !anyTool.function) {
+          tools: (tools as Array<ChatCompletionTool & { name?: string; description?: string; parameters?: Record<string, unknown> }>).map((tool) => {
+            if (tool.type === "function" && !tool.function) {
               return {
                 type: "function",
                 function: {
-                  name: anyTool.name,
-                  description: anyTool.description,
-                  parameters: anyTool.parameters,
+                  name: tool.name || "",
+                  description: tool.description,
+                  parameters: tool.parameters,
                 },
               } as ChatCompletionTool;
             }
