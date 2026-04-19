@@ -1162,8 +1162,16 @@ async function createResponseStream(
     ...(tools
       ? {
           tools: tools.map((tool) => {
-            if (tool.type === "function" && !("function" in tool)) {
-              return tool as ChatCompletionTool;
+            const anyTool = tool as any;
+            if (anyTool.type === "function" && !anyTool.function) {
+              return {
+                type: "function",
+                function: {
+                  name: anyTool.name,
+                  description: anyTool.description,
+                  parameters: anyTool.parameters,
+                },
+              } as ChatCompletionTool;
             }
             return tool;
           }),
