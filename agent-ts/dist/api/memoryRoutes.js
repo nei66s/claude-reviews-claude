@@ -2,6 +2,70 @@ import { Router } from 'express';
 import { query } from '../db.js';
 import crypto from 'crypto';
 const router = Router();
+// GET /memory/users - List all registered users
+router.get('/users', async (req, res) => {
+    try {
+        const result = await query(`SELECT id as user_id FROM public.app_users ORDER BY id ASC`);
+        res.json({ users: result.rows.map(r => r.user_id) });
+    }
+    catch (error) {
+        console.error('[memory] Failed to list users:', error);
+        res.status(500).json({ error: 'Falha ao listar usuários.' });
+    }
+});
+// Temporary maintenance route to force rich re-compilation
+router.get('/debug/recompile/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const itemsResult = await query(`select content, type, normalized_value from public.user_memory_items where user_id = $1 and status = 'active'`, [userId]);
+        const facts = itemsResult.rows.filter(r => r.type === 'declared_fact').map(r => r.content);
+        const preferences = itemsResult.rows.filter(r => r.type === 'preference').map(r => r.content);
+        const goals = itemsResult.rows.filter(r => r.type === 'goal').map(r => r.content);
+        const constraints = itemsResult.rows.filter(r => r.type === 'constraint').map(r => r.content);
+        const style = itemsResult.rows.filter(r => r.type === 'interaction_style').map(r => r.content);
+        const summaryShort = [
+            `${facts.length} fatos`,
+            preferences.length ? `${preferences.length} preferências` : '',
+            goals.length ? `${goals.length} objetivos` : '',
+            constraints.length ? `${constraints.length} restrições` : '',
+        ].filter(Boolean).join(', ');
+        const finalSummaryShort = `Perfil com ${summaryShort}.`;
+        const summaryLongParts = ['# Perfil do usuário', ''];
+        if (facts.length) {
+            summaryLongParts.push('## Fatos e traços');
+            facts.forEach(f => summaryLongParts.push(`- ${f}`));
+        }
+        if (goals.length) {
+            summaryLongParts.push('\n## Objetivos');
+            goals.forEach(g => summaryLongParts.push(`- ${g}`));
+        }
+        if (preferences.length) {
+            summaryLongParts.push('\n## Preferências');
+            preferences.forEach(p => summaryLongParts.push(`- ${p}`));
+        }
+        if (constraints.length) {
+            summaryLongParts.push('\n## Restrições');
+            constraints.forEach(c => summaryLongParts.push(`- ${c}`));
+        }
+        if (style.length) {
+            summaryLongParts.push('\n## Estilo de Interação');
+            style.forEach(s => summaryLongParts.push(`- ${s}`));
+        }
+        const summaryLong = summaryLongParts.join('\n').trim();
+        await query(`insert into public.user_profile (
+         user_id, summary_short, summary_long, last_compiled_at, updated_at
+       ) values ($1, $2, $3, now(), now())
+       on conflict (user_id) do update set
+         summary_short = excluded.summary_short,
+         summary_long = excluded.summary_long,
+         last_compiled_at = excluded.last_compiled_at,
+         updated_at = now()`, [userId, finalSummaryShort, summaryLong]);
+        res.json({ success: true, userId });
+    }
+    catch (e) {
+        res.status(500).json({ error: String(e) });
+    }
+});
 // GET /memory/users/:userId/profile
 router.get('/users/:userId/profile', async (req, res) => {
     const { userId } = req.params;
@@ -102,7 +166,8 @@ router.get('/users/:userId/audit', async (req, res) => {
     const { userId } = req.params;
     const limit = parseInt(req.query.limit) || 50;
     try {
-        const result = await query(`select 
+        // 1. Get events list
+        const eventsResult = await query(`select 
          al.*,
          umi.type as item_type,
          umi.status as item_status,
@@ -113,9 +178,29 @@ router.get('/users/:userId/audit', async (req, res) => {
        where al.user_id = $1
        order by al.created_at desc
        limit $2`, [userId, limit]);
+        // 2. Calculate summary statistics
+        const statsResult = await query(`select 
+         min(created_at) as first_event_at,
+         count(*) filter (where action in ('created', 'promoted') and actor != 'admin') as automatic_captures,
+         count(*) filter (where action in ('contradicted', 'archived', 'deleted', 'updated') and actor = 'admin') as manual_corrections,
+         count(*) filter (where action = 'archived') as archived_count,
+         count(*) filter (where action = 'contradicted') as contradicted_count,
+         count(*) filter (where action = 'deleted') as deleted_count
+       from public.memory_audit_log
+       where user_id = $1`, [userId]);
+        const stats = statsResult.rows[0] || {};
         res.json({
             userId,
-            events: result.rows.map(row => ({
+            summary: {
+                userId,
+                firstEventAt: stats.first_event_at,
+                automaticCaptures: parseInt(stats.automatic_captures || '0'),
+                manualCorrections: parseInt(stats.manual_corrections || '0'),
+                archived: parseInt(stats.archived_count || '0'),
+                contradicted: parseInt(stats.contradicted_count || '0'),
+                deleted: parseInt(stats.deleted_count || '0')
+            },
+            events: eventsResult.rows.map(row => ({
                 id: Number(row.id),
                 memoryItemId: row.memory_item_id,
                 userId: row.user_id,
@@ -271,9 +356,19 @@ router.patch('/users/:userId/items/:itemId', async (req, res) => {
         const updatedItem = updateResult.rows[0];
         // Log audit
         if (status && status !== previousStatus) {
+            // Determine semantic action from status or fallback to updated
+            let action = 'updated';
+            if (nextStatus === 'contradicted')
+                action = 'contradicted';
+            else if (nextStatus === 'archived')
+                action = 'archived';
+            else if (nextStatus === 'deleted')
+                action = 'deleted';
+            else if (nextStatus === 'active' && previousStatus === 'candidate')
+                action = 'promoted';
             await query(`insert into public.memory_audit_log (
            memory_item_id, user_id, action, previous_status, new_status, reason, actor
-         ) values ($1, $2, $3, $4, $5, $6, $7)`, [itemId, userId, 'status_change', previousStatus, nextStatus, reason || 'manual_admin', 'admin']);
+         ) values ($1, $2, $3, $4, $5, $6, $7)`, [itemId, userId, action, previousStatus, nextStatus, reason || 'manual_admin', 'admin']);
         }
         res.json({
             item: {
@@ -284,6 +379,55 @@ router.patch('/users/:userId/items/:itemId', async (req, res) => {
                 updatedAt: updatedItem.updated_at
             }
         });
+        // Trigger profile re-compilation in the background after change
+        try {
+            const itemsResult = await query(`select content, type, normalized_value from public.user_memory_items where user_id = $1 and status = 'active'`, [userId]);
+            const facts = itemsResult.rows.filter(r => r.type === 'declared_fact').map(r => r.content);
+            const preferences = itemsResult.rows.filter(r => r.type === 'preference').map(r => r.content);
+            const goals = itemsResult.rows.filter(r => r.type === 'goal').map(r => r.content);
+            const constraints = itemsResult.rows.filter(r => r.type === 'constraint').map(r => r.content);
+            const style = itemsResult.rows.filter(r => r.type === 'interaction_style').map(r => r.content);
+            const summaryShort = [
+                `${facts.length} fatos`,
+                preferences.length ? `${preferences.length} preferências` : '',
+                goals.length ? `${goals.length} objetivos` : '',
+                constraints.length ? `${constraints.length} restrições` : '',
+            ].filter(Boolean).join(', ');
+            const finalSummaryShort = `Perfil com ${summaryShort}.`;
+            const summaryLongParts = ['# Perfil do usuário', ''];
+            if (facts.length) {
+                summaryLongParts.push('## Fatos e traços');
+                facts.forEach(f => summaryLongParts.push(`- ${f}`));
+            }
+            if (goals.length) {
+                summaryLongParts.push('\n## Objetivos');
+                goals.forEach(g => summaryLongParts.push(`- ${g}`));
+            }
+            if (preferences.length) {
+                summaryLongParts.push('\n## Preferências');
+                preferences.forEach(p => summaryLongParts.push(`- ${p}`));
+            }
+            if (constraints.length) {
+                summaryLongParts.push('\n## Restrições');
+                constraints.forEach(c => summaryLongParts.push(`- ${c}`));
+            }
+            if (style.length) {
+                summaryLongParts.push('\n## Estilo de Interação');
+                style.forEach(s => summaryLongParts.push(`- ${s}`));
+            }
+            const summaryLong = summaryLongParts.join('\n').trim();
+            await query(`insert into public.user_profile (
+           user_id, summary_short, summary_long, last_compiled_at, updated_at
+         ) values ($1, $2, $3, now(), now())
+         on conflict (user_id) do update set
+           summary_short = excluded.summary_short,
+           summary_long = excluded.summary_long,
+           last_compiled_at = excluded.last_compiled_at,
+           updated_at = now()`, [userId, finalSummaryShort, summaryLong]);
+        }
+        catch (e) {
+            console.error('[memory] Background profile recompile failed:', e);
+        }
     }
     catch (error) {
         console.error('[memory] Failed to update item:', error);

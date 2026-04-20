@@ -44,11 +44,14 @@ export default function Sidebar({
     { id: "conversations", label: "Conversas", color: "#10b981", emoji: "💬", icon: (
       <svg viewBox="0 0 24 24"><path d="M7 8h10"></path><path d="M7 12h7"></path><path d="M7 16h5"></path><rect x="4" y="5" width="16" height="14" rx="4"></rect></svg>
     )},
-    { id: "code", label: "Ferramentas", color: "#f43f5e", emoji: "🔌", icon: (
-      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"></path><polyline points="3 12 12 12 12 18"></polyline><line x1="9" y1="6" x2="9" y2="10"></line><line x1="15" y1="6" x2="15" y2="10"></line></svg>
+    { id: "skills", label: "Habilidades", color: "#8b5cf6", emoji: "⚡", icon: (
+      <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
     )},
     { id: "files", label: "Arquivos", color: "#f59e0b", emoji: "📁", icon: (
       <svg viewBox="0 0 24 24"><path d="M4 7h6l2 2h8v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M4 7a2 2 0 0 1 2-2h4l2 2"></path></svg>
+    )},
+    { id: "code", label: "Código", color: "#3b82f6", emoji: "💻", icon: (
+      <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
     )},
     { id: "coordinator", label: "Fluxo de Trabalho", color: "#3b82f6", emoji: "⚙️", icon: (
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path><path d="M15 3v18"></path><path d="M3 9h18"></path><path d="M3 15h18"></path></svg>
@@ -65,11 +68,11 @@ export default function Sidebar({
     { id: "doutora-kitty", label: "Doutora Kitty", color: "#ec4899", emoji: "🩺", icon: (
       <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"></path><path d="M12 6v12"></path><path d="M6 12h12"></path></svg>
     )},
-    { id: "memory-admin", label: "Memória (Admin)", color: "#f97316", emoji: "🧠", icon: (
-      <svg viewBox="0 0 24 24"><path d="M8 6a3 3 0 0 1 6 0v1"></path><path d="M6 9a3 3 0 0 1 3-3"></path><path d="M18 9a3 3 0 0 0-3-3"></path><path d="M9 7v10"></path><path d="M15 7v10"></path><path d="M6 12a3 3 0 0 0 3 3"></path><path d="M18 12a3 3 0 0 1-3 3"></path><path d="M8 19h8"></path></svg>
+    { id: "memory", label: "Memória", color: "#f97316", emoji: "🧠", icon: (
+      <svg viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 5 4 6 4 9h8c0-3 4-4 4-9a8 8 0 0 0-8-8z"></path><path d="M9 22h6"></path></svg>
     )},
-    { id: "memory-graph", label: "Grafo de Memória", color: "#0ea5e9", emoji: "🕸️", icon: (
-      <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.2"></circle><circle cx="18" cy="7" r="2.2"></circle><circle cx="18" cy="17" r="2.2"></circle><path d="M8 12h6"></path><path d="M16.3 8.3 8.7 11.2"></path><path d="M16.3 15.7 8.7 12.8"></path></svg>
+    { id: "memory-graph", label: "Grafo de Memória", color: "#3b82f6", emoji: "🕸️", icon: (
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M9 9l6 6"></path><path d="M15 9l-6 6"></path></svg>
     )},
   ];
 

@@ -24,6 +24,14 @@ interface WelcomeScreenProps {
   attachmentError: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   commandMenu: React.ReactNode;
+  onPaste: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
+  isRecording?: boolean;
+  isProcessingAudio?: boolean;
+  onStartRecord?: () => void;
+  onStopRecord?: () => void;
+  onCancelRecord?: () => void;
+  isPlayingTTS?: boolean;
+  onStopTTS?: () => void;
 }
 
 function getGreeting() {
@@ -55,6 +63,14 @@ export default function WelcomeScreen({
   attachmentError,
   textareaRef,
   commandMenu,
+  onPaste,
+  isRecording,
+  isProcessingAudio,
+  onStartRecord,
+  onStopRecord,
+  onCancelRecord,
+  isPlayingTTS,
+  onStopTTS,
 }: WelcomeScreenProps) {
   const greeting = getGreeting();
   const [agentOnline, setAgentOnline] = useState(false);
@@ -93,6 +109,15 @@ export default function WelcomeScreen({
     { icon: "💡", label: "Explicar", desc: "Explicar conceito ou código", action: () => onSetPrompt("/explain ") },
     { icon: "🤖", label: "Agentes", desc: "Criar time de agentes", action: () => onSetPrompt("/create-agents ") },
     { icon: "⚙️", label: "Workflow", desc: "Atribuir tarefas ao time", action: () => onSetPrompt("/create-workflow ") },
+  ];
+
+  const osAutomations = [
+    { icon: "🪟", label: "Lançar Aplicativos", desc: "Ex: 'abre o valorant'", action: () => onSetPrompt("abre o ") },
+    { icon: "💻", label: "Controle de Janelas", desc: "Ex: 'minimiza tudo'", action: () => onSetPrompt("minimiza tudo") },
+    { icon: "☀️", label: "Monitor e Temas", desc: "Ex: 'modo escuro'", action: () => onSetPrompt("ativa o modo escuro") },
+    { icon: "📈", label: "Hardware e Energia", desc: "Ex: 'uso de ram'", action: () => onSetPrompt("como ta a memoria ram?") },
+    { icon: "🗣️", label: "Voz e Áudio", desc: "Ex: 'fale: olá'", action: () => onSetPrompt("fale: ") },
+    { icon: "📸", label: "Mágicas do Sistema", desc: "Ex: 'tira um print'", action: () => onSetPrompt("tira um print") },
   ];
 
   const workspaceCards = [
@@ -137,28 +162,14 @@ export default function WelcomeScreen({
             <span className="welcome-v2-status-dot" />
             <span>{agentOnline ? "Agente online" : "Agente offline"}</span>
           </div>
-          <div className="welcome-v2-status-pill neutral">
-            <span>🛠️</span>
-            <span>{toolsCount} tools ativas</span>
-          </div>
-          <div className="welcome-v2-status-pill neutral">
-            <span>🔌</span>
-            <span>{pluginsCount} plugins</span>
-          </div>
-          <div className="welcome-v2-status-pill neutral" style={{ borderColor: "rgba(139, 92, 246, 0.4)", color: "var(--text)" }}>
-            <span>⚡</span>
-            <span>Powered by <strong>Pimpotasma</strong></span>
-          </div>
-          <div className="welcome-v2-status-pill neutral hint">
+          <button className="welcome-v2-status-pill neutral interactable" onClick={() => onNavigate("skills")}>
+             <span>⚡</span>
+             <span>Ver Habilidades e Ferramentas</span>
+          </button>
+          <div className="welcome-v2-status-pill neutral hint" style={{ marginLeft: "auto" }}>
             <span>⌨️</span>
             <span>Ctrl+K</span>
           </div>
-        </div>
-
-        {/* Agent Personality Card */}
-        <div className="welcome-v2-agent-personality">
-          <ChocksIdentityCard />
-          <PimpotasmaTeamCard />
         </div>
 
         {/* Composer */}
@@ -169,18 +180,34 @@ export default function WelcomeScreen({
               value={prompt}
               onChange={onPromptChange}
               onKeyDown={onKeyDown}
+              onPaste={onPaste}
               placeholder="Pergunte qualquer coisa ao agente... (use / para comandos rápidos)"
               rows={3}
             />
             {commandMenu}
             {attachments.length > 0 && (
               <div className="attachment-list">
-                {attachments.map((att, i) => (
-                  <div key={`${att.name}-${i}`} className="attachment-chip">
-                    <span>{att.name}</span>
-                    <button className="attachment-remove" type="button" onClick={() => onRemoveAttachment(i)}>×</button>
-                  </div>
-                ))}
+                {attachments.map((att, i) => {
+                  const isImage = (att.content || "").startsWith("data:image/");
+                  return (
+                    <div key={`${att.name}-${i}`} className={`attachment-chip ${isImage ? "has-preview" : ""}`}>
+                      {isImage && (
+                        <div className="attachment-preview">
+                          <img src={att.content} alt={att.name} />
+                        </div>
+                      )}
+                      <div className="attachment-details">
+                        <span className="attachment-name">{att.name}</span>
+                      </div>
+                      <button className="attachment-remove" type="button" onClick={() => onRemoveAttachment(i)}>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
             {attachmentFeedback && (
@@ -194,7 +221,39 @@ export default function WelcomeScreen({
                   </svg>
                 </button>
 
-                {isThinking && <span className="welcome-v2-thinking">Executando...</span>}
+                {onStartRecord && (
+                  <div className="audio-controls-wrap" style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "12px" }}>
+                    {isRecording ? (
+                      <>
+                        <button className="welcome-v2-composer-action" type="button" onClick={onStopRecord} style={{ color: "red" }} title="Parar gravação">
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                        </button>
+                        <button className="welcome-v2-composer-action" type="button" onClick={onCancelRecord} title="Cancelar gravação">
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                        <span className="welcome-v2-thinking">Gravando...</span>
+                      </>
+                    ) : (
+                      <button className="welcome-v2-composer-action" type="button" onClick={onStartRecord} title="Gravar áudio" disabled={isProcessingAudio}>
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                          <line x1="12" y1="19" x2="12" y2="23"></line>
+                          <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {isPlayingTTS && (
+                  <button className="welcome-v2-composer-action" type="button" onClick={onStopTTS} style={{ color: "#3b82f6", marginLeft: "12px" }} title="Parar áudio">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                  </button>
+                )}
+
+                {isProcessingAudio && <span className="welcome-v2-thinking">Transcrevendo áudio...</span>}
+                {isThinking && !isProcessingAudio && <span className="welcome-v2-thinking">Executando...</span>}
               </div>
               <button
                 className={`welcome-v2-composer-send ${isThinking ? "cancel" : ""}`}
@@ -215,20 +274,10 @@ export default function WelcomeScreen({
           </div>
         </div>
 
-        {/* Quick Actions Grid */}
-        <div className="welcome-v2-section">
-          <div className="welcome-v2-section-label">Ações rápidas</div>
-          <div className="welcome-v2-quick-grid">
-            {quickActions.map((action) => (
-              <button key={action.label} className="welcome-v2-quick-card" onClick={action.action} type="button">
-                <span className="welcome-v2-quick-icon">{action.icon}</span>
-                <div className="welcome-v2-quick-text">
-                  <span className="welcome-v2-quick-label">{action.label}</span>
-                  <span className="welcome-v2-quick-desc">{action.desc}</span>
-                </div>
-              </button>
-            ))}
-          </div>
+        {/* Agent Personality Card (Now below composer to save space) */}
+        <div className="welcome-v2-agent-personality" style={{ marginBottom: "20px" }}>
+          <ChocksIdentityCard />
+          <PimpotasmaTeamCard />
         </div>
 
         {/* Download Section (Visible only in Browser) */}

@@ -48,7 +48,7 @@ const PROJECT_ROOT = process.env.PROJECT_ROOT
   : path.resolve(process.cwd(), '..')
 
 const app = express()
-app.use(express.json())
+app.use(express.json({ limit: '20mb' }))
 app.use(express.static(path.resolve(__dirname, '..', 'public')))
 
 type RequestUser = {
@@ -231,6 +231,75 @@ function getLastUserMessageText(messages: any[]) {
   return ''
 }
 
+function parseDirectTerminalIntent(text: string): string | null {
+  if (!text?.trim()) return null
+
+  // 1. Normalizar e remover sufixos de polidez
+  const cleaned = text.trim()
+    .replace(/\s+(pra\s+mim|por\s+favor|por\s+gentileza|agora|aí|ai|ok|né|vc pode|me ajuda)\s*$/i, '')
+    .trim()
+
+  // 2. Padrão: verbo + (o) + (comando) + CMD
+  //    Ex: "rode o comando ipconfig", "execute o ping google.com", "faz o git status"
+  const verbMatch = cleaned.match(/^(?:rode|rodar|execute|executar|faz|fazer|manda|mandas|run|exec|roda)\s+(?:o\s+)?(?:comando\s+)?(.+)$/i)
+  if (verbMatch?.[1]) return verbMatch[1].trim()
+
+  // 3. Padrão: versão de um programa
+  //    Ex: "versão do node", "qual versão do npm", "qual a versão do git"
+  const versionMatch = cleaned.match(/(?:qual\s+(?:a\s+)?vers[aã]o|vers[aã]o|version)\s+do\s+([a-z0-9_-]+)/i)
+  if (versionMatch?.[1]) return `${versionMatch[1]} --version`
+
+  // 4. Comandos diretos sem verbo introdutório
+  const directMatch = cleaned.match(/^(ipconfig|ifconfig|whoami|hostname|dir|ls|pwd|netstat|tasklist|systeminfo|git\s+\S.*|node\s+\S.*|npm\s+\S.*|ping\s+\S.*|python\s+\S.*|docker\s+\S.*)$/i)
+  if (directMatch?.[0]) return directMatch[0].trim()
+
+  return null
+}
+
+async function tryDirectTerminal(messages: any[], req: Request) {
+  const userText = getLastUserMessageText(messages)
+  const cmd = parseDirectTerminalIntent(userText)
+  if (!cmd) return null
+
+  const callId = `direct_terminal_${Date.now()}`
+  const user = getRequestUser(req)
+  const chatId = typeof req.body?.chatId === 'string' ? req.body.chatId : undefined
+
+  // 🔥 Executa o comando de verdade via bash_exec
+  let executionResult: { stdout?: string; stderr?: string } = {}
+  let execError: string | null = null
+  try {
+    const result = await runTool('bash_exec', { cmd }, {
+      chatId,
+      userId: user.id,
+      displayName: user.displayName,
+      fullAccess: getFullAccess(req),
+      permissionMode: 'auto',
+      latestUserMessage: userText,
+      approvedTools: ['bash_exec'],
+    })
+    if (result?.output) {
+      executionResult = result.output as { stdout?: string; stderr?: string }
+    }
+  } catch (err) {
+    execError = String(err)
+  }
+
+  const stdout = String(executionResult?.stdout || '').trim()
+  const stderr = String(executionResult?.stderr || '').trim()
+  const output = stdout || stderr || execError || '(sem saída)'
+
+  const output_text = `Aqui está o resultado do comando \`${cmd}\`:\n\n\`\`\`\n${output}\n\`\`\``
+
+  return {
+    output_text,
+    trace: [
+      { type: 'tool_call', name: 'bash_exec', call_id: callId, arguments: JSON.stringify({ cmd }) },
+      { type: 'tool_output', call_id: callId, output: JSON.stringify({ stdout, stderr }) },
+    ],
+  }
+}
+
 function parseDirectDeleteIntent(text: string): DirectDeleteIntent | null {
   const normalized = String(text || '').trim()
   if (!normalized) return null
@@ -250,6 +319,8 @@ function parseDirectDeleteIntent(text: string): DirectDeleteIntent | null {
   if (!extractedPath) return null
   return { path: extractedPath }
 }
+
+
 
 function extractWorkspacePath(text: string) {
   const normalized = String(text || '').trim()
@@ -673,6 +744,19 @@ app.post('/chat/stream', async (req: Request, res: Response) => {
       sendEvent('done', {
         output_text: directRead.output_text,
         trace: directRead.trace,
+      })
+      return res.end()
+    }
+
+    const directTerminal = await tryDirectTerminal(messages, req)
+    if (directTerminal) {
+      sendEvent('text-delta', { delta: directTerminal.output_text })
+      for (const entry of directTerminal.trace) {
+        sendEvent('trace', entry)
+      }
+      sendEvent('done', {
+        output_text: directTerminal.output_text,
+        trace: directTerminal.trace,
       })
       return res.end()
     }

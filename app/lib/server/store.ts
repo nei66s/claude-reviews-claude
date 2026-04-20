@@ -54,6 +54,7 @@ export type ChatMessage = {
   handoffLabel?: string | null;
   collaborationLabel?: string | null;
   feedback?: "like" | "dislike" | null;
+  attachments?: { name: string; content?: string; mimeType?: string }[];
 };
 
 export type StoredConversation = {

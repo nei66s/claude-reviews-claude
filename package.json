@@ -7,6 +7,7 @@
     "dev:backend": "cd agent-ts && npm run dev",
     "predev:all": "powershell -Command \"try { Get-NetTCPConnection -LocalPort 3000,3001 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue } } catch {}; exit 0\"",
     "dev:all": "concurrently -n web,coordination -c \"cyan,magenta\" \"npm run dev:web\" \"npm run dev:backend\"",
+    "dev:desktop": "concurrently -n web,coordination,tauri -c \"cyan,magenta,yellow\" \"npm run dev:web\" \"npm run dev:backend\" \"npx tauri dev\"",
     "dev": "npm run dev:all",
     "build": "next build",
     "start": "next start --port 3000",

@@ -312,6 +312,7 @@ export default function MemoryGraphView() {
   const { user, isLoading } = useAuth();
 
   const [targetUserId, setTargetUserId] = useState("");
+  const [userList, setUserList] = useState<string[]>([]);
   const [graph, setGraph] = useState<GraphResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -321,6 +322,8 @@ export default function MemoryGraphView() {
   const [profile, setProfile] = useState<UserProfileResponse["profile"] | null>(null);
   const [items, setItems] = useState<UserMemoryItem[]>([]);
   const [auditSummary, setAuditSummary] = useState<MemoryAuditSummary | null>(null);
+  const [showDetails, setShowDetails] = useState(true);
+  const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(new Set());
 
   const canInspectOtherUsers = user?.id === "local-admin";
 
@@ -333,7 +336,7 @@ export default function MemoryGraphView() {
     linkDistance: 150,
   }));
 
-  const [layoutMode, setLayoutMode] = useState<"fixed" | "forces">("fixed");
+  const [layoutMode, setLayoutMode] = useState<"fixed" | "forces">("forces");
   const [dragEnabled, setDragEnabled] = useState(false);
   const [lockOnDrag, setLockOnDrag] = useState(true);
 
@@ -372,6 +375,16 @@ export default function MemoryGraphView() {
     if (user && !targetUserId) {
       setTargetUserId(user.id);
     }
+    
+    const fetchUsers = async () => {
+      try {
+        const resp = await requestJson("/memory/users");
+        if (Array.isArray(resp?.users)) setUserList(resp.users);
+      } catch (e) {
+        console.error("Failed to fetch users list", e);
+      }
+    };
+    fetchUsers();
   }, [user, isLoading, router, targetUserId]);
 
   const structuralGraph = useMemo(() => {
@@ -397,16 +410,45 @@ export default function MemoryGraphView() {
       setCanvasLinks([]);
       return;
     }
-    setCanvasNodes(structuralGraph.nodes.map((n) => ({ ...n })));
+
+    // Filter nodes and links based on collapsed state
+    const visibleNodeIds = new Set<string>();
+    const stack = ["memory-orchestrator"]; // Start from root
+    
+    // Map of parent -> children for traversal
+    const childrenMap = new Map<string, string[]>();
+    for (const edge of structuralGraph.edges) {
+      const list = childrenMap.get(edge.source) || [];
+      list.push(edge.target);
+      childrenMap.set(edge.source, list);
+    }
+
+    while (stack.length > 0) {
+      const currId = stack.pop()!;
+      visibleNodeIds.add(currId);
+      
+      if (!collapsedNodeIds.has(currId)) {
+        const children = childrenMap.get(currId) || [];
+        for (const childId of children) {
+          if (!visibleNodeIds.has(childId)) {
+            stack.push(childId);
+          }
+        }
+      }
+    }
+
+    setCanvasNodes(structuralGraph.nodes.filter(n => visibleNodeIds.has(n.id)).map((n) => ({ ...n })));
     setCanvasLinks(
-      structuralGraph.edges.map((edge) => ({
-        source: edge.source,
-        target: edge.target,
-        kind: edge.kind,
-        label: edge.label,
-      })),
+      structuralGraph.edges
+        .filter(edge => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target))
+        .map((edge) => ({
+          source: edge.source,
+          target: edge.target,
+          kind: edge.kind,
+          label: edge.label,
+        }))
     );
-  }, [structuralGraph]);
+  }, [structuralGraph, collapsedNodeIds]);
 
   const topicStrength = useMemo(() => {
     const recurringTopics = Array.isArray(profile?.recurringTopics)
@@ -572,12 +614,13 @@ export default function MemoryGraphView() {
     fgRef.current?.zoomToFit?.(400, 32);
   };
 
+  // Auto-load graph on focus/mount if we have a userId
   useEffect(() => {
-    if (!user) return;
-    if (!targetUserId) return;
-    void loadGraph();
+    if (user && targetUserId && !loading && !error) {
+      void loadGraph();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, targetUserId]);
 
   const headerStyle: CSSProperties = {
     display: "flex",
@@ -623,28 +666,44 @@ export default function MemoryGraphView() {
       <div style={headerStyle}>
         <div>
           <div style={{ fontWeight: 800, fontSize: 14 }}>Memory Graph (read-only)</div>
-          <div style={{ opacity: 0.7, fontSize: 12 }}>Visualização interna do estado atual no banco</div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div style={{ opacity: 0.7, fontSize: 12 }}>Visualização interna do estado atual no banco</div>
+            <button
+               style={{ ...buttonStyle, padding: '4px 10px', fontSize: 11, background: 'var(--accent-low)' }}
+               onClick={() => setShowDetails(!showDetails)}
+            >
+              {showDetails ? '⇠ Ocultar Detalhes' : '⇢ Mostrar Detalhes'}
+            </button>
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <input
+          <select
             style={inputStyle}
             value={targetUserId}
-            onChange={(e) => setTargetUserId(e.target.value)}
-            placeholder={canInspectOtherUsers ? "userId (ex: admin-001)" : "seu userId"}
-            disabled={loading || !canInspectOtherUsers}
-          />
-          <button style={buttonStyle} onClick={() => void loadGraph()} disabled={loading || !targetUserId.trim()}>
-            {loading ? "Carregando..." : "Recarregar"}
-          </button>
+            onChange={(e) => {
+              setTargetUserId(e.target.value);
+              setGraph(null); // Clear old graph to trigger re-load via effect
+            }}
+            disabled={loading}
+          >
+            {userList.length === 0 && (
+              <option value={targetUserId}>{targetUserId}</option>
+            )}
+            {userList.map(uid => (
+              <option key={uid} value={uid}>
+                {uid} {uid === user?.id ? '(você)' : ''}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 360px",
-          gap: 12,
+          gridTemplateColumns: showDetails ? "1fr 360px" : "1fr",
+          gap: showDetails ? 12 : 0,
           padding: 12,
           flex: 1,
           minHeight: 0,
@@ -731,6 +790,7 @@ export default function MemoryGraphView() {
                     <span>Arrastar nós</span>
                     <input
                       type="checkbox"
+                      style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
                       checked={dragEnabled}
                       onChange={(e) => setDragEnabled(e.target.checked)}
                       aria-label="Habilitar arrastar nós"
@@ -741,6 +801,7 @@ export default function MemoryGraphView() {
                     <span>Fixar ao arrastar</span>
                     <input
                       type="checkbox"
+                      style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
                       checked={lockOnDrag}
                       disabled={!dragEnabled}
                       onChange={(e) => setLockOnDrag(e.target.checked)}
@@ -928,7 +989,26 @@ export default function MemoryGraphView() {
                   return link.kind === "references" ? 1.1 : 1;
                 }}
                 cooldownTicks={layoutMode === "fixed" ? 0 : 80}
-                onNodeClick={(node: GraphNode) => setSelectedNodeId(node.id)}
+                onNodeClick={(node: GraphNode, _event: MouseEvent) => {
+                  // Single click selects
+                  setSelectedNodeId(node.id);
+                  
+                  // Double click logic simulation (since react-force-graph doesn't have native onNodeDoubleClick in this version)
+                  const now = Date.now();
+                  const lastClick = (node as unknown as { _lastClick?: number })._lastClick || 0;
+                  if (now - lastClick < 300) {
+                    // Double click triggered
+                    setCollapsedNodeIds(prev => {
+                      const next = new Set(prev);
+                      if (next.has(node.id)) next.delete(node.id);
+                      else next.add(node.id);
+                      return next;
+                    });
+                    (node as unknown as { _lastClick?: number })._lastClick = 0;
+                  } else {
+                    (node as unknown as { _lastClick?: number })._lastClick = now;
+                  }
+                }}
                 onNodeHover={(node: GraphNode | null) => setHoverNodeId(node?.id ?? null)}
                 onNodeDragEnd={(node: GraphNode) => {
                   if (!lockOnDrag) return;
@@ -966,6 +1046,17 @@ export default function MemoryGraphView() {
                   ctx.lineWidth = isSelected ? 3 : isSystemCore ? 3 : isUserCore ? 2.8 : isUsersRoot ? 2.4 : 2.2;
                   ctx.strokeStyle = color;
                   ctx.stroke();
+
+                  // Visual indicator for collapsed nodes
+                  if (collapsedNodeIds.has(node.id)) {
+                    ctx.beginPath();
+                    ctx.setLineDash([2, 2]);
+                    ctx.arc(x, y, r + 4, 0, 2 * Math.PI, false);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.setLineDash([]); // Reset
+                  }
 
                   if (isSystemCore) {
                     ctx.beginPath();
@@ -1023,320 +1114,322 @@ export default function MemoryGraphView() {
           )}
         </div>
 
-        <div
-          style={{
-            height: "100%",
-            borderRadius: 14,
-            border: "1px solid var(--line)",
-            background: "var(--panel)",
-            padding: 14,
-            overflow: "auto",
-            color: "var(--text)",
-          }}
-        >
-          <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8 }}>Detalhes</div>
-
-          {graph ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 12 }}>
-              <div style={{ opacity: 0.8 }}>
-                <div>
-                  userId: <span style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" }}>{graph.meta.userId}</span>
-                </div>
-                <div>gerado: {formatDate(graph.meta.generatedAt)}</div>
-                <div>perfil atualizado: {formatDate(graph.meta.profileUpdatedAt)}</div>
-                <div>
-                  itens (ativos/ok): {graph.meta.memoryItemsIncluded} / {graph.meta.memoryItemsTotal}
-                </div>
-              </div>
-
-              <div style={{ height: 1, background: "var(--line-soft)", margin: "6px 0" }} />
-
-              {selectedNode ? (
-                <>
-                  <div style={{ fontWeight: 800, fontSize: 12 }}>{selectedNode.label}</div>
-                  <div style={{ opacity: 0.85 }}>
-                    <div>
-                      id:{" "}
-                      <span style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" }}>
-                        {selectedNode.id}
-                      </span>
-                    </div>
-                    <div>kind: {selectedNode.kind}</div>
-                    <div>source: {selectedNode.source ?? "-"}</div>
+        {showDetails && (
+          <div
+            style={{
+              height: "100%",
+              borderRadius: 14,
+              border: "1px solid var(--line)",
+              background: "var(--panel)",
+              padding: 14,
+              overflow: "auto",
+              color: "var(--text)",
+            }}
+          >
+            <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8 }}>Detalhes</div>
+  
+            {graph ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 12 }}>
+                <div style={{ opacity: 0.8 }}>
+                  <div>
+                    userId: <span style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" }}>{graph.meta.userId}</span>
                   </div>
-
-                  {(() => {
-                    const userId = graph.meta.userId;
-                    const panelItems = items.filter(
-                      (i) => i.status === "active" && i.sensitivityLevel !== "high" && i.sensitivityLevel !== "blocked",
-                    );
-
-                    const identityItems = panelItems.filter(
-                      (i) => i.type === "declared_fact" || i.type === "constraint" || i.type === "inferred_trait",
-                    );
-                    const preferenceItems = panelItems.filter((i) => i.type === "preference" || i.type === "interaction_style");
-                    const goalItems = panelItems.filter((i) => i.type === "goal");
-
-                    const keyFacts = Array.isArray(profile?.keyFacts) ? (profile?.keyFacts ?? []).map((v) => String(v)) : [];
-                    const activeGoals = Array.isArray(profile?.activeGoals)
-                      ? (profile?.activeGoals ?? []).map((v) => String(v))
-                      : [];
-                    const recurringTopics = Array.isArray(profile?.recurringTopics)
-                      ? (profile?.recurringTopics ?? []).map((v) => String(v))
-                      : [];
-
-                    const prefsRaw = (profile?.interactionPreferences ?? {}) as Record<string, unknown>;
-                    const prefFromProfile = [
-                      ...(Array.isArray(prefsRaw.interaction_style) ? (prefsRaw.interaction_style as unknown[]).map((v) => String(v)) : []),
-                      ...(Array.isArray(prefsRaw.preferences) ? (prefsRaw.preferences as unknown[]).map((v) => String(v)) : []),
-                    ];
-
-                    const identityLines = (() => {
-                      const base = uniqNonEmpty([...keyFacts, ...identityItems.map((i) => i.content)], 50);
-                      const name = extractNameFromText(base);
-                      const withName = name ? [`Nome: ${name}`, ...base.filter((v) => !/^nome\s*:/i.test(v))] : base;
-                      return uniqNonEmpty(withName, 20);
-                    })();
-
-                    const preferenceLines = uniqNonEmpty([...preferenceItems.map((i) => i.content), ...prefFromProfile], 20);
-                    const goalLines = uniqNonEmpty([...goalItems.map((i) => i.content), ...activeGoals], 20);
-                    const topicLines = uniqNonEmpty(recurringTopics, 20);
-
-                    const blockStyle: CSSProperties = {
-                      margin: 0,
-                      padding: 10,
-                      borderRadius: 12,
-                      border: "1px solid var(--line)",
-                      background: "var(--surface-glass)",
-                      fontSize: 12,
-                    };
-
-                    const cardStyle: CSSProperties = {
-                      padding: "10px 10px",
-                      borderRadius: 12,
-                      border: "1px solid var(--line)",
-                      background: "var(--panel-soft)",
-                      boxShadow: "var(--shadow-xs)",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
-                    };
-
-                    const metaRowStyle: CSSProperties = {
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 8,
-                      opacity: 0.85,
-                      fontSize: 11,
-                    };
-
-                    const chipStyle = (bg: string): CSSProperties => ({
-                      padding: "2px 8px",
-                      borderRadius: 999,
-                      border: "1px solid var(--line)",
-                      background: bg,
-                      fontWeight: 700,
-                      fontSize: 11,
-                    });
-
-                    function sortBySignal<T extends { relevanceScore?: number; confidenceScore?: number; updatedAt?: string }>(arr: T[]) {
-                      return [...arr].sort((a, b) => {
-                        const ra = Number(a.relevanceScore ?? 0);
-                        const rb = Number(b.relevanceScore ?? 0);
-                        if (rb !== ra) return rb - ra;
-                        const ca = Number(a.confidenceScore ?? 0);
-                        const cb = Number(b.confidenceScore ?? 0);
-                        if (cb !== ca) return cb - ca;
-                        const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-                        const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-                        return tb - ta;
+                  <div>gerado: {formatDate(graph.meta.generatedAt)}</div>
+                  <div>perfil atualizado: {formatDate(graph.meta.profileUpdatedAt)}</div>
+                  <div>
+                    itens (ativos/ok): {graph.meta.memoryItemsIncluded} / {graph.meta.memoryItemsTotal}
+                  </div>
+                </div>
+  
+                <div style={{ height: 1, background: "var(--line-soft)", margin: "6px 0" }} />
+  
+                {selectedNode ? (
+                  <>
+                    <div style={{ fontWeight: 800, fontSize: 12 }}>{selectedNode.label}</div>
+                    <div style={{ opacity: 0.85 }}>
+                      <div>
+                        id:{" "}
+                        <span style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" }}>
+                          {selectedNode.id}
+                        </span>
+                      </div>
+                      <div>kind: {selectedNode.kind}</div>
+                      <div>source: {selectedNode.source ?? "-"}</div>
+                    </div>
+  
+                    {(() => {
+                      const userId = graph.meta.userId;
+                      const panelItems = items.filter(
+                        (i) => i.status === "active" && i.sensitivityLevel !== "high" && i.sensitivityLevel !== "blocked",
+                      );
+  
+                      const identityItems = panelItems.filter(
+                        (i) => i.type === "declared_fact" || i.type === "constraint" || i.type === "inferred_trait",
+                      );
+                      const preferenceItems = panelItems.filter((i) => i.type === "preference" || i.type === "interaction_style");
+                      const goalItems = panelItems.filter((i) => i.type === "goal");
+  
+                      const keyFacts = Array.isArray(profile?.keyFacts) ? (profile?.keyFacts ?? []).map((v) => String(v)) : [];
+                      const activeGoals = Array.isArray(profile?.activeGoals)
+                        ? (profile?.activeGoals ?? []).map((v) => String(v))
+                        : [];
+                      const recurringTopics = Array.isArray(profile?.recurringTopics)
+                        ? (profile?.recurringTopics ?? []).map((v) => String(v))
+                        : [];
+  
+                      const prefsRaw = (profile?.interactionPreferences ?? {}) as Record<string, unknown>;
+                      const prefFromProfile = [
+                        ...(Array.isArray(prefsRaw.interaction_style) ? (prefsRaw.interaction_style as unknown[]).map((v) => String(v)) : []),
+                        ...(Array.isArray(prefsRaw.preferences) ? (prefsRaw.preferences as unknown[]).map((v) => String(v)) : []),
+                      ];
+  
+                      const identityLines = (() => {
+                        const base = uniqNonEmpty([...keyFacts, ...identityItems.map((i) => i.content)], 50);
+                        const name = extractNameFromText(base);
+                        const withName = name ? [`Nome: ${name}`, ...base.filter((v) => !/^nome\s*:/i.test(v))] : base;
+                        return uniqNonEmpty(withName, 20);
+                      })();
+  
+                      const preferenceLines = uniqNonEmpty([...preferenceItems.map((i) => i.content), ...prefFromProfile], 20);
+                      const goalLines = uniqNonEmpty([...goalItems.map((i) => i.content), ...activeGoals], 20);
+                      const topicLines = uniqNonEmpty(recurringTopics, 20);
+  
+                      const blockStyle: CSSProperties = {
+                        margin: 0,
+                        padding: 10,
+                        borderRadius: 12,
+                        border: "1px solid var(--line)",
+                        background: "var(--surface-glass)",
+                        fontSize: 12,
+                      };
+  
+                      const cardStyle: CSSProperties = {
+                        padding: "10px 10px",
+                        borderRadius: 12,
+                        border: "1px solid var(--line)",
+                        background: "var(--panel-soft)",
+                        boxShadow: "var(--shadow-xs)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      };
+  
+                      const metaRowStyle: CSSProperties = {
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 8,
+                        opacity: 0.85,
+                        fontSize: 11,
+                      };
+  
+                      const chipStyle = (bg: string): CSSProperties => ({
+                        padding: "2px 8px",
+                        borderRadius: 999,
+                        border: "1px solid var(--line)",
+                        background: bg,
+                        fontWeight: 700,
+                        fontSize: 11,
                       });
-                    }
-
-                    function renderMemoryItems(list: UserMemoryItem[], title: string) {
-                      const sorted = sortBySignal(list).slice(0, 30);
-                      return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          <div style={{ fontWeight: 900, fontSize: 12 }}>{title}</div>
-                          {sorted.length ? (
-                            sorted.map((item) => (
-                              <div key={item.id} style={cardStyle}>
-                                <div style={{ fontWeight: 800, fontSize: 12, whiteSpace: "pre-wrap" }}>{item.content}</div>
+  
+                      function sortBySignal<T extends { relevanceScore?: number; confidenceScore?: number; updatedAt?: string }>(arr: T[]) {
+                        return [...arr].sort((a, b) => {
+                          const ra = Number(a.relevanceScore ?? 0);
+                          const rb = Number(b.relevanceScore ?? 0);
+                          if (rb !== ra) return rb - ra;
+                          const ca = Number(a.confidenceScore ?? 0);
+                          const cb = Number(b.confidenceScore ?? 0);
+                          if (cb !== ca) return cb - ca;
+                          const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+                          const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+                          return tb - ta;
+                        });
+                      }
+  
+                      function renderMemoryItems(list: UserMemoryItem[], title: string) {
+                        const sorted = sortBySignal(list).slice(0, 30);
+                        return (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                            <div style={{ fontWeight: 900, fontSize: 12 }}>{title}</div>
+                            {sorted.length ? (
+                              sorted.map((item) => (
+                                <div key={item.id} style={cardStyle}>
+                                  <div style={{ fontWeight: 800, fontSize: 12, whiteSpace: "pre-wrap" }}>{item.content}</div>
+                                  <div style={metaRowStyle}>
+                                    <span style={chipStyle("rgba(37,99,235,0.08)")}>{itemTypeLabel(item.type)}</span>
+                                    <span style={chipStyle("rgba(15,23,42,0.04)")}>{item.status}</span>
+                                    <span style={chipStyle("rgba(234,88,12,0.08)")}>conf {formatMaybeNumber(item.confidenceScore)}</span>
+                                    <span style={chipStyle("rgba(124,58,237,0.08)")}>rel {formatMaybeNumber(item.relevanceScore)}</span>
+                                    <span>origem: user_memory_items</span>
+                                    <span>atualizado: {formatDate(item.updatedAt)}</span>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div style={{ opacity: 0.7 }}>Nenhum item ativo nesta categoria.</div>
+                            )}
+                          </div>
+                        );
+                      }
+  
+                      function renderProfileLines(lines: string[], label: string, sourceKey: string) {
+                        const trimmed = lines.map((l) => String(l ?? "").trim()).filter(Boolean).slice(0, 30);
+                        if (!trimmed.length) return null;
+                        return (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                            <div style={{ fontWeight: 900, fontSize: 12 }}>{label}</div>
+                            {trimmed.map((text, idx) => (
+                              <div key={`${sourceKey}-${idx}-${text}`} style={cardStyle}>
+                                <div style={{ fontWeight: 800, fontSize: 12, whiteSpace: "pre-wrap" }}>{text}</div>
                                 <div style={metaRowStyle}>
-                                  <span style={chipStyle("rgba(37,99,235,0.08)")}>{itemTypeLabel(item.type)}</span>
-                                  <span style={chipStyle("rgba(15,23,42,0.04)")}>{item.status}</span>
-                                  <span style={chipStyle("rgba(234,88,12,0.08)")}>conf {formatMaybeNumber(item.confidenceScore)}</span>
-                                  <span style={chipStyle("rgba(124,58,237,0.08)")}>rel {formatMaybeNumber(item.relevanceScore)}</span>
-                                  <span>origem: user_memory_items</span>
-                                  <span>atualizado: {formatDate(item.updatedAt)}</span>
+                                  <span style={chipStyle("rgba(15,118,110,0.10)")}>perfil</span>
+                                  <span>origem: {sourceKey}</span>
+                                  <span>perfil atualizado: {formatDate(profile?.updatedAt ?? null)}</span>
                                 </div>
                               </div>
-                            ))
-                          ) : (
-                            <div style={{ opacity: 0.7 }}>Nenhum item ativo nesta categoria.</div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                    function renderProfileLines(lines: string[], label: string, sourceKey: string) {
-                      const trimmed = lines.map((l) => String(l ?? "").trim()).filter(Boolean).slice(0, 30);
-                      if (!trimmed.length) return null;
-                      return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          <div style={{ fontWeight: 900, fontSize: 12 }}>{label}</div>
-                          {trimmed.map((text, idx) => (
-                            <div key={`${sourceKey}-${idx}-${text}`} style={cardStyle}>
-                              <div style={{ fontWeight: 800, fontSize: 12, whiteSpace: "pre-wrap" }}>{text}</div>
-                              <div style={metaRowStyle}>
-                                <span style={chipStyle("rgba(15,118,110,0.10)")}>perfil</span>
-                                <span>origem: {sourceKey}</span>
-                                <span>perfil atualizado: {formatDate(profile?.updatedAt ?? null)}</span>
+                            ))}
+                          </div>
+                        );
+                      }
+  
+                      if (selectedNode.kind === "root") {
+                        return (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                            <div style={blockStyle}>
+                              Este é um grafo estrutural de navegação: o canvas mostra a macroestrutura (sistema → usuário → categorias) e o painel mostra a microestrutura (listas).
+                            </div>
+                            <div style={{ opacity: 0.9 }}>
+                              <div>itens ativos (ok): {graph.meta.memoryItemsIncluded}</div>
+                              <div>categorias: 4</div>
+                              <div>userId atual: {graph.meta.userId}</div>
+                              <div>roadmap: Fase atual — Observação (read-only)</div>
+                              <div style={{ opacity: 0.85 }}>
+                                status: capturas automáticas {auditSummary?.automaticCaptures ?? 0} • correções manuais{" "}
+                                {auditSummary?.manualCorrections ?? 0}
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      );
-                    }
-
-                    if (selectedNode.kind === "root") {
-                      return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          <div style={blockStyle}>
-                            Este é um grafo estrutural de navegação: o canvas mostra a macroestrutura (sistema → usuário → categorias) e o painel mostra a microestrutura (listas).
                           </div>
-                          <div style={{ opacity: 0.9 }}>
-                            <div>itens ativos (ok): {graph.meta.memoryItemsIncluded}</div>
-                            <div>categorias: 4</div>
-                            <div>userId atual: {graph.meta.userId}</div>
-                            <div>roadmap: Fase atual — Observação (read-only)</div>
-                            <div style={{ opacity: 0.85 }}>
-                              status: capturas automáticas {auditSummary?.automaticCaptures ?? 0} • correções manuais{" "}
-                              {auditSummary?.manualCorrections ?? 0}
+                        );
+                      }
+  
+                      if (selectedNode.kind === "group") {
+                        return <div style={blockStyle}>Raiz de usuários. Nesta etapa, o grafo mostra apenas o usuário selecionado.</div>;
+                      }
+  
+                      if (selectedNode.kind === "user") {
+                        return (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                            <div style={blockStyle}>
+                              <div style={{ fontWeight: 800, marginBottom: 6 }}>summaryShort</div>
+                              <div style={{ whiteSpace: "pre-wrap" }}>{profile?.summaryShort?.trim() ? profile.summaryShort : "-"}</div>
+                            </div>
+                            <div style={{ opacity: 0.9 }}>
+                              <div>identidade: {identityItems.length}</div>
+                              <div>preferências: {preferenceItems.length}</div>
+                              <div>objetivos: {goalItems.length}</div>
+                              <div>temas: {topicLines.length}</div>
+                              <div>primeiro evento: {formatDate(auditSummary?.firstEventAt ?? null) || "-"}</div>
+                              <div>gerado: {formatDate(graph.meta.generatedAt)}</div>
+                              <div>perfil atualizado: {formatDate(profile?.updatedAt ?? null)}</div>
+                              <div>última compilação: {formatDate(profile?.lastCompiledAt ?? null)}</div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    }
-
-                    if (selectedNode.kind === "group") {
-                      return <div style={blockStyle}>Raiz de usuários. Nesta etapa, o grafo mostra apenas o usuário selecionado.</div>;
-                    }
-
-                    if (selectedNode.kind === "user") {
-                      return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          <div style={blockStyle}>
-                            <div style={{ fontWeight: 800, marginBottom: 6 }}>summaryShort</div>
-                            <div style={{ whiteSpace: "pre-wrap" }}>{profile?.summaryShort?.trim() ? profile.summaryShort : "-"}</div>
-                          </div>
-                          <div style={{ opacity: 0.9 }}>
-                            <div>identidade: {identityItems.length}</div>
-                            <div>preferências: {preferenceItems.length}</div>
-                            <div>objetivos: {goalItems.length}</div>
-                            <div>temas: {topicLines.length}</div>
-                            <div>primeiro evento: {formatDate(auditSummary?.firstEventAt ?? null) || "-"}</div>
-                            <div>gerado: {formatDate(graph.meta.generatedAt)}</div>
-                            <div>perfil atualizado: {formatDate(profile?.updatedAt ?? null)}</div>
-                            <div>última compilação: {formatDate(profile?.lastCompiledAt ?? null)}</div>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    if (selectedNode.kind === "section") {
-                      const sectionId = selectedNode.id;
-                      const isIdentity = sectionId === `user-${userId}-identity`;
-                      const isPreferences = sectionId === `user-${userId}-preferences`;
-                      const isGoals = sectionId === `user-${userId}-goals`;
-                      const isTopics = sectionId === `user-${userId}-topics`;
-
-                      return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          {isIdentity ? (
-                            <>
-                              {renderMemoryItems(identityItems, "Itens ativos (banco)")}
-                              {renderProfileLines(identityLines, "Perfil compilado (resumo)", "user_profile.keyFacts/summaryShort")}
-                            </>
-                          ) : null}
-
-                          {isPreferences ? (
-                            <>
-                              {renderMemoryItems(preferenceItems, "Preferências ativas (banco)")}
-                              {renderProfileLines(preferenceLines, "Perfil compilado (preferências)", "user_profile.interactionPreferences")}
-                            </>
-                          ) : null}
-
-                          {isGoals ? (
-                            <>
-                              {renderMemoryItems(goalItems, "Objetivos ativos (banco)")}
-                              {renderProfileLines(goalLines, "Perfil compilado (objetivos)", "user_profile.activeGoals")}
-                            </>
-                          ) : null}
-
-                          {isTopics ? (
-                            <>
-                              <div style={{ fontWeight: 900, fontSize: 12 }}>Temas recorrentes</div>
-                              {topicLines.length >= 2 ? (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                                  {topicLines.map((topic, idx) => (
-                                    <div key={`${idx}-${topic}`} style={cardStyle}>
-                                      <div style={{ fontWeight: 800, fontSize: 12 }}>{topic}</div>
-                                      <div style={metaRowStyle}>
-                                        <span style={chipStyle("rgba(15,118,110,0.10)")}>perfil</span>
-                                        <span>origem: user_profile.recurringTopics</span>
-                                        <span>perfil atualizado: {formatDate(profile?.updatedAt ?? null)}</span>
+                        );
+                      }
+  
+                      if (selectedNode.kind === "section") {
+                        const sectionId = selectedNode.id;
+                        const isIdentity = sectionId === `user-${userId}-identity`;
+                        const isPreferences = sectionId === `user-${userId}-preferences`;
+                        const isGoals = sectionId === `user-${userId}-goals`;
+                        const isTopics = sectionId === `user-${userId}-topics`;
+  
+                        return (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                            {isIdentity ? (
+                              <>
+                                {renderMemoryItems(identityItems, "Itens ativos (banco)")}
+                                {renderProfileLines(identityLines, "Perfil compilado (resumo)", "user_profile.keyFacts/summaryShort")}
+                              </>
+                            ) : null}
+  
+                            {isPreferences ? (
+                              <>
+                                {renderMemoryItems(preferenceItems, "Preferências ativas (banco)")}
+                                {renderProfileLines(preferenceLines, "Perfil compilado (preferências)", "user_profile.interactionPreferences")}
+                              </>
+                            ) : null}
+  
+                            {isGoals ? (
+                              <>
+                                {renderMemoryItems(goalItems, "Objetivos ativos (banco)")}
+                                {renderProfileLines(goalLines, "Perfil compilado (objetivos)", "user_profile.activeGoals")}
+                              </>
+                            ) : null}
+  
+                            {isTopics ? (
+                              <>
+                                <div style={{ fontWeight: 900, fontSize: 12 }}>Temas recorrentes</div>
+                                {topicLines.length >= 2 ? (
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    {topicLines.map((topic, idx) => (
+                                      <div key={`${idx}-${topic}`} style={cardStyle}>
+                                        <div style={{ fontWeight: 800, fontSize: 12 }}>{topic}</div>
+                                        <div style={metaRowStyle}>
+                                          <span style={chipStyle("rgba(15,118,110,0.10)")}>perfil</span>
+                                          <span>origem: user_profile.recurringTopics</span>
+                                          <span>perfil atualizado: {formatDate(profile?.updatedAt ?? null)}</span>
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div style={{ ...blockStyle, borderColor: "rgba(234,88,12,0.18)", background: "rgba(234,88,12,0.05)" }}>
-                                  Sem temas recorrentes “fortes” ainda. Isso pode acontecer quando:
-                                  <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
-                                    <li>o perfil ainda não foi compilado recentemente, ou</li>
-                                    <li>itens ativos não têm `category` consistente o suficiente.</li>
-                                  </ul>
-                                </div>
-                              )}
-                            </>
-                          ) : null}
-
-                          <div style={{ opacity: 0.72, fontSize: 11 }}>
-                            Fonte: `user_profile` + `user_memory_items` (ativos). Sensibilidade high/blocked não é exibida aqui.
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div style={{ ...blockStyle, borderColor: "rgba(234,88,12,0.18)", background: "rgba(234,88,12,0.05)" }}>
+                                    Sem temas recorrentes “fortes” ainda. Isso pode acontecer quando:
+                                    <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+                                      <li>o perfil ainda não foi compilado recentemente, ou</li>
+                                      <li>itens ativos não têm `category` consistente o suficiente.</li>
+                                    </ul>
+                                  </div>
+                                )}
+                              </>
+                            ) : null}
+  
+                            <div style={{ opacity: 0.72, fontSize: 11 }}>
+                              Fonte: `user_profile` + `user_memory_items` (ativos). Sensibilidade high/blocked não é exibida aqui.
+                            </div>
                           </div>
-                        </div>
+                        );
+                      }
+  
+                      return selectedNode.payload ? (
+                        <pre
+                          style={{
+                            margin: 0,
+                            padding: 10,
+                            borderRadius: 12,
+                            border: "1px solid var(--line)",
+                            background: "var(--surface-glass)",
+                            whiteSpace: "pre-wrap",
+                            wordBreak: "break-word",
+                            fontSize: 12,
+                          }}
+                        >
+                          {JSON.stringify(selectedNode.payload, null, 2)}
+                        </pre>
+                      ) : (
+                        <div style={{ opacity: 0.7 }}>Sem detalhes adicionais.</div>
                       );
-                    }
-
-                    return selectedNode.payload ? (
-                      <pre
-                        style={{
-                          margin: 0,
-                          padding: 10,
-                          borderRadius: 12,
-                          border: "1px solid var(--line)",
-                          background: "var(--surface-glass)",
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                          fontSize: 12,
-                        }}
-                      >
-                        {JSON.stringify(selectedNode.payload, null, 2)}
-                      </pre>
-                    ) : (
-                      <div style={{ opacity: 0.7 }}>Sem detalhes adicionais.</div>
-                    );
-                  })()}
-                </>
-              ) : (
-                <div style={{ opacity: 0.7 }}>Clique em um nó para ver detalhes.</div>
-              )}
-            </div>
-          ) : (
-            <div style={{ opacity: 0.7, fontSize: 12 }}>Nenhum grafo carregado.</div>
-          )}
-        </div>
+                    })()}
+                  </>
+                ) : (
+                  <div style={{ opacity: 0.7 }}>Clique em um nó para ver detalhes.</div>
+                )}
+              </div>
+            ) : (
+              <div style={{ opacity: 0.7, fontSize: 12 }}>Nenhum grafo carregado.</div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

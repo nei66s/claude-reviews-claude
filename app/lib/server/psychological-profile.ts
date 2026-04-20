@@ -112,7 +112,7 @@ export async function updatePsychologicalProfile(
       mf.feedback_text,
       m.content as m_content
      FROM public.message_feedback mf
-     JOIN public.messages m ON mf.message_id::text = m.id::text
+     LEFT JOIN public.messages m ON mf.message_id::text = m.id::text
      WHERE mf.user_id = $1
      ORDER BY mf.created_at DESC
      LIMIT 50`,

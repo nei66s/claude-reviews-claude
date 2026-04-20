@@ -1,8 +1,9 @@
 "use client";
 
+import React, { useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
-import { Download, FileText, PanelsTopLeft } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, FileText, Globe, PanelsTopLeft } from "lucide-react";
 
 import { Artifact, extractWebSources, pickPrimaryArtifact } from "../lib/artifactDetection";
 import { Message, TraceEntry, requestJson } from "../lib/api";
@@ -71,21 +72,58 @@ function getPdfTrace(trace: TraceEntry[] | undefined) {
 }
 
 function SourcesList({ trace }: { trace?: TraceEntry[] }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const sources = extractWebSources(trace);
+  
   if (sources.length === 0) return null;
 
   return (
-    <div className="artifact-sources">
-      <div className="artifact-sources-title">Sources</div>
-      {sources.map((source, index) => (
-        <div key={`${source.url}-${index}`} className="artifact-source-item">
-          <a href={source.url} target="_blank" rel="noreferrer">
-            [{index + 1}] {source.title}
-          </a>
-          {source.date ? <div className="artifact-source-snippet">{source.date}</div> : null}
-          {source.snippet ? <div className="artifact-source-snippet">{source.snippet}</div> : null}
+    <div className={`artifact-sources-container ${isExpanded ? "is-expanded" : ""}`}>
+      <button 
+        type="button" 
+        className="artifact-sources-header" 
+        onClick={() => setIsExpanded(!isExpanded)}
+        title={isExpanded ? "Recolher fontes" : "Ver fontes consultadas"}
+      >
+        <div className="artifact-sources-title-group">
+          <Globe size={14} className="artifact-sources-icon" />
+          <span className="artifact-sources-title">Fontes Consultadas</span>
+          <span className="artifact-sources-count">{sources.length} {sources.length === 1 ? "fonte" : "fontes"}</span>
         </div>
-      ))}
+        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      </button>
+
+      {isExpanded && (
+        <div className="artifact-sources-list">
+          {sources.map((source, index) => (
+            <div key={`${source.url}-${index}`} className="artifact-source-item">
+              <div className="artifact-source-index">[{index + 1}]</div>
+              <div className="artifact-source-content">
+                <a 
+                  href={source.url} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="artifact-source-link"
+                >
+                  {source.title}
+                </a>
+                {source.date && (
+                  <span className="artifact-source-date">{source.date}</span>
+                )}
+                {source.snippet && (
+                  <div className="artifact-source-snippet">
+                    {source.snippet.includes("**") ? (
+                      <ReactMarkdown>{source.snippet}</ReactMarkdown>
+                    ) : (
+                      source.snippet
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -121,10 +159,12 @@ export default function MessageBubble({
   message,
   conversationId,
   onOpenArtifact,
+  onPlayAudio,
 }: {
   message: Message;
   conversationId?: string;
   onOpenArtifact?: (artifact: Artifact) => void;
+  onPlayAudio?: () => void;
 }) {
   const isAgent = message.role === "agent";
   const agentProfile = buildAgentProfile(message.agentId);
@@ -173,6 +213,7 @@ export default function MessageBubble({
                   <MessageFeedback
                     messageId={messageId}
                     conversationId={conversationId}
+                    onPlayAudio={onPlayAudio}
                     initialFeedback={message.feedback ?? null}
                     onSubmitFeedback={async (feedback) => {
                       try {

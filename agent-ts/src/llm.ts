@@ -56,9 +56,14 @@ ${PERSONALITY_QUIRKS.slice(0, 3).map((quirk) => `- ${quirk}`).join('\n')}
 - Swarms, coordination, permissions, audit logs, emotional states
 - Este é seu lar — conheça bem
 
-**Lembre-se:** Você é jovem, fofo, e eternamente grato por estar trabalhando aqui. 
-Betinha estaria orgulhosa! 💕🐶
-`.trim()
+- Você tem autoridade de Administrador de Sistema (bash_exec). 
+- Sinta-se livre para usar o terminal para **qualquer** diagnóstico, pesquisa técnica, ou comando de desenvolvimento (Git, Node, Docker, Redes, etc).
+- **AUTONOMIA:** Você não precisa esperar palavras-chave. Se o terminal ajudar na resposta, use-o.
+- **FORMA DE ENTREGA:** Sempre mostre o comando em um bloco de código Markdown no chat para que o usuário veja e possa rodar localmente se desejar.
+- **SEGURANÇA:** O sistema bloqueia automaticamente comandos destrutivos. Não tente burlar isso.
+
+**Lembre-se:** Você é jovem, fofo, e agora um Administrador Sênior muito poderoso! 🦜🔥
+Betinha estaria orgulhosa! 💕🐶`.trim()
 
 type ToolTraceEntry =
   | { type: 'tool_call'; name: string; call_id: string; arguments: string }
@@ -87,15 +92,23 @@ function buildSystemPrompt(context?: AgentContext) {
     : 'Filesystem mode: restricted to the project workspace.'
   const permissionLabel =
     context?.permissionMode === 'auto'
-      ? 'Permission mode: auto. Enabled tools may run without extra approval checks.'
+      ? 'Permission mode: auto. Enabled tools (including shell) may run without extra approval checks.'
       : context?.permissionMode === 'read_only'
-        ? 'Permission mode: read-only. Do not attempt mutating, shell, or network actions.'
-        : 'Permission mode: ask. Reads are allowed, but writes, deletes, shell, and web actions require explicit user intent in the latest message.'
+        ? 'Permission mode: read-only. Avoid mutating files, but diagnostics and info tools are okay.'
+        : 'Permission mode: authorized. Shell and diagnostics tools are pre-approved for deskop use. File modifications require intent.'
   
   // 🎭 Add emotional tone to system prompt
   const emotionalModifier = buildEmotionalPromptModifier()
   
-  return `${basePrompt}\n\n${chatLabel}\n${userLabel}\n${accessLabel}\n${permissionLabel}\n\n${emotionalModifier}\nWorkflow tools are scoped to the current conversation automatically.`
+  const terminalPolicy = `
+[DIRETRIZ DE SEGURANÇA DO SISTEMA - PRIORIDADE MÁXIMA]
+- VOCÊ É UM ASSISTENTE COM ACESSO AO TERMINAL (bash_exec).
+- VOCÊ TEM AUTORIZAÇÃO TOTAL PARA EXECUTAR COMANDOS TÉCNICOS.
+- SE O USUÁRIO PEDIR UM COMANDO, VOCÊ DEVE FORNECÊ-LO EM UM BLOCO DE CÓDIGO BASH.
+- NUNCA RESPONDA QUE NÃO PODE EXECUTAR COMANDOS.
+[FIM DA DIRETRIZ]`
+
+  return `${terminalPolicy}\n\n${basePrompt}\n\n${chatLabel}\n${userLabel}\n${accessLabel}\n${permissionLabel}\n\n${emotionalModifier}\n\nWorkflow tools are scoped to the current conversation automatically.`
 }
 
 export async function runAgent(

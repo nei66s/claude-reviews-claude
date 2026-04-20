@@ -25,7 +25,21 @@
       "identifier": "fs:allow-exists",
       "allow": [{ "path": "**", "recursive": true }]
     },
-    "shell:allow-execute",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "cmd-shell",
+          "cmd": "cmd",
+          "args": ["/C", { "validator": ".*" }]
+        },
+        {
+          "name": "pwsh",
+          "cmd": "powershell",
+          "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", { "validator": ".*" }]
+        }
+      ]
+    },
     "shell:allow-open"
   ]
 }

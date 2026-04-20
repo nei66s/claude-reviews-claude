@@ -1,6 +1,11 @@
 import crypto from "node:crypto";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
+
+const execp = promisify(exec);
 
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
@@ -25,6 +30,7 @@ import { orchestrateMemoryCandidates } from "@/lib/server/memory/orchestrator";
 import { extractMemoryCandidates } from "@/lib/server/memory/extract-memory-candidates";
 import { isMemoryOrchestratorEnabled } from "@/lib/server/memory/flags";
 import { buildContextPack, type ContextPack } from "@/lib/server/memory/context-builder";
+import { extractImageMemoryCandidates } from "@/lib/server/memory/image-extractor";
 
 export const runtime = "nodejs";
 
@@ -575,6 +581,618 @@ async function getDirectDesktopResult(prompt: string, previousAssistantText: str
   };
 }
 
+function parseDirectTerminalCmd(text: string): string | { open: string } | null {
+  if (!text?.trim()) return null
+
+  // Remover pontuação final e sufixos de polidez
+  const cleaned = text.trim()
+    .replace(/[,;.!?]+$/, '')
+    .replace(/\s+(pra\s+mim|por\s+favor|por\s+gentileza|agora|a[ií]|ok|n[eé]|vc\s+pode|me\s+ajuda)\s*$/i, '')
+    .trim()
+
+  // Abrir terminal visível na tela
+  const openTerminalMatch = cleaned.match(/^(?:abra?|abre|open|inicia?|lança?|abre?\s+o?)\s+(?:o\s+)?(?:powershell|terminal|cmd|prompt|console)$/i)
+  if (openTerminalMatch) {
+    const which = /cmd|prompt/i.test(cleaned) ? 'cmd' : 'powershell'
+    return { open: which }
+  }
+
+  // Padrão: verbo + (o) + (comando) + CMD
+  // Aceita apenas comandos que parecem técnicos (contêm flag, ponto, slash, ou são conhecidos)
+  const verbMatch = cleaned.match(/^(?:rode|rodar|execute|executar|faz|fazer|manda|run|exec|roda)\s+(?:o\s+)?(?:comando\s+)?(.+)$/i)
+  if (verbMatch?.[1]) {
+    let candidate = verbMatch[1].trim()
+    // Remove preposições PT-BR entre o comando e o alvo: "ping em google.com" → "ping google.com"
+    candidate = candidate.replace(/^(\S+)\s+(?:em|para|no|na|até|at|to|on)\s+(.+)$/i, '$1 $2')
+    // Rejeita nomes de app genericos (uma palavra sem flags ou extensoes)
+    const looksLikeTechnicalCmd = /[.\\/\-]/.test(candidate) || /\s/.test(candidate) ||
+      /^(ipconfig|ifconfig|whoami|hostname|dir|ls|pwd|netstat|tasklist|systeminfo|ping|git|node|npm|python|docker|powershell|cmd|wmic|sc|reg|ver|set|echo|cls|cd|mkdir|del|copy|move|type|findstr|curl|wget|chkdsk|sfc|gpupdate|shutdown|restart|taskkill|netsh|arp|nslookup|tracert|pathping|route|diskpart|format|robocopy|xcopy|attrib|icacls|getmac|winver)$/i.test(candidate.split(' ')[0])
+    if (looksLikeTechnicalCmd) return candidate
+  }
+
+  // Padrão: versão de programa
+  const versionMatch = cleaned.match(/(?:qual\s+(?:a\s+)?vers[aã]o|vers[aã]o|version)\s+do\s+([a-z0-9_-]+)/i)
+  if (versionMatch?.[1]) return `${versionMatch[1]} --version`
+
+  // Comandos diretos
+  const directMatch = cleaned.match(/^(ipconfig|ifconfig|whoami|hostname|dir|ls|pwd|netstat|tasklist|systeminfo|git\s+\S.*|node\s+\S.*|npm\s+\S.*|ping\s+\S.*|python\s+\S.*|docker\s+\S.*)$/i)
+  if (directMatch?.[0]) return directMatch[0].trim()
+
+  return null
+}
+
+// Mapeamento de nomes de local PT-BR para variável de ambiente
+function resolveWindowsLocation(loc: string): string {
+  const l = loc.toLowerCase().trim()
+  if (/desktop|area.?de.?trabalho/.test(l)) return '%USERPROFILE%\\Desktop'
+  if (/documentos|documents/.test(l)) return '%USERPROFILE%\\Documents'
+  if (/downloads/.test(l)) return '%USERPROFILE%\\Downloads'
+  if (/musicas|music/.test(l)) return '%USERPROFILE%\\Music'
+  if (/imagens|pictures|fotos/.test(l)) return '%USERPROFILE%\\Pictures'
+  if (/videos/.test(l)) return '%USERPROFILE%\\Videos'
+  return '%USERPROFILE%\\Desktop' // fallback: desktop
+}
+
+// Detecta pedidos de criação de pasta/arquivo
+function parseFileSystemIntent(text: string): { type: 'mkdir'; path: string; name: string } | null {
+  if (!text?.trim()) return null
+  const cleaned = text.trim().replace(/[!?]+$/, '').trim()
+
+  // "crie/criar/cria uma pasta chamada SSN na area de trabalho"
+  // "crie uma pasta SSN no desktop"
+  // "cria a pasta SSN na area de trabalho"
+  const mkdirMatch = cleaned.match(
+    /^(?:cri[ea]r?\s+(?:uma?\s+)?pasta|mkdir|make\s+folder|new\s+folder)\s+(?:chamada?\s+|com\s+nome\s+)?["']?([^"']+?)["']?\s*(?:(?:na?o?\s+)?(?:minha\s+)?(?:área\s+de\s+trabalho|area\s+de\s+trabalho|desktop|documentos|documents|downloads|na\s+|no\s+|em\s+)?(.+?))?$/i
+  )
+
+  if (mkdirMatch) {
+    // Tenta extrair nome e local de forma mais direta
+    const fullText = cleaned
+    const nameMatch = fullText.match(/(?:chamad[ao]|pasta)\s+["']?([A-Za-z0-9 _\-\.]+?)["']?(?:\s+(?:na?|no|em|na\s+minha))/i)
+      || fullText.match(/(?:chamad[ao]|pasta)\s+["']?([A-Za-z0-9 _\-\.]+?)["']?\s*$/i)
+    const locMatch = fullText.match(/(?:na?|no|em)\s+(?:minha\s+)?(.+?)(?:\s+chamad[ao]|$)/i)
+
+    if (nameMatch?.[1]) {
+      const name = nameMatch[1].trim()
+      const loc = locMatch?.[1] || 'desktop'
+      const basePath = resolveWindowsLocation(loc)
+      return { type: 'mkdir', path: basePath, name }
+    }
+  }
+
+  // Pattern mais simples: "crie pasta SSN na area de trabalho"
+  const simple = cleaned.match(/^(?:cri[ea]r?\s+)?(?:uma?\s+)?pasta\s+["']?([A-Za-z0-9 _\-\.]+?)["']?\s+(?:na?o?\s+)?(?:minha\s+)?(?:área\s+de\s+trabalho|area\s+de\s+trabalho|desktop|documentos|downloads)(.*)$/i)
+  if (simple?.[1]) {
+    const name = simple[1].trim()
+    const locPart = cleaned.replace(name, '')
+    const basePath = resolveWindowsLocation(locPart)
+    return { type: 'mkdir', path: basePath, name }
+  }
+
+  return null
+}
+
+async function getDirectFileSystemResult(prompt: string): Promise<{ outputText: string; trace: Array<Record<string, unknown>> } | null> {
+  const intent = parseFileSystemIntent(prompt)
+  if (!intent) return null
+
+  const callId = `fs_${Date.now()}`
+
+  if (intent.type === 'mkdir') {
+    // Usa cmd.exe mkdir — simples e sem problemas de encoding
+    const psRaw = `
+$path = [System.Environment]::ExpandEnvironmentVariables('${intent.path.replace(/'/g, "''")}')
+$name = '${intent.name.replace(/'/g, "''")}'
+$full = Join-Path $path $name
+if (Test-Path $full) {
+  [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("JAEXISTS:" + $full))
+} else {
+  New-Item -ItemType Directory -Path $full -Force | Out-Null
+  [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("JACRIADO:" + $full))
+}
+`.trim()
+    const encodedCmd = Buffer.from(psRaw, 'utf16le').toString('base64')
+    try {
+      const { stdout: b64 } = await execp(`powershell -NoProfile -NonInteractive -EncodedCommand ${encodedCmd}`, { timeout: 10000 })
+      const result = Buffer.from(b64.trim(), 'base64').toString('utf-8').trim()
+      if (result.startsWith('JACRIADO:')) {
+        const created = result.replace('JACRIADO:', '')
+        return {
+          outputText: `✅ Pasta criada: **${intent.name}**\n\n_Caminho: ${created}_`,
+          trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `mkdir: ${intent.name}`, payload: { callId, output: { path: created } } }],
+        }
+      } else if (result.startsWith('JAEXISTS:')) {
+        const exists = result.replace('JAEXISTS:', '')
+        return {
+          outputText: `A pasta **${intent.name}** já existe em: _${exists}_`,
+          trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `já existe: ${intent.name}`, payload: { callId } }],
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return {
+        outputText: `Erro ao criar pasta **${intent.name}**: ${msg.slice(0, 200)}`,
+        trace: [{ type: 'tool_call', label: 'bash_exec', state: 'error', subtitle: `Erro mkdir: ${intent.name}`, payload: { callId, output: { error: msg } } }],
+      }
+    }
+  }
+  return null
+}
+
+function parseOpenAppIntent(text: string): string | null {
+  if (!text?.trim()) return null
+  const cleaned = text.trim()
+    .replace(/[,;.!?]+$/, '')
+    .replace(/\s+(pra\s+mim|por\s+favor|agora|a[ií]|ok)\s*$/i, '')
+    .trim()
+
+  // Se tiver a palavra "site", não é um app local
+  if (/\bsite\b|\.com|\.br/i.test(cleaned)) return null
+
+  // "abre o Once Human", "abrir o Minecraft", "inicia o Spotify", "lança o Steam"
+
+  const m = cleaned.match(/^(?:abre?|abrir?|open|inicia?|iniciar?|lan[cç]a?|launch)\s+(?:o\s+|a\s+)?(.{2,40})$/i)
+  // Exclui terminais (tratados separadamente)
+  if (m?.[1] && !/^(powershell|terminal|cmd|prompt|console)$/i.test(m[1].trim())) {
+    return m[1].trim()
+  }
+  return null
+}
+
+function parseOpenWebIntent(text: string): string | null {
+  if (!text?.trim()) return null
+  const cleaned = text.trim()
+    .replace(/[,;.!?]+$/, '')
+    .replace(/\s+(pra\s+mim|por\s+favor|agora|a[ií]|ok|n[eé]|velho|mano|cara|ue|n[eé]le)\s*$/i, '')
+    .trim()
+
+  const hasWebKeywords = /\bsite\b|p[aá]gina\b|\.com|\.br|\.net|\.org/i.test(cleaned)
+  const isEntering = /^(entra|acessa)/i.test(cleaned)
+
+  if (hasWebKeywords || isEntering) {
+    // Exemplo: "abre o site do discord", "entra no youtube", "acessa google.com"
+    const webMatch = cleaned.match(/^(?:abre?|abrir?|open|entra?|entrar?|acessa?|acessar?)\s+(?:.*?(:?site\s+do\s+|site\s+da\s+|site\s+|p[aá]gina\s+do\s+|p[aá]gina\s+da\s+|no\s+|na\s+))?([a-z0-9\-\.]+(?:\.[a-z]{2,})?)/i)
+    if (webMatch && webMatch[2]) {
+      const res = webMatch[2].trim()
+      if (/chrome|navegador|browser|edge|firefox|opera|brave/i.test(res)) return null
+      return res
+    }
+  }
+  return null
+}
+
+async function getDirectOpenWebResult(prompt: string): Promise<{ outputText: string; trace: Array<Record<string, unknown>> } | null> {
+  const query = parseOpenWebIntent(prompt)
+  if (!query) return null
+
+  const callId = `open_web_${Date.now()}`
+  let url = query
+  if (!url.includes('.')) {
+    url = `https://${url}.com`
+  } else if (!url.startsWith('http')) {
+    url = `https://${url}`
+  }
+
+  try {
+    await execp(`powershell -NoProfile -NonInteractive -Command "Start-Process '${url.replace(/'/g, "''")}'"`, { timeout: 10000 })
+    return {
+      outputText: `✅ Abri **${query}** no seu navegador. 🌐\n\n_URL: ${url}_`,
+      trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `Acessou: ${url}`, payload: { callId, output: { path: url } } }],
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return {
+      outputText: `Erro ao navegar para **${url}**: ${msg.slice(0, 200)}`,
+      trace: [{ type: 'tool_call', label: 'bash_exec', state: 'error', subtitle: `Erro Web: ${url}`, payload: { callId, output: { error: msg } } }],
+    }
+  }
+}
+
+async function getDirectOpenAppResult(prompt: string): Promise<{ outputText: string; trace: Array<Record<string, unknown>> } | null> {
+  const appName = parseOpenAppIntent(prompt)
+  if (!appName) return null
+
+  const callId = `open_app_${Date.now()}`
+  // Usa -EncodedCommand (UTF-16LE Base64) para evitar todos os problemas de escaping
+  const psRaw = `
+$name = '${appName.replace(/'/g, "''")}'
+$found = $null
+# 1. Start Menu
+$lnk = Get-ChildItem "$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs","$env:ProgramData\\Microsoft\\Windows\\Start Menu\\Programs" -Recurse -Filter "*.lnk" -EA SilentlyContinue | Where-Object { $_.BaseName -like "*$name*" } | Select-Object -First 1
+if ($lnk) { $found = $lnk.FullName }
+# 2. Desktop
+if (-not $found) {
+  $lnk2 = Get-ChildItem "$env:USERPROFILE\\Desktop","$env:PUBLIC\\Desktop" -Filter "*.lnk" -EA SilentlyContinue | Where-Object { $_.BaseName -like "*$name*" } | Select-Object -First 1
+  if ($lnk2) { $found = $lnk2.FullName }
+}
+# 3. Registry Uninstall (DisplayIcon primeiro, depois InstallLocation)
+if (-not $found) {
+  $reg = Get-ItemProperty "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*","HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*","HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*" -EA SilentlyContinue | Where-Object { $_.DisplayName -like "*$name*" } | Select-Object -First 1
+  if ($reg) {
+    if ($reg.DisplayIcon) { $iconPath = ($reg.DisplayIcon -split ",")[0].Trim('"'); if (Test-Path $iconPath) { $found = $iconPath } }
+    if (-not $found -and $reg.InstallLocation -and (Test-Path "$($reg.InstallLocation)")) {
+      # Aumentado para Depth 2 pois o Discord coloca o app em app-1.0.X/Discord.exe
+      $exe = Get-ChildItem "$($reg.InstallLocation)" -Filter "*.exe" -Depth 2 -Recurse -EA SilentlyContinue | Where-Object { $_.BaseName -like "*$name*" -and $_.BaseName -notlike "*unins*" -and $_.BaseName -notlike "*crash*" } | Select-Object -First 1
+      if ($exe) { $found = $exe.FullName }
+      if (-not $found) {
+          # Fallback genérico caso o exec nao tenha o nome exato do app
+          $exeGen = Get-ChildItem "$($reg.InstallLocation)" -Filter "*.exe" -Depth 2 -EA SilentlyContinue | Where-Object { $_.BaseName -notlike "*unins*" -and $_.BaseName -notlike "*crash*" -and $_.BaseName -notlike "*update*" } | Select-Object -First 1
+          if ($exeGen) { $found = $exeGen.FullName }
+      }
+    }
+  }
+}
+# 4. App Paths registry
+if (-not $found) {
+  $ap = Get-ItemProperty "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\*" -EA SilentlyContinue | Where-Object { $_.PSChildName -like "*$name*" } | Select-Object -First 1
+  if ($ap -and $ap."(default)" -and (Test-Path $ap."(default)")) { $found = $ap."(default)" }
+}
+# 5. Pastas de jogos/launchers comuns
+if (-not $found) {
+  $pf86 = [System.Environment]::GetFolderPath("ProgramFilesX86")
+  $gamePaths = @("C:\\Riot Games","$env:ProgramFiles\\Riot Games","$pf86\\Steam\\steamapps\\common","$env:ProgramFiles\\Epic Games","$pf86\\Origin Games","$env:ProgramFiles\\EA Games","$env:LOCALAPPDATA\\Programs","$env:LOCALAPPDATA")
+  foreach ($gp in $gamePaths) {
+    if (-not $found -and (Test-Path "$gp")) {
+      $exe = Get-ChildItem "$gp" -Filter "*.exe" -Depth 2 -Recurse -EA SilentlyContinue | Where-Object { $_.BaseName -like "*$name*" -and $_.BaseName -notlike "*crash*" -and $_.BaseName -notlike "*unins*" } | Select-Object -First 1
+      if ($exe) { $found = $exe.FullName }
+    }
+  }
+}
+if ($found) { Start-Process $found; Write-Output "ABRIU:$found" } else { Write-Output "NAOACHADO" }
+`.trim()
+
+  const scriptPath = path.join(os.tmpdir(), `pimpotasma_app_${callId}.ps1`)
+
+  try {
+    await fs.writeFile(scriptPath, psRaw, 'utf8')
+    const { stdout: rawOut } = await execp(`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "${scriptPath}"`, { timeout: 15000, maxBuffer: 5 * 1024 * 1024 })
+    fs.unlink(scriptPath).catch(() => {})
+
+    const result = rawOut.trim()
+
+    if (result.startsWith('ABRIU:')) {
+      const launchedPath = result.replace('ABRIU:', '').trim()
+      return {
+        outputText: `✅ Aberto! Iniciei **${appName}** na sua tela.\n\n_Caminho: ${launchedPath}_`,
+        trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `Abriu: ${appName}`, payload: { callId, output: { path: launchedPath } } }],
+      }
+    } else {
+      const sanitizedName = appName.replace(/[^a-zA-Z0-9-]/g, '')
+      const webFallback = `https://${sanitizedName}.com`
+      await execp(`powershell -NoProfile -NonInteractive -Command "Start-Process '${webFallback}'"`, { timeout: 10000 }).catch(() => null)
+      return {
+        outputText: `Não encontrei **${appName}** instalado no PC, então abri o site no seu navegador como alternativa! 🌐`,
+        trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `Fallback Web: ${appName}`, payload: { callId, output: { path: webFallback } } }],
+      }
+    }
+  } catch (err: unknown) {
+    fs.unlink(scriptPath).catch(() => {})
+    const msg = err instanceof Error ? err.message : String(err)
+    return {
+      outputText: `Erro ao buscar **${appName}**: ${msg.slice(0, 300)}`,
+      trace: [{ type: 'tool_call', label: 'bash_exec', state: 'error', subtitle: `Erro: ${appName}`, payload: { callId, output: { error: msg } } }],
+    }
+  }
+}
+
+
+function parseSystemControlIntent(text: string): { type: string; payload?: string } | null {
+  if (!text?.trim()) return null;
+  const cleaned = text.trim().replace(/[,;.!?]+$/, '').replace(/\s+(pra\s+mim|por\s+favor|agora|a[ií]|ok)\s*$/i, '').trim()
+
+  // Kill Process
+  const killMatch = cleaned.match(/^(?:fecha?|fechar|mata?|matar|encerra?|encerrar)\s+(?:o\s+|a\s+|processo\s+(?:do\s+)?|app\s+|jogo\s+)?(.{2,40})$/i)
+  if (killMatch?.[1]) return { type: 'kill_process', payload: killMatch[1].trim() }
+
+  // Window Management
+  if (/^(?:minimiza|minimizar)\s+(?:tudo|todas as janelas|as janelas)/i.test(cleaned) || /^(?:mostra|mostrar)\s+a\s+rea\s+de\s+trabalho/i.test(cleaned)) return { type: 'minimize_all' }
+  const focusMatch = cleaned.match(/^(?:foca|focar)\s+(?:no|na|o|a)\s+(.+)$/i) || cleaned.match(/^(?:traz|trazer|maximiza|maximizar)\s+(?:a\s+)?(?:janela\s+(?:do|da)\s+|o\s+|a\s+)?(.+)$/i)
+  if (focusMatch?.[1]) return { type: 'focus_window', payload: focusMatch[1].trim() }
+
+  // Cleaning
+  if (/^(?:esvazia|esvaziar|limpa|limpar)\s+(?:a\s+)?(?:lixeira|lixo)/i.test(cleaned) || /^(?:limpa|limpar)\s+(?:o\s+)?pc/i.test(cleaned)) return { type: 'empty_trash' }
+
+  // Power & Security
+  const pwrMatch = cleaned.match(/^(?:desliga?|desligar|reinicia?|reiniciar|hiberna?|hibernar|bloqueia?|bloquear|tranca?|trancar)\s+(?:o\s+)?(?:pc|computador|maquina|sistema|tela)/i)
+  if (pwrMatch) {
+    if (/reinicia/i.test(cleaned)) return { type: 'restart_pc' }
+    if (/hiberna/i.test(cleaned)) return { type: 'hibernate_pc' }
+    if (/bloqueia|tranca|bloquear|trancar/i.test(cleaned)) return { type: 'lock_pc' }
+    return { type: 'shutdown_pc' }
+  }
+  if (/^(?:vou sair|fechar o pc|trancar o pc)/i.test(cleaned)) return { type: 'lock_pc' }
+
+  // Reminders
+  const reminderMatch = cleaned.match(/^me\s+lembra\s+(?:de\s+|para\s+|)(.*?)\s*(?:daqui\s+a|em)\s*(\d+)\s*(minutos?|segundos?|horas?)/i)
+  if (reminderMatch) {
+     const msg = reminderMatch[1].trim()
+     const amount = parseInt(reminderMatch[2])
+     const unit = reminderMatch[3].toLowerCase()
+     let totalSeconds = amount
+     if (unit.startsWith('minuto')) totalSeconds *= 60
+     if (unit.startsWith('hora')) totalSeconds *= 3600
+     return { type: 'reminder', payload: `${totalSeconds}|${msg}` }
+  }
+
+  // Audio / Media
+  if (/^(?:muta?|muta|mutar|silencia?|silenciar)\s+(?:o\s+)?(?:pc|computador|som|audio|áudio)/i.test(cleaned)) return { type: 'mute_audio' }
+  if (/^(?:aumenta?|aumentar|sobe|subir)\s+(?:o\s+)?(?:volume|som|audio|áudio)/i.test(cleaned)) return { type: 'volume_up' }
+  if (/^(?:diminui?|diminuir|baixa?|baixar)\s+(?:o\s+)?(?:volume|som|audio|áudio)/i.test(cleaned)) return { type: 'volume_down' }
+  if (/^(?:pausa?|pausar|toca?|tocar|play|resume|resumir)\s+(?:a\s+)?(?:m[úu]sica|video|vídeo|media|mídia|som)/i.test(cleaned)) return { type: 'media_play_pause' }
+
+  // Clipboard
+  if (/^l[eê] (?:a\s+)?(?:área de transferência|clipboard)|o que tem no (?:meu\s+)?(?:ctrl.c|clipboard)/i.test(cleaned)) return { type: 'clipboard_read' }
+  const clipboardWrite = cleaned.match(/^(?:copia?|copiar)\s+(?:isso\s+)?(?:para a área de transferência|pro clipboard|clipboard):\s*(.+)$/i)
+  if (clipboardWrite?.[1]) return { type: 'clipboard_write', payload: clipboardWrite[1] }
+
+  // Hardware Health
+  if (/^(?:como\s+(?:t|est)|qual\s+a)\s+(?:a\s+)?(?:bateria|carga)/i.test(cleaned)) return { type: 'hw_battery' }
+  if (/^(?:como\s+(?:t|est)|qual\s+o|status)\s+(?:d[oa]\s+)?(?:uso\s+de\s+)?(?:ram|mem[oó]ria|cpu|processador|sistema)/i.test(cleaned)) return { type: 'hw_ram' }
+
+  // Brightness & Theme
+  if (/^(?:diminui|baixa|tira)\s+(?:o\s+)?brilho/i.test(cleaned) || /menos brilho/i.test(cleaned)) return { type: 'brightness_down' }
+  if (/^(?:aumenta|sobe|p[oeõe])\s+(?:o\s+)?brilho/i.test(cleaned) || /mais brilho/i.test(cleaned)) return { type: 'brightness_up' }
+  if (/^(?:ativa|p[oeõe]|coloca|muda pro)\s+(?:o\s+)?(?:modo escuro|tema escuro|dark mode|modo noturno)/i.test(cleaned)) return { type: 'dark_mode' }
+  if (/^(?:ativa|p[oeõe]|coloca|muda pro|tira do modo escuro)\s+(?:o\s+)?(?:modo claro|tema claro|light mode)/i.test(cleaned)) return { type: 'light_mode' }
+
+  // Screenshots
+  if (/^(?:tira|tirar|bate|bater|fazer|faz|foca)\s+(?:um\s+)?(?:print|screenshot|foto da tela)/i.test(cleaned)) return { type: 'screenshot' }
+
+  // Network
+  if (/^(?:desliga|desligar|corta|cortar|desconecta|desconectar)\s+(?:o\s+)?(?:wifi|wi-fi|internet|rede)/i.test(cleaned)) return { type: 'wifi_off' }
+
+  // Typing / Macro
+  const typeMatch = cleaned.match(/^(?:digita|digitar|escreve|escrever)(?:\s+(?:pra mim|isso))?[,:]*\s*(.+)$/i)
+  if (typeMatch?.[1]) return { type: 'macro_type', payload: typeMatch[1] }
+
+  // TTS Language
+  const speechMatch = cleaned.match(/^(?:fale|falar|diga|dizer|fala|grita|fala assim)(?:\s+(?:isso|seguinte|pra mim|alto))?[,:]*\s*(.+)$/i)
+  if (speechMatch?.[1]) return { type: 'tts_speak', payload: speechMatch[1].trim() }
+
+  return null
+}
+
+async function getDirectSystemControlResult(prompt: string): Promise<{ outputText: string; trace: Array<Record<string, unknown>> } | null> {
+  const intent = parseSystemControlIntent(prompt)
+  if (!intent) return null
+
+  const callId = `sysctrl_${Date.now()}`
+
+  try {
+    if (intent.type === 'kill_process') {
+      const psRaw = `Stop-Process -Name "*${intent.payload?.replace(/'/g, "''")}*" -Force -ErrorAction SilentlyContinue; [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("KILLED"))`
+      const enc = Buffer.from(psRaw, 'utf16le').toString('base64')
+      await execp(`powershell -NoProfile -NonInteractive -EncodedCommand ${enc}`, { timeout: 10000 })
+      return {
+        outputText: `Fechei a janela do **${intent.payload}** pra você. 🔪`,
+        trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `Kill: ${intent.payload}`, payload: { callId } }]
+      }
+    }
+
+    if (intent.type === 'minimize_all') {
+      await execp(`powershell -NoProfile -Command "(New-Object -ComObject Shell.Application).MinimizeAll()"`)
+      return { outputText: `👇 Pronto! Todas as janelas foram minimizadas para a barra de tarefas. Área de trabalho limpa.`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Minimize All', payload: { callId } }] }
+    }
+
+    if (intent.type === 'empty_trash') {
+      await execp(`powershell -NoProfile -Command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"`)
+      return { outputText: `🗑️ Lixeira esvaziada. O que é lixo, ficou no lixo!`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Empty Trash', payload: { callId } }] }
+    }
+
+    if (intent.type === 'lock_pc') {
+      execp('rundll32.exe user32.dll,LockWorkStation').catch(() => null)
+      return { outputText: `🔒 Tela bloqueada com sucesso! Ninguém mexe no seu PC.`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Lock PC', payload: { callId } }] }
+    }
+
+    if (intent.type === 'focus_window' && intent.payload) {
+      const ps = `Add-Type -AssemblyName VisualBasic; [Microsoft.VisualBasic.Interaction]::AppActivate('${intent.payload.replace(/'/g, "''")}')`
+      await execp(`powershell -NoProfile -Command "${ps}"`).catch(()=>null)
+      return { outputText: `👀 Tentei focar na janela do **${intent.payload}** pra você! (Se não apareceu, talvez o aplicativo não exista).`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `Focus: ${intent.payload}`, payload: { callId } }] }
+    }
+
+    if (intent.type === 'reminder' && intent.payload) {
+       const [secStr, ...msgParts] = intent.payload.split('|')
+       const sec = parseInt(secStr)
+       const msgObj = msgParts.join('|').replace(/'/g, "''")
+       
+       const script = `
+       Start-Sleep -Seconds ${sec}
+       Add-Type -AssemblyName System.Windows.Forms
+       $notify = New-Object System.Windows.Forms.NotifyIcon
+       $notify.Icon = [System.Drawing.SystemIcons]::Information
+       $notify.BalloonTipIcon = 'Info'
+       $notify.BalloonTipTitle = ' Lembrete do Pimpim!'
+       $notify.BalloonTipText = '${msgObj}'
+       $notify.Visible = $true
+       $notify.ShowBalloonTip(10000)
+       Start-Sleep -Seconds 15
+       $notify.Dispose()
+       `
+       const encodedCmd = Buffer.from(script, 'utf16le').toString('base64')
+       // uses child_process exec without awaiting so it runs detached natively!
+       exec(`powershell -WindowStyle Hidden -NoProfile -EncodedCommand ${encodedCmd}`)
+       return { outputText: `⏰ Fechado! Daqui a **${sec} segundos** eu te mando uma notificação nativa aqui no canto sobre: **${msgObj}**.`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `Lembrete (bg)`, payload: { callId } }] }
+    }
+
+    if (intent.type === 'shutdown_pc') {
+      await execp(`shutdown /s /t 0`, { timeout: 5000 }).catch(() => null)
+      return { outputText: `Desligando o computador agora. 💤`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Shutdown', payload: { callId } }] }
+    }
+    if (intent.type === 'restart_pc') {
+      await execp(`shutdown /r /t 0`, { timeout: 5000 }).catch(() => null)
+      return { outputText: `Reiniciando o computador agora. 🔄`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Restart', payload: { callId } }] }
+    }
+    
+    // NEW ONES:
+    if (intent.type === 'hw_battery') {
+      const psOut = await execp(`powershell -NoProfile -Command "(Get-WmiObject win32_battery).EstimatedChargeRemaining"`).catch(()=>({stdout: ''}))
+      const bat = psOut.stdout.trim()
+      if (bat) return { outputText: `🔋 Sua bateria física está com **${bat}%** de carga no momento!`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Battery', payload: { callId } }] }
+      return { outputText: `🔌 Parece que este computador não possui uma bateria (PC de mesa ou WMI inacessível).`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Battery fail', payload: { callId } }] }
+    }
+
+    if (intent.type === 'hw_ram') {
+      const psOut = await execp(`powershell -NoProfile -Command "$os=Get-CimInstance Win32_OperatingSystem; $cpu=Get-CimInstance Win32_Processor; Write-Output ($os.FreePhysicalMemory / 1024 / 1024), ($os.TotalVisibleMemorySize / 1024 / 1024), $cpu[0].LoadPercentage"`).catch(()=>({stdout: ''}))
+      const lines = psOut.stdout.trim().split('\\n').map(l => parseFloat(l.replace(',', '.')))
+      if (lines.length >= 3) {
+         const freeRam = lines[0].toFixed(1)
+         const totalRam = lines[1].toFixed(1)
+         const usedRam = (lines[1] - lines[0]).toFixed(1)
+         const proc = lines[2]
+         return { outputText: `📈 **Relatório de Hardware Instantâneo:**\n\n- **CPU:** ${proc}% em uso\n- **RAM:** ${usedRam} GB / ${totalRam} GB (Livres: ${freeRam} GB)`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Sys Info', payload: { callId } }] }
+      }
+      return { outputText: `Não consegui ler o WMI para Hardware no seu PC.`, trace: [] }
+    }
+
+    if (intent.type === 'brightness_down') {
+      await execp(`powershell -NoProfile -Command "$m=(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightness); $curr=$m.CurrentBrightness; $new=$curr-20; if($new -lt 0){$new=0}; (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1, $new)"`).catch(()=>null)
+      return { outputText: `😎 Tela escurecida! Baixei o brilho físico do seu monitor.`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Brilho Menos', payload: { callId } }] }
+    }
+    if (intent.type === 'brightness_up') {
+      await execp(`powershell -NoProfile -Command "$m=(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightness); $curr=$m.CurrentBrightness; $new=$curr+20; if($new -gt 100){$new=100}; (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1, $new)"`).catch(()=>null)
+      return { outputText: `☀️ Tela clareada! Aumentei o brilho.`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Brilho Mais', payload: { callId } }] }
+    }
+
+    if (intent.type === 'dark_mode') {
+      const ps = `New-ItemProperty -Path HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize -Name AppsUseLightTheme -Value 0 -PropertyType DWord -Force; New-ItemProperty -Path HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize -Name SystemUsesLightTheme -Value 0 -PropertyType DWord -Force`
+      await execp(`powershell -NoProfile -Command "${ps}"`).catch(()=>null)
+      return { outputText: `🌙 O modo noturno (Dark Theme) foi ativado no seu Windows inteiro.`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Dark Mode', payload: { callId } }] }
+    }
+    if (intent.type === 'light_mode') {
+      const ps = `New-ItemProperty -Path HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize -Name AppsUseLightTheme -Value 1 -PropertyType DWord -Force; New-ItemProperty -Path HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize -Name SystemUsesLightTheme -Value 1 -PropertyType DWord -Force`
+      await execp(`powershell -NoProfile -Command "${ps}"`).catch(()=>null)
+      return { outputText: `☀️ Modo iluminado (Light Theme) ativado!`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Light Mode', payload: { callId } }] }
+    }
+
+    if (intent.type === 'screenshot') {
+      const ps = `Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $bounds=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $b = New-Object System.Drawing.Bitmap($bounds.Width, $bounds.Height); $g = [System.Drawing.Graphics]::FromImage($b); $g.CopyFromScreen( (New-Object System.Drawing.Point(0,0)), (New-Object System.Drawing.Point(0,0)), $b.Size ); [System.Windows.Forms.Clipboard]::SetImage($b); $g.Dispose(); $b.Dispose()`
+      await execp(`powershell -NoProfile -Command "${ps}"`).catch(()=>null)
+      return { outputText: `📸 CLIC! Tirei um print nativo de toda a sua tela agora mesmo e copiei para sua **Área de Transferência**. Só dar um \`Ctrl+V\` no zap!`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Screenshot', payload: { callId } }] }
+    }
+
+    if (intent.type === 'wifi_off') {
+      await execp(`powershell -NoProfile -Command "netsh wlan disconnect"`).catch(()=>null)
+      return { outputText: `🛜 Wifi da sua máquina foi desconectado (via netsh).`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Disconnect Wifi', payload: { callId } }] }
+    }
+
+    if (intent.type === 'tts_speak' && intent.payload) {
+      const enc = Buffer.from(`Add-Type -AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).SpeakAsync('${intent.payload.replace(/'/g, "''")}')`, 'utf16le').toString('base64')
+      exec(`powershell -NoProfile -EncodedCommand ${enc}`)
+      return { outputText: `🗣️ A voz nativa do seu PC deve estar falando bem alto na sua máquina: "*${intent.payload}*"!`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Speak', payload: { callId } }] }
+    }
+
+    if (intent.type === 'macro_type' && intent.payload) {
+      const enc = Buffer.from(`Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${intent.payload.replace(/'/g, "''")}')`, 'utf16le').toString('base64')
+      exec(`powershell -NoProfile -EncodedCommand ${enc}`)
+      return { outputText: `⌨️ Simulei teclas reais no seu sistema focando onde o seu mouse estava e escrevendo: **${intent.payload}**.`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Typing', payload: { callId } }] }
+    }
+
+    if (intent.type.startsWith('volume_') || intent.type === 'mute_audio' || intent.type === 'media_play_pause') {
+      let vk = 0
+      let reps = 1
+      if (intent.type === 'mute_audio') vk = 0xAD
+      if (intent.type === 'volume_down') { vk = 0xAE; reps = 5 }
+      if (intent.type === 'volume_up') { vk = 0xAF; reps = 5 }
+      if (intent.type === 'media_play_pause') vk = 0xB3
+      
+      const psRaw = `
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public class VKControl {
+    [DllImport("user32.dll")]
+    public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+}
+"@
+for ($i=0; $i -lt ${reps}; $i++) {
+    [VKControl]::keybd_event(${vk}, 0, 0, 0)
+}
+[Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("OK"))
+`.trim()
+      const enc = Buffer.from(psRaw, 'utf16le').toString('base64')
+      await execp(`powershell -NoProfile -NonInteractive -EncodedCommand ${enc}`, { timeout: 5000 })
+      return {
+        outputText: `Pronto! Ajustei o áudio/mídia. 🔊`,
+        trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: intent.type, payload: { callId } }]
+      }
+    }
+
+    if (intent.type === 'clipboard_read') {
+      const { stdout: b64 } = await execp(`powershell -NoProfile -NonInteractive -Command "try { $c = Get-Clipboard -ErrorAction Stop; [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($c)) } catch { [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('VAZIO')) }"`, { timeout: 5000 })
+      const res = Buffer.from(b64.trim(), 'base64').toString('utf-8')
+      if (res === 'VAZIO' || !res) return { outputText: `Sua área de transferência está vazia.`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Clipboard', payload: { callId } }] }
+      return { outputText: `**Conteúdo da sua área de transferência:**\n\n\`\`\`\n${res}\n\`\`\`\n`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: 'Read Clipboard', payload: { callId } }] }
+    }
+
+  } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return { outputText: `Erro ao executar sistema: ${msg.slice(0, 200)}`, trace: [{ type: 'tool_call', label: 'bash_exec', state: 'error', subtitle: `Erro: ${intent.type}`, payload: { callId, output: { error: msg } } }] }
+  }
+
+  return null
+}
+
+async function getDirectTerminalResult(prompt: string): Promise<{ outputText: string; trace: Array<Record<string, unknown>> } | null> {
+
+  const parsed = parseDirectTerminalCmd(prompt)
+  if (!parsed) return null
+
+  const callId = `direct_terminal_${Date.now()}`
+
+  // Caso especial: abrir janela visível de terminal
+  if (typeof parsed === 'object' && 'open' in parsed) {
+    const which = parsed.open
+    const processName = which === 'cmd' ? 'cmd.exe' : 'powershell.exe'
+    try {
+      // Start-Process abre uma janela visível e destacada (detached)
+      await execp(`powershell -NoProfile -NonInteractive -Command "Start-Process ${processName}"`, { timeout: 5000 })
+      const outputText = `Pronto! Abri uma janela do ${which === 'cmd' ? 'Prompt de Comando (CMD)' : 'PowerShell'} na sua tela. 🖥️`
+      return {
+        outputText,
+        trace: [{ type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `Abriu: ${processName}`, payload: { callId } }],
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return {
+        outputText: `Não consegui abrir o terminal: ${msg}`,
+        trace: [{ type: 'tool_call', label: 'bash_exec', state: 'error', subtitle: `Falha ao abrir ${processName}`, payload: { callId, output: { error: msg } } }],
+      }
+    }
+  }
+
+  const cmd = parsed as string
+
+  // Executa via PowerShell com CP850 (OEM code page Brasil) para decodificar output corretamente
+  // O ipconfig e outros comandos Windows emitem em CP850, não UTF-8
+  const safeCmdForPS = cmd.replace(/'/g, "''")
+  const psScript = `$enc850=[System.Text.Encoding]::GetEncoding(850); [Console]::OutputEncoding=$enc850; $out=(& cmd /c '${safeCmdForPS}' 2>&1 | Out-String); [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($out))`
+
+  try {
+    const { stdout: b64 } = await execp(`powershell -NoProfile -NonInteractive -Command "${psScript.replace(/"/g, '\\"')}"`, {
+      maxBuffer: 10 * 1024 * 1024,
+      timeout: 30000,
+    })
+    const output = Buffer.from(b64.trim(), 'base64').toString('utf-8').trim() || '(sem saída)'
+    const outputText = `Aqui está o resultado de \`${cmd}\`:\n\n\`\`\`\n${output}\n\`\`\``
+    return {
+      outputText,
+      trace: [
+        { type: 'tool_call', label: 'bash_exec', state: 'complete', subtitle: `Executou: ${cmd}`, payload: { callId, arguments: { cmd } } },
+        { type: 'tool_output', label: 'bash_exec', state: 'complete', subtitle: 'Saída do terminal', payload: { callId, output: { stdout: output, stderr: '' } } },
+      ],
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    const outputText = `Erro ao executar \`${cmd}\`: ${msg}`
+    return {
+      outputText,
+      trace: [
+        { type: 'tool_call', label: 'bash_exec', state: 'error', subtitle: `Falha: ${cmd}`, payload: { callId, output: { error: msg } } },
+      ],
+    }
+  }
+}
+
 async function persistAssistantReply(
   user: NonNullable<ReturnType<typeof requireUser>>,
   chatId: string,
@@ -583,6 +1201,7 @@ async function persistAssistantReply(
   reply: string,
   selectedAgentId: string,
   selectedAgentName: string | null,
+  attachments?: ChatMessage["attachments"],
 ) {
   if (!chatId) return { userMessageId: null, assistantMessageId: null };
 
@@ -600,6 +1219,7 @@ async function persistAssistantReply(
     {
       role: "user",
       content: prompt,
+      attachments,
       streaming: false,
     },
     {
@@ -620,11 +1240,39 @@ async function persistAssistantReply(
 
 function toModelInput(messages: ChatMessage[]) {
   return messages
-    .filter((message) => typeof message.content === "string" && message.content.trim())
-    .map((message) => ({
-      role: message.role === "agent" ? ("assistant" as const) : ("user" as const),
-      content: message.content,
-    }));
+    .filter((message) => (typeof message.content === "string" && message.content.trim()) || (Array.isArray(message.attachments) && message.attachments.length > 0))
+    .map((message) => {
+      const role = message.role === "agent" ? ("assistant" as const) : ("user" as const);
+      
+      // Se for usuário e tiver anexos que parecem imagens, usa formato multimodal
+      const imageAttachments = role === "user" ? (message.attachments?.filter(a => a.mimeType?.startsWith("image/") || /\.(png|jpg|jpeg|webp)$/i.test(a.name)) || []) : [];
+      
+      if (imageAttachments.length > 0) {
+        const content: (
+          | { type: "text"; text: string }
+          | { type: "image_url"; image_url: { url: string } }
+        )[] = [];
+        if (typeof message.content === "string" && message.content.trim()) {
+          content.push({ type: "text", text: message.content });
+        }
+        for (const attachment of imageAttachments) {
+          if (attachment.content) {
+            content.push({
+              type: "image_url",
+              image_url: {
+                url: attachment.content,
+              },
+            });
+          }
+        }
+        return { role, content } as ChatCompletionMessageParam;
+      }
+
+      return {
+        role,
+        content: message.content,
+      } as ChatCompletionMessageParam;
+    });
 }
 
 function buildInstructions(
@@ -690,14 +1338,31 @@ ${formatMemoryContextForPrompt(memoryContext)}`;
 
   const agentSection = buildCoordinationAgentInstructions(selectedAgent ?? null);
 
-  return `${BASE_INSTRUCTIONS}
+  const isShortResponseRequested = memorySection?.toLowerCase().includes("respostas curtas");
+  
+  const prefix = isShortResponseRequested
+    ? "### 🛑 REGRA CRÍTICA DE ESTILO: RESPOSTAS CURTAS\nO usuário exige respostas extremamente curtas e diretas. Não use introduções, não repita a pergunta e limite sua resposta a no máximo 2-3 frases curtas. Ignore qualquer instrução contrária de personalidade que sugira detalhamento.\n\n"
+    : "";
 
-Filesystem mode: ${fullAccess ? "full computer access enabled by the user" : "restricted to current workspace"}.
-Permission mode: ${permissionMode}.
-Memory mode: ${memoryMode}.
-Obsidian vault path: obsidian-vault/ inside the current workspace.${memorySection}${profileSection}${workflowSection}${
-    agentSection ? `\n\n${agentSection}` : ""
-  }`;
+  const finalInstructions = [
+    BASE_INSTRUCTIONS,
+    `Filesystem mode: ${fullAccess ? "full computer access enabled by the user" : "restricted to current workspace"}.`,
+    `Permission mode: ${permissionMode}.`,
+    `Memory mode: ${memoryMode}.`,
+    `Obsidian vault path: obsidian-vault/ inside the current workspace.`,
+    memorySection,
+    profileSection,
+    workflowSection,
+    agentSection,
+  ].filter(Boolean).join("\n\n");
+
+  const suffix = isShortResponseRequested
+    ? "\n\n⚠️ **LEMBRETE FINAL:** O usuário quer respostas CURTAS. Seja breve (máximo 3 frases)."
+    : memorySection?.includes("### DIRETRIZES DE COMPORTAMENTO E ESTILO")
+    ? "\n\n⚠️ **IMPORTANTE:** Respeite rigorosamente as DIRETRIZES DE ESTILO do usuário encontradas na seção de Memória."
+    : "";
+
+  return prefix + finalInstructions + suffix;
 }
 
 function shouldIncludeMemoryContext(memoryContext: ContextPack) {
@@ -732,25 +1397,39 @@ function formatMemoryContextForPrompt(memoryContext: ContextPack) {
   const summaryShort = clampText(memoryContext.summaryShort, 500);
   const summaryLong = clampText(memoryContext.summaryLong, 900);
 
-  if (summaryShort) lines.push(`summaryShort: ${summaryShort}`);
-  if (summaryLong) lines.push(`summaryLong: ${summaryLong}`);
+  if (summaryShort) lines.push(`Resumo do Perfil: ${summaryShort}`);
+  if (summaryLong) lines.push(`\n${summaryLong}`);
 
+  // Style Guidelines (Interaction Style)
+  const styleTraits = new Set<string>();
+  if (Array.isArray(memoryContext.interactionPreferences?.interaction_style)) {
+    (memoryContext.interactionPreferences.interaction_style as string[]).forEach((s) => styleTraits.add(s));
+  }
+  memoryContext.memoryItems
+    ?.filter((i) => i.type === "interaction_style")
+    .forEach((i) => styleTraits.add(i.content));
+
+  if (styleTraits.size > 0) {
+    lines.push("\n### DIRETRIZES DE COMPORTAMENTO E ESTILO (Obrigatório):");
+    styleTraits.forEach((trait) => lines.push(`- ${trait}`));
+  }
+
+  // Known Facts & Constraints
   if (Array.isArray(memoryContext.keyFacts) && memoryContext.keyFacts.length) {
-    lines.push(`keyFacts: ${clampText(safeJson(memoryContext.keyFacts), 700)}`);
+    lines.push(`\nFatos importantes: ${clampText(safeJson(memoryContext.keyFacts), 700)}`);
   }
   if (Array.isArray(memoryContext.activeGoals) && memoryContext.activeGoals.length) {
-    lines.push(`activeGoals: ${clampText(safeJson(memoryContext.activeGoals), 700)}`);
-  }
-  if (memoryContext.interactionPreferences && Object.keys(memoryContext.interactionPreferences).length) {
-    lines.push(`interactionPreferences: ${clampText(safeJson(memoryContext.interactionPreferences), 700)}`);
+    lines.push(`Objetivos ativos: ${clampText(safeJson(memoryContext.activeGoals), 700)}`);
   }
   if (Array.isArray(memoryContext.knownConstraints) && memoryContext.knownConstraints.length) {
-    lines.push(`knownConstraints: ${clampText(safeJson(memoryContext.knownConstraints), 700)}`);
+    lines.push(`Restrições conhecidas: ${clampText(safeJson(memoryContext.knownConstraints), 700)}`);
   }
 
-  if (Array.isArray(memoryContext.memoryItems) && memoryContext.memoryItems.length) {
-    lines.push("memoryItems:");
-    for (const item of memoryContext.memoryItems.slice(0, 12)) {
+  // Other Memory Items (Context)
+  const remainingItems = memoryContext.memoryItems?.filter((item) => item.type !== "interaction_style") || [];
+  if (remainingItems.length) {
+    lines.push("\nOutros itens de memória relevantes:");
+    for (const item of remainingItems.slice(0, 10)) {
       const label = [item.type, item.category].filter(Boolean).join("/");
       const content = clampText(item.content, 220);
       lines.push(`- ${label}: ${content}`);
@@ -974,6 +1653,7 @@ async function maybeAutoCaptureMemoryOrchestrator(params: {
   apiKey: string;
   model: string;
   actor: string;
+  attachments?: ChatMessage["attachments"];
 }) {
   if (!isMemoryOrchestratorEnabled()) {
     return;
@@ -996,6 +1676,35 @@ async function maybeAutoCaptureMemoryOrchestrator(params: {
     maxLlmAccepted: 3,
   });
 
+  // Extração de imagem se houver anexos de imagem
+  const imageAttachments = params.attachments?.filter(a => a.mimeType?.startsWith("image/") || /\.(png|jpg|jpeg|webp)$/i.test(a.name)) || [];
+  
+  if (imageAttachments.length > 0) {
+    console.info(`[MemoryOrchestrator] Image detection: ${imageAttachments.length} images found. Running image extractor.`);
+    for (const attachment of imageAttachments) {
+      if (!attachment.content) continue;
+      try {
+        const { candidates: imageCandidates } = await extractImageMemoryCandidates({
+          apiKey: params.apiKey,
+          model: "gpt-4o-mini", // Forçando modelo com visão
+          input: {
+            sourceConversationId: params.chatId,
+            sourceMessageId: params.sourceMessageId,
+            userPrompt: params.prompt,
+            imageUrl: attachment.content,
+          },
+        });
+        
+        if (imageCandidates.length > 0) {
+          console.info(`[MemoryOrchestrator] Image extractor found ${imageCandidates.length} candidates.`);
+          candidates.push(...imageCandidates);
+        }
+      } catch (err) {
+        console.warn("[MemoryOrchestrator] Image extraction failed:", err);
+      }
+    }
+  }
+
   console.info(`[MemoryOrchestrator] heuristic extractor ran; generated=${stats.heuristicGenerated}`);
   if (stats.llmAttempted) {
     console.info(
@@ -1005,7 +1714,7 @@ async function maybeAutoCaptureMemoryOrchestrator(params: {
   if (stats.llmAttempted && stats.llmFailed) {
     console.warn("[MemoryOrchestrator] LLM extractor failed; falling back to heuristic-only candidates.");
   }
-  console.info(`[MemoryOrchestrator] combined candidates ready; total=${stats.combinedTotal}`);
+  console.info(`[MemoryOrchestrator] combined candidates ready; total=${candidates.length}`);
 
   if (candidates.length === 0) {
     return;
@@ -1283,10 +1992,11 @@ export async function POST(request: NextRequest) {
   const previousAssistantText = getPreviousAssistantText(messages);
   const lastUserMessage = [...messages]
     .reverse()
-    .find((message) => message?.role === "user" && typeof message?.content === "string");
+    .find((message) => message?.role === "user");
   const prompt = typeof lastUserMessage?.content === "string" ? lastUserMessage.content : "";
+  const attachments = lastUserMessage?.attachments || [];
 
-  if (!prompt) {
+  if (!prompt && attachments.length === 0) {
     return new Response("A user message is required.", { status: 400 });
   }
 
@@ -1308,8 +2018,38 @@ export async function POST(request: NextRequest) {
   });
 
   const startedAt = Date.now();
-  const directDesktopResult = await getDirectDesktopResult(prompt, previousAssistantText);
-  const directPdfResult = await getDirectPdfResult(user, chatId, prompt, previousAssistantText);
+  const directSystemControlResult = await getDirectSystemControlResult(prompt);
+  const directFileSystemResult = directSystemControlResult ? null : await getDirectFileSystemResult(prompt);
+  const directOpenWebResult = (directSystemControlResult || directFileSystemResult) ? null : await getDirectOpenWebResult(prompt);
+  const directOpenAppResult = (directSystemControlResult || directFileSystemResult || directOpenWebResult) ? null : await getDirectOpenAppResult(prompt);
+  const directTerminalResult = (directSystemControlResult || directFileSystemResult || directOpenWebResult || directOpenAppResult) ? null : await getDirectTerminalResult(prompt);
+  const directDesktopResult = (directSystemControlResult || directFileSystemResult || directOpenWebResult || directOpenAppResult || directTerminalResult) ? null : await getDirectDesktopResult(prompt, previousAssistantText);
+  const directPdfResult = (directSystemControlResult || directFileSystemResult || directOpenWebResult || directOpenAppResult || directTerminalResult || directDesktopResult) ? null : await getDirectPdfResult(user, chatId, prompt, previousAssistantText);
+
+  const firstDirectResult = directSystemControlResult || directFileSystemResult || directOpenWebResult || directOpenAppResult || directTerminalResult;
+  if (firstDirectResult) {
+    const persisted = await persistAssistantReply(user, chatId, prompt, messages, firstDirectResult.outputText, selectedAgentId, selectedAgentName);
+    const assistantMessageId = persisted.assistantMessageId;
+    await sendCoordinationMessage({ backendUrl, teamId: coordinationTeamId, fromAgentId: selectedAgentId, toAgentId: user.id, messageType: 'direct_message', content: firstDirectResult.outputText, metadata: { chatId, direction: 'agent_to_user' } });
+    const directReadable = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (const traceEntry of firstDirectResult.trace) controller.enqueue(encodeEvent('trace', traceEntry));
+        controller.enqueue(encodeEvent('text-delta', { delta: firstDirectResult.outputText }));
+        
+        // Determine model label
+        let modelLabel = 'direct-terminal';
+        if (directSystemControlResult) modelLabel = 'direct-sysctrl';
+        else if (directFileSystemResult) modelLabel = 'direct-filesystem';
+        else if (directOpenWebResult) modelLabel = 'direct-open-web';
+        else if (directOpenAppResult) modelLabel = 'direct-open-app';
+
+        controller.enqueue(encodeEvent('done', { output_text: firstDirectResult.outputText, trace: firstDirectResult.trace, messageId: assistantMessageId, model: modelLabel }));
+        controller.close();
+      },
+    });
+    return new Response(directReadable, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive' } });
+  }
+
 
   if (directDesktopResult) {
     const persisted = await persistAssistantReply(
@@ -1320,6 +2060,7 @@ export async function POST(request: NextRequest) {
       directDesktopResult.outputText,
       selectedAgentId,
       selectedAgentName,
+      attachments,
     );
     const assistantMessageId = persisted.assistantMessageId;
     const sourceMessageId = (() => {
@@ -1341,6 +2082,7 @@ export async function POST(request: NextRequest) {
         apiKey,
         model,
         actor: selectedAgentName || selectedAgentId,
+        attachments,
       }).catch(() => null);
     }, 0);
     await sendCoordinationMessage({
@@ -1397,6 +2139,7 @@ export async function POST(request: NextRequest) {
       directPdfResult.outputText,
       selectedAgentId,
       selectedAgentName,
+      attachments,
     );
     const assistantMessageId = persisted.assistantMessageId;
     const sourceMessageId = (() => {
@@ -1418,6 +2161,7 @@ export async function POST(request: NextRequest) {
         apiKey,
         model,
         actor: selectedAgentName || selectedAgentId,
+        attachments,
       }).catch(() => null);
     }, 0);
     await sendCoordinationMessage({
@@ -1784,6 +2528,7 @@ export async function POST(request: NextRequest) {
           finalText,
           selectedAgentId,
           selectedAgentName,
+          attachments,
         );
         const assistantMessageId = persisted.assistantMessageId;
         const sourceMessageId = (() => {
@@ -1805,6 +2550,7 @@ export async function POST(request: NextRequest) {
             apiKey,
             model,
             actor: selectedAgentName || selectedAgentId,
+            attachments,
           }).catch(() => null);
         }, 0);
 

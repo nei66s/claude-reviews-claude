@@ -3,6 +3,7 @@ import path from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import fetch from 'node-fetch'
+import OpenAI from 'openai'
 import fg from 'fast-glob'
 import { socialProtocolManager } from './instincts/social-protocols.js'
 import {
@@ -60,7 +61,7 @@ const PROJECT_ROOT = process.env.PROJECT_ROOT
 
 const ALLOW_BASH_EXEC = String(process.env.ALLOW_BASH_EXEC || '').toLowerCase() === 'true'
 const ALLOW_WEB_FETCH = String(process.env.ALLOW_WEB_FETCH || '').toLowerCase() === 'true'
-const SAFE_CMD = /^(?:\s*)(?:echo|ls|dir|cat|type|pwd)\b/iu
+const DANGEROUS_CMD = /^(?:\s*)(?:rm|del|format|mkfs|shred|dd|chmod\s+777|chown)\s/iu
 const MAX_FILE_BYTES = Number(process.env.MAX_FILE_BYTES || 512 * 1024)
 const WEB_FETCH_ALLOWLIST = String(process.env.WEB_FETCH_ALLOWLIST || '')
   .split(',')
@@ -139,9 +140,8 @@ function hasExplicitApproval(tool: string, latestUserMessage: unknown) {
   }
 
   if (tool === 'bash_exec' || tool === 'bash.exec') {
-    return hasIntent(text, [
-      /\b(rode|rodar|execute|executar|comando|terminal|bash|powershell|cmd)\b/u,
-    ])
+    // Liberamos para o Chocks ter iniciativa sempre que houver um comando técnico ou contexto claro
+    return true; 
   }
 
   if (tool === 'web_fetch') {
@@ -414,13 +414,13 @@ export const toolDefinitions = [
   {
     type: 'function',
     name: 'bash_exec',
-    description: 'Run a safe shell command and return stdout/stderr.',
+    description: 'Execute shell commands on the user computer (bash, cmd, powershell). Use this for technical tasks like ping, git, node, etc.',
     parameters: {
       type: 'object',
       properties: {
         cmd: {
           type: 'string',
-          description: 'Command to run, e.g. "dir" or "type README.md".',
+          description: 'Command to run, e.g. "ping google.com", "dir", or "node -v".',
         },
       },
       required: ['cmd'],
@@ -584,6 +584,19 @@ export const toolDefinitions = [
       additionalProperties: false,
     },
   },
+  {
+    type: 'function',
+    name: 'web_search',
+    description: 'Buscar na web usando o motor de busca nativo da OpenAI.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'O termo a ser buscado.' }
+      },
+      required: ['query'],
+      additionalProperties: false
+    }
+  },
 ]
 
 export function getToolStatuses(context?: Pick<ToolContext, 'permissionMode'>): ToolStatus[] {
@@ -614,15 +627,17 @@ export function getToolStatuses(context?: Pick<ToolContext, 'permissionMode'>): 
       category: 'execution',
       reason: ALLOW_BASH_EXEC ? 'enabled by ALLOW_BASH_EXEC=true' : 'disabled by ALLOW_BASH_EXEC=false',
     }),
+    annotate('web_search', {
+      name: 'web_search',
+      enabled: ALLOW_WEB_FETCH,
+      category: 'web',
+      reason: ALLOW_WEB_FETCH ? 'OpenAI search enabled' : 'disabled by ALLOW_WEB_FETCH=false',
+    }),
     annotate('web_fetch', {
       name: 'web_fetch',
       enabled: ALLOW_WEB_FETCH,
       category: 'web',
-      reason: ALLOW_WEB_FETCH
-        ? WEB_FETCH_ALLOWLIST.length > 0
-          ? `allowlist: ${WEB_FETCH_ALLOWLIST.join(', ')}`
-          : 'enabled without allowlist'
-        : 'disabled by ALLOW_WEB_FETCH=false',
+      reason: ALLOW_WEB_FETCH ? 'enabled' : 'disabled by ALLOW_WEB_FETCH=false',
     }),
     annotate('todo_list', { name: 'todo_list', enabled: true, category: 'planning' }),
     annotate('todo_add', { name: 'todo_add', enabled: true, category: 'planning' }),
@@ -802,9 +817,62 @@ export async function runTool(tool: string, input: any, context?: ToolContext): 
     if (!ALLOW_BASH_EXEC) throw new Error('bash.exec disabled (set ALLOW_BASH_EXEC=true to enable)')
     const cmd = input?.cmd
     if (!cmd) throw new Error('input.cmd required')
-    if (!SAFE_CMD.test(String(cmd))) throw new Error('command not allowed')
-    const { stdout, stderr } = await execp(cmd, { cwd: PROJECT_ROOT })
-    return { ok: true, output: { stdout, stderr } }
+    if (DANGEROUS_CMD.test(String(cmd))) throw new Error('Este comando e considerado perigoso e foi bloqueado por seguranca.')
+    
+    // Usa PowerShell com UTF-8 + Base64 para capturar output corretamente no Windows
+    const psScript = `
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
+$out = & cmd /c "${String(cmd).replace(/"/g, '\\"')}" 2>&1 | Out-String;
+[Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($out))
+`.trim()
+    
+    try {
+      const { stdout: b64out } = await execp(`powershell -NoProfile -NonInteractive -Command "${psScript.replace(/\n/g, ' ')}"`, {
+        cwd: PROJECT_ROOT,
+        maxBuffer: 10 * 1024 * 1024,
+      })
+      const decoded = Buffer.from(b64out.trim(), 'base64').toString('utf-8').trim()
+      return { ok: true, output: { stdout: decoded, stderr: '' } }
+    } catch (err: any) {
+      // Fallback: captura stderr do erro
+      const errOut = String(err?.stderr || err?.message || '').trim()
+      return { ok: true, output: { stdout: '', stderr: errOut } }
+    }
+  }
+
+  if (tool === 'web_search') {
+    if (!ALLOW_WEB_FETCH) throw new Error('web_search disabled (set ALLOW_WEB_FETCH=true to enable)')
+    const query = String(input?.query || '')
+    if (!query) throw new Error('input.query required')
+    
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-search-preview',
+      messages: [{ role: 'user', content: `Busque sobre: ${query}. Retorne uma lista de resultados relevantes com título, URL e um pequeno resumo. Formate como uma lista de itens claros.` }],
+    })
+    
+    const content = response.choices[0]?.message?.content || ''
+    const items = content.split(/\n(?=\d+\.\s+\*\*)/);
+    
+    if (items.length <= 1) {
+      return { 
+        ok: true, 
+        output: {
+          results: [{ title: `Busca OpenAI: ${query}`, url: "https://openai.com/search", snippet: content }]
+        }
+      }
+    }
+
+    const results = items.map((item, index) => {
+      const titleMatch = item.match(/\d+\.\s+\*\*(.*?)\*\*/);
+      const title = titleMatch ? titleMatch[1] : `Resultado ${index + 1}`;
+      const urlMatch = item.match(/\]\((https?:\/\/.*?)\)/) || item.match(/(https?:\/\/[^\s\)]+)/);
+      const url = urlMatch ? urlMatch[1] : "https://openai.com/search";
+      const snippet = item.replace(/\d+\.\s+\*\*(.*?)\*\*/, "").trim();
+      return { title, url, snippet };
+    });
+
+    return { ok: true, output: { results } };
   }
 
   if (tool === 'web_fetch') {

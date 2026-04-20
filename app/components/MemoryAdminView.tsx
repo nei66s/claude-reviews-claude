@@ -115,6 +115,7 @@ export default function MemoryAdminPage() {
   const { user, isLoading } = useAuth();
 
   const [targetUserId, setTargetUserId] = useState("");
+  const [userList, setUserList] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("");
   const [limit, setLimit] = useState(50);
@@ -143,6 +144,17 @@ export default function MemoryAdminPage() {
     if (user && !targetUserId) {
       setTargetUserId(user.id);
     }
+    
+    // Fetch users list for dropdown
+    const fetchUsers = async () => {
+      try {
+        const resp = await requestJson("/memory/users");
+        if (Array.isArray(resp?.users)) setUserList(resp.users);
+      } catch (e) {
+        console.error("Failed to fetch users list", e);
+      }
+    };
+    fetchUsers();
   }, [user, isLoading, router, targetUserId]);
 
   const queryString = useMemo(() => {
@@ -153,6 +165,13 @@ export default function MemoryAdminPage() {
     const qs = params.toString();
     return qs ? `?${qs}` : "";
   }, [statusFilter, typeFilter, limit]);
+
+  // Auto-load data when filters or userId change
+  useEffect(() => {
+    if (targetUserId) {
+      void loadData();
+    }
+  }, [targetUserId, queryString]);
 
   const auditQueryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -213,12 +232,9 @@ export default function MemoryAdminPage() {
       const updatedItem = resp?.item as UserMemoryItem | undefined;
       if (updatedItem) {
         setItems((prev) => prev.map((it) => (it.id === updatedItem.id ? updatedItem : it)));
-      } else {
-        await loadData();
       }
-      if (resp?.profile) {
-        setProfile(resp.profile as UserProfile);
-      }
+      // Always reload all data to get fresh audit summary and recompiled profile
+      await loadData();
       setEditingId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao atualizar item.");
@@ -299,13 +315,22 @@ export default function MemoryAdminPage() {
       <div style={containerStyle}>
         <div style={{ ...rowStyle, marginBottom: 14 }}>
           <label style={{ fontSize: 13, opacity: 0.75 }}>Usuário</label>
-          <input
-            style={{ ...inputStyle, minWidth: 240 }}
+          <select
+            id="user-select"
+            style={{ ...inputStyle, minWidth: 240, cursor: 'pointer' }}
             value={targetUserId}
             onChange={(e) => setTargetUserId(e.target.value)}
-            disabled={!canInspectOtherUsers}
-            placeholder={canInspectOtherUsers ? "userId" : user.id}
-          />
+          >
+            {userList.length === 0 && (
+               <option value={targetUserId}>{targetUserId} (carregando...)</option>
+            )}
+            {userList.map(uid => (
+              <option key={uid} value={uid}>
+                {uid} {uid === user?.id ? '(você)' : ''}
+              </option>
+            ))}
+          </select>
+
           <label style={{ fontSize: 13, opacity: 0.75 }}>Status</label>
           <select
             style={inputStyle}
@@ -319,6 +344,7 @@ export default function MemoryAdminPage() {
               </option>
             ))}
           </select>
+
           <label style={{ fontSize: 13, opacity: 0.75 }}>Tipo</label>
           <select
             style={inputStyle}
@@ -332,6 +358,7 @@ export default function MemoryAdminPage() {
               </option>
             ))}
           </select>
+
           <label style={{ fontSize: 13, opacity: 0.75 }}>Limite</label>
           <input
             style={{ ...inputStyle, width: 90 }}
@@ -341,12 +368,6 @@ export default function MemoryAdminPage() {
             value={limit}
             onChange={(e) => setLimit(Math.max(1, Math.min(200, Number(e.target.value) || 50)))}
           />
-          <button style={buttonStyle} onClick={loadData} disabled={loading}>
-            {loading ? "Carregando..." : "Carregar"}
-          </button>
-          <button style={buttonStyle} onClick={compileProfile} disabled={loading}>
-            Recompilar perfil
-          </button>
         </div>
 
         {error ? (

@@ -162,7 +162,17 @@ export function useChat(enabled = true) {
     }
 
     coordinationLoadRef.current = (async () => {
-      const initResponse = await requestJson("/coordination/family/init", { method: "POST" });
+      // Retry até 5x com backoff para lidar com race condition de startup
+      let initResponse = null;
+      for (let attempt = 1; attempt <= 5; attempt++) {
+        try {
+          initResponse = await requestJson("/coordination/family/init", { method: "POST" });
+          break; // sucesso
+        } catch {
+          if (attempt === 5) throw new Error("Servidor de coordenação indisponível após 5 tentativas.");
+          await new Promise((r) => setTimeout(r, attempt * 1000)); // 1s, 2s, 3s, 4s
+        }
+      }
       const team = initResponse?.team;
 
       if (!team?.id) {
@@ -376,7 +386,7 @@ export function useChat(enabled = true) {
   }, []);
 
   const sendMessage = useCallback(
-    async (content: string, attachments: Attachment[] = []) => {
+    async (content: string, attachments: Attachment[] = [], options?: { onFinish?: (finalText: string) => void }) => {
       if (!enabled) return;
       if (sendLockRef.current) return;
 
@@ -500,8 +510,10 @@ export function useChat(enabled = true) {
 
               const attachmentText = message.attachments
                 .map((attachment) => {
-                  const nameLine = `Arquivo anexado: ${attachment.name}`;
-                  const contentLine = attachment.content ? `\n${attachment.content}` : "";
+                  const isImage = (attachment.content || "").startsWith("data:image/");
+                  const nameLine = `Arquivo anexado: ${attachment.name}${isImage ? " (Imagem)" : ""}`;
+                  // Não injeta o base64 da imagem no prompt de texto
+                  const contentLine = (attachment.content && !isImage) ? `\n${attachment.content}` : "";
                   return `${nameLine}${contentLine}`;
                 })
                 .join("\n\n");
@@ -577,6 +589,7 @@ export function useChat(enabled = true) {
             }
 
             if (eventName === "done") {
+              const finalOutputText = payload.output_text || fullContent;
               setActiveChat((prev) => {
                 if (!prev) return null;
                 const msgs = [...prev.messages];
@@ -584,7 +597,7 @@ export function useChat(enabled = true) {
                 if (last?.role === "agent") {
                   last.agentId = last.agentId || selectedAgent.id;
                   last.helperAgentId = last.helperAgentId || helperAgent?.id;
-                  last.content = payload.output_text || fullContent;
+                  last.content = finalOutputText;
                   last.streaming = false;
                   if (typeof payload.messageId === "string" && payload.messageId.trim()) {
                     last.id = payload.messageId.trim();
@@ -595,6 +608,10 @@ export function useChat(enabled = true) {
                 }
                 return { ...prev, messages: msgs };
               });
+              
+              if (options?.onFinish) {
+                 options.onFinish(finalOutputText);
+              }
             }
           }
 
@@ -640,6 +657,9 @@ export function useChat(enabled = true) {
           }
           return { ...prev, messages: msgs };
         });
+        if (options?.onFinish) {
+           options.onFinish(""); // Notifica que terminou, mas com erro/vazio
+        }
       } finally {
         abortControllerRef.current = null;
         setIsThinking(false);
@@ -660,5 +680,6 @@ export function useChat(enabled = true) {
     deleteChat,
     renameChat,
     selectChat,
+    loadConversations,
   };
 }

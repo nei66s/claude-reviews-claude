@@ -1,201 +1,247 @@
 "use client";
 
-import Image from "next/image";
-import { Heart, MessageCircle, TrendingUp, AlertCircle } from "lucide-react";
+import React from "react";
 import styles from "./DoutorKittyDashboard.module.css";
-import type { KittyInterpretation } from "@/lib/server/doutora-kitty";
+
+interface KittyInterpretation {
+  userId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  history: any[];
+  profile: {
+    tonalPreference: string;
+    depthPreference: string;
+    structurePreference: string;
+    pacePreference: string;
+    exampleType: string;
+    responseLength: string;
+    confidenceScore: number;
+    totalFeedback: number;
+    likeCount: number;
+    dislikeCount: number;
+  } | null;
+  analysis: {
+    patterns: string[];
+    tonal: string;
+    depth: string;
+    structure: string;
+    pace: string;
+    examples: string;
+    length: string;
+    suggestions: string[];
+    memories: {
+      keyFacts: string[];
+      summary: string;
+      preferences: string[];
+    };
+  };
+}
 
 interface DoutorKittyDashboardProps {
   interpretation: KittyInterpretation | null;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
-export default function DoutorKittyDashboard({
+const translate = (val: string) => {
+  const map: Record<string, string> = {
+    formal: "Formal",
+    casual: "Casual",
+    balanced: "Equilibrado",
+    simplified: "Simplificado",
+    technical: "Técnico",
+    narrative: "Narrativo",
+    list: "Em listas",
+    mixed: "Misto",
+    fast: "Rápido",
+    detailed: "Detalhado",
+    brief: "Breve",
+    comprehensive: "Abrangente",
+    code: "Focado em Código",
+    conceptual: "Conceitual",
+  };
+  return map[val] || val;
+};
+
+const DoutorKittyDashboard: React.FC<DoutorKittyDashboardProps> = ({
   interpretation,
-  isLoading = false,
-}: DoutorKittyDashboardProps) {
+  isLoading,
+}) => {
   if (isLoading) {
     return (
       <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <p>Doutora Kitty está analisando seu perfil... 🧐</p>
+        <div className={styles.spinner}></div>
+        <p>Iniciando análise psicométrica...</p>
       </div>
     );
   }
 
-  if (!interpretation) {
+  if (!interpretation || !interpretation.profile || !interpretation.analysis || interpretation.profile.totalFeedback === 0) {
     return (
-      <div className={styles.loading}>
-        <div style={{ fontSize: "48px", marginBottom: "16px" }}>🩺</div>
-        <p>Doutora Kitty ainda não tem dados suficientes...</p>
-        <p style={{ fontSize: "13px", color: "rgba(153, 153, 153, 0.7)", marginTop: "8px" }}>
-          Dá alguns feedbacks em minhas respostas pra eu entender você melhor! 💚
-        </p>
+      <div className={styles.dashboard}>
+        <section className={styles.hero}>
+          <div className={styles.avatarCard}>
+            <div className={styles.avatarWrapper}>
+              <img 
+                src="/kitty.jpg" 
+                alt="Doutora Kitty" 
+                className={styles.avatarImg}
+              />
+            </div>
+            <div className={styles.statLabel}>Aguardando Dados</div>
+            <p className={styles.tagline}>Analista Comportamental</p>
+          </div>
+
+          <div className={styles.heroContent}>
+            <h1>Doutora Kitty 🩺</h1>
+            <p className={styles.tagline}>Sua analista de personalidade digital ainda está aprendendo sobre você.</p>
+            <p className={styles.summary}>
+              Continue conversando com o CHOCKS e avalie as respostas dele clicando em &quot;CUKI&quot; ou &quot;Não curti&quot;. 
+              Em breve, eu terei dados suficientes para criar o seu Perfil Psicométrico Profissional aqui!
+            </p>
+          </div>
+        </section>
       </div>
     );
   }
 
-  const {
-    profile,
-    summary,
-    strengths,
-    suggestions,
-    preferenceInsights,
-    feedbackStats,
-  } = interpretation;
-
-  const confidencePercentage = Math.round(profile.confidenceScore * 100);
+  const { profile, analysis } = interpretation;
+  const successRate = profile.totalFeedback > 0 
+    ? Math.round((profile.likeCount / profile.totalFeedback) * 100) 
+    : 0;
 
   return (
     <div className={styles.dashboard}>
-      {/* Header com Doutora Kitty */}
-      <div className={styles.header}>
-        <div className={styles.characterSection}>
-          <div className={styles.characterAvatar}>
-            <Image
-              src="/kitty-avatar.jpg"
-              alt="Foto da Doutora Kitty"
-              width={88}
-              height={88}
-              className={styles.characterPhoto}
-              priority
+      {/* Hero Section */}
+      <section className={styles.hero}>
+        <div className={styles.avatarCard}>
+          <div className={styles.avatarWrapper}>
+            <img 
+              src="/kitty.jpg" 
+              alt="Doutora Kitty" 
+              className={styles.avatarImg}
             />
           </div>
-          <div className={styles.characterInfo}>
-            <h1>Doutora Kitty 🩺</h1>
-            <p className={styles.subtitle}>Analista de Personalidade Digital</p>
-          </div>
-        </div>
-        <div className={styles.summaryBox}>
-          <p>{summary}</p>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon + " " + styles.like}>
-            <Heart size={28} fill="currentColor" />
-          </div>
-          <div className={styles.statContent}>
-            <div className={styles.statValue}>{Math.max(feedbackStats.totalLikes || 0, 0)}</div>
-            <div className={styles.statLabel}>Cuki 💚</div>
-          </div>
+          <div className={styles.statLabel}>Status Ativo</div>
+          <p className={styles.tagline}>Analista Comportamental Senior</p>
         </div>
 
-        <div className={styles.statCard}>
-          <div className={styles.statIcon + " " + styles.dislike}>
-            <MessageCircle size={28} fill="currentColor" />
-          </div>
-          <div className={styles.statContent}>
-            <div className={styles.statValue}>{Math.max(feedbackStats.totalDislikes || feedbackStats.totalFeedback - feedbackStats.totalLikes || 0, 0)}</div>
-            <div className={styles.statLabel}>Poderia Melhorar 🤔</div>
-          </div>
-        </div>
-
-        <div className={styles.statCard}>
-          <div className={styles.statIcon + " " + styles.percentage}>
-            <TrendingUp size={28} />
-          </div>
-          <div className={styles.statContent}>
-            <div className={styles.statValue}>{Math.round(feedbackStats.likePercentage || 0)}%</div>
-            <div className={styles.statLabel}>Satisfação</div>
+        <div className={styles.heroContent}>
+          <h1>Doutora Kitty</h1>
+          <p className={styles.tagline}>Perfil Digital Personalizado</p>
+          <div className={styles.summary}>
+            <p>
+              &quot;Com base em {profile.totalFeedback} interações, identifiquei que você prefere um fluxo de trabalho 
+              <strong> {translate(analysis.pace)}</strong> e comunicações com nível <strong>{translate(analysis.tonal)}</strong>. 
+              Minha análise indica uma compatibilidade de {successRate}% com o modelo atual.&quot;
+            </p>
           </div>
         </div>
+      </section>
 
-        <div className={styles.statCard}>
-          <div className={styles.statIcon + " " + styles.confidence}>
-            <AlertCircle size={24} />
-          </div>
-          <div className={styles.statContent}>
-            <div className={styles.statValue}>{confidencePercentage}%</div>
-            <div className={styles.statLabel}>Confiança de Análise</div>
+      {/* Primary Metrics */}
+      <section className={styles.statsGrid}>
+        <div className={styles.statCard} style={{ animationDelay: "100ms" }}>
+          <div className={styles.statLabel}>Interações Positivas</div>
+          <div className={styles.statValue}>
+            {profile.likeCount} <span>CUKI</span>
           </div>
         </div>
-      </div>
+        <div className={styles.statCard} style={{ animationDelay: "200ms" }}>
+          <div className={styles.statLabel}>Taxa de Satisfação</div>
+          <div className={styles.statValue}>
+            {successRate}<span>%</span>
+          </div>
+        </div>
+        <div className={styles.statCard} style={{ animationDelay: "300ms" }}>
+          <div className={styles.statLabel}>Confiança da Análise</div>
+          <div className={styles.statValue}>
+            {Math.round(profile.confidenceScore * 100)}<span>%</span>
+          </div>
+        </div>
+        <div className={styles.statCard} style={{ animationDelay: "400ms" }}>
+          <div className={styles.statLabel}>Volume de Feedback</div>
+          <div className={styles.statValue}>
+            {profile.totalFeedback} <span>Total</span>
+          </div>
+        </div>
+      </section>
 
-      {/* Psychological Profile */}
-      <div className={styles.sectionBox}>
-        <h2 className={styles.sectionTitle}>🧠 Seu Perfil Psicológico</h2>
-        <div className={styles.preferencesGrid}>
-          {Object.entries(preferenceInsights).map(([key, insight]) => (
-            <div key={key} className={styles.preferenceCard}>
-              <p>{insight as string}</p>
+      {/* Behavioral Matrix */}
+      <section>
+        <h2 className={styles.recTitle}>Matriz de Afinidade</h2>
+        <div className={styles.matrixSection}>
+          <div className={styles.matrixCard} style={{ animationDelay: "500ms" }}>
+            <div className={styles.matrixHeader}>
+              <span className={styles.matrixTitle}>TOM DA VOZ</span>
+              <span className={styles.matrixValue}>{translate(analysis.tonal)}</span>
+            </div>
+            <p className={styles.matrixDescription}>Adaptando a linguagem para melhor ressonância cognitiva.</p>
+          </div>
+          <div className={styles.matrixCard} style={{ animationDelay: "600ms" }}>
+            <div className={styles.matrixHeader}>
+              <span className={styles.matrixTitle}>PROFUNDIDADE</span>
+              <span className={styles.matrixValue}>{translate(analysis.depth)}</span>
+            </div>
+            <p className={styles.matrixDescription}>Equilibrando detalhes técnicos com clareza objetiva.</p>
+          </div>
+          <div className={styles.matrixCard} style={{ animationDelay: "700ms" }}>
+            <div className={styles.matrixHeader}>
+              <span className={styles.matrixTitle}>ESTRUTURA</span>
+              <span className={styles.matrixValue}>{translate(analysis.structure)}</span>
+            </div>
+            <p className={styles.matrixDescription}>Organização de dados preferida pelo seu processamento.</p>
+          </div>
+          <div className={styles.matrixCard} style={{ animationDelay: "800ms" }}>
+            <div className={styles.matrixHeader}>
+              <span className={styles.matrixTitle}>EXEMPLOS</span>
+              <span className={styles.matrixValue}>{translate(analysis.examples)}</span>
+            </div>
+            <p className={styles.matrixDescription}>Tipologia de exemplos que geram maior entendimento.</p>
+          </div>
+          
+          <div className={styles.matrixCard} style={{ animationDelay: "900ms", gridColumn: "span 2" }}>
+            <div className={styles.matrixHeader}>
+              <span className={styles.matrixTitle}>MEMÓRIAS E FATOS</span>
+              <span className={styles.matrixValue}>{analysis.memories?.keyFacts?.length || 0} Identificados</span>
+            </div>
+            <div className={styles.matrixDescription} style={{ marginTop: "8px" }}>
+              {analysis.memories?.keyFacts && analysis.memories.keyFacts.length > 0 ? (
+                <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "13px", color: "var(--kitty-text-dim)" }}>
+                  {analysis.memories.keyFacts.slice(0, 3).map((fact, i) => (
+                    <li key={i} style={{ marginBottom: "4px" }}>{fact}</li>
+                  ))}
+                  {analysis.memories.keyFacts.length > 3 && <li>... e mais {analysis.memories.keyFacts.length - 3} fatos</li>}
+                </ul>
+              ) : (
+                "Ainda estou observando seus padrões para consolidar memórias de longo prazo."
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Insights and Suggestions */}
+      <section className={styles.recommendations}>
+        <h2 className={styles.recTitle}>Ajustes Recomendados para o CHOCKS</h2>
+        <div className={styles.recGrid}>
+          {analysis.suggestions.map((suggestion, index) => (
+            <div key={index} className={styles.recItem}>
+              {suggestion}
             </div>
           ))}
+          {analysis.suggestions.length === 0 && (
+            <div className={styles.recItem}>
+              O perfil ainda está em fase de maturação. Continue interagindo para gerar novos insights.
+            </div>
+          )}
         </div>
-      </div>
+      </section>
 
-      {/* Tendência e Insights */}
-      <div className={styles.insightsRow}>
-        <div className={styles.insightBox}>
-          <h3>📈 Tendência Recente</h3>
-          <div
-            className={`${styles.trendBadge} ${styles[feedbackStats.recentTrend]}`}
-          >
-            {feedbackStats.recentTrend === "improving"
-              ? "🚀 Melhorando!"
-              : feedbackStats.recentTrend === "stable"
-                ? "⚖️ Estável"
-                : "📉 Precisa melhorar"}
-          </div>
-        </div>
-
-        <div className={styles.insightBox}>
-          <h3>🎯 Consistência</h3>
-          <div className={styles.consistencyBar}>
-            <div
-              className={styles.consistencyFill}
-              style={{
-                width: `${Math.round(feedbackStats.consistencyScore * 100)}%`,
-              }}
-            />
-          </div>
-          <p className={styles.consistencyLabel}>
-            {feedbackStats.consistencyScore > 0.7
-              ? "Muito consistente"
-              : feedbackStats.consistencyScore > 0.4
-                ? "Moderadamente consistente"
-                : "Variado"}
-          </p>
-        </div>
-      </div>
-
-      {/* Strengths */}
-      {strengths && strengths.length > 0 && (
-        <div className={styles.sectionBox}>
-          <h2 className={styles.sectionTitle}>⭐ Seus Pontos Fortes</h2>
-          <ul className={styles.list}>
-            {strengths.map((strength: string, idx: number) => (
-              <li key={idx}>{strength}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Suggestions */}
-      {suggestions && suggestions.length > 0 && (
-        <div className={styles.sectionBox + " " + styles.suggestionBox}>
-          <h2 className={styles.sectionTitle}>💡 Dicas da Doutora Kitty</h2>
-          <ul className={styles.suggestionList}>
-            {suggestions.map((suggestion: string, idx: number) => (
-              <li key={idx} className={styles.suggestionItem}>
-                {suggestion}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Footer Message */}
-      <div className={styles.footer}>
-        <p>
-          Feito com 💚 pela Doutora Kitty - Sua psicóloga digital favorita!
-        </p>
-        <p className={styles.footerSub}>
-          Quanto mais você feedback, mais eu entendo você! 🧬
-        </p>
-      </div>
+      <footer className={styles.footer}>
+        <p>&copy; 2026 Pimpotasma Intelligence Systems</p>
+        <p className={styles.footerSub}>Powered by Kitty Psychometrics Engine v2.1</p>
+      </footer>
     </div>
   );
-}
+};
+
+export default DoutorKittyDashboard;

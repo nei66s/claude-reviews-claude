@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Volume2 } from "lucide-react";
 import styles from "./MessageFeedback.module.css";
 
 export type FeedbackType = "like" | "dislike" | null;
@@ -10,6 +10,7 @@ interface MessageFeedbackProps {
   messageId: string;
   conversationId: string;
   onSubmitFeedback?: (feedback: FeedbackType) => Promise<void>;
+  onPlayAudio?: () => void;
   isLoading?: boolean;
   initialFeedback?: FeedbackType;
 }
@@ -18,6 +19,7 @@ export default function MessageFeedback({
   messageId,
   conversationId,
   onSubmitFeedback,
+  onPlayAudio,
   isLoading = false,
   initialFeedback = null,
 }: MessageFeedbackProps) {
@@ -53,6 +55,18 @@ export default function MessageFeedback({
 
   return (
     <div className={styles.feedbackContainer}>
+      {onPlayAudio && (
+        <button
+          className={`${styles.feedbackButton}`}
+          onClick={onPlayAudio}
+          disabled={isLoading || isSubmitting}
+          title="Ouvir resposta em áudio"
+          aria-label="Ouvir áudio"
+        >
+          <Volume2 size={20} />
+        </button>
+      )}
+
       <button
         className={`${styles.feedbackButton} ${styles.like} ${
           currentFeedback === "like" ? styles.active : ""

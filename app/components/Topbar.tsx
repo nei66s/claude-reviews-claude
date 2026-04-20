@@ -107,9 +107,9 @@ export default function Topbar({
           </div>
           <div className="topbar-user-name">{userName}</div>
           {isDesktop && (
-            <div className="desktop-badge" title="Rodando nativamente no Desktop">
+            <div className={`desktop-badge ${typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'is-dev' : ''}`}>
               <span className="desktop-badge-dot"></span>
-              Desktop
+              DESKTOP {typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '(DEV)' : ''}
             </div>
           )}
         </button>

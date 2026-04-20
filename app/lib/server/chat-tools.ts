@@ -189,16 +189,16 @@ async function generatePdfReport(absPath: string, title: string, content: string
         for (const line of lines) {
           const trimmed = line.trim();
           if (!trimmed) {
-            doc.moveDown(0.3);
+            doc.moveDown(0.5);
             continue;
           }
           if (/^\d+\)/.test(trimmed) || (trimmed.endsWith(":") && trimmed.length < 80)) {
-            doc.moveDown(0.2).fontSize(11).text(trimmed, { underline: true });
+            doc.moveDown(0.2).fontSize(11).text(trimmed, { underline: true, lineGap: 2 });
             doc.fontSize(10);
           } else if (trimmed.startsWith("-")) {
-            doc.fontSize(10).text(`  ${trimmed}`);
+            doc.fontSize(10).text(`  ${trimmed}`, { lineGap: 2 });
           } else {
-            doc.fontSize(10).text(trimmed);
+            doc.fontSize(10).text(trimmed, { lineGap: 2 });
           }
         }
 
@@ -239,7 +239,7 @@ async function generatePdfReport(absPath: string, title: string, content: string
         ...wrappedLines,
       ];
 
-      let contentStream = "BT\n/F1 10 Tf\n50 750 Td\n";
+      let contentStream = "BT\n/F1 10 Tf\n12 TL\n50 750 Td\n";
       
       for (const line of textLines) {
         const escapedLine = line.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
@@ -1397,7 +1397,6 @@ export async function runChatTool(
   if (toolName === "web_search") {
     return searchWeb(user, {
       query: String(input.query || ""),
-      max_results: typeof input.max_results === "number" ? input.max_results : undefined,
     });
   }
 

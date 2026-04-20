@@ -11,7 +11,6 @@ import FilesView from "./FilesView";
 import WorkflowView from "./WorkflowView";
 import MonitorView from "./MonitorView";
 import AuditView from "./AuditView";
-import PluginsView from "./PluginsView";
 import SettingsModal from "./SettingsModal";
 import ChocksDanceVideo from "./ChocksDanceVideo";
 import ArtifactPanel from "./ArtifactPanel";
@@ -19,18 +18,24 @@ import CommandPalette from "./CommandPalette";
 import WelcomeScreen from "./WelcomeScreen";
 import ToastViewport from "./ToastViewport";
 import DoutorKittyDashboard from "./DoutorKittyDashboard";
+import { CoordinationView } from "./CoordinationView";
+import SkillsView from "./SkillsView";
 import MemoryAdminView from "./MemoryAdminView";
 import MemoryGraphView from "./MemoryGraphView";
-import { CoordinationView } from "./CoordinationView";
 import EasterEggManager from "./EasterEggManager";
 import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
 import type { Artifact } from "../lib/artifactDetection";
 import { detectArtifacts } from "../lib/artifactDetection";
-import { Attachment, Message } from "../lib/api";
+import { Attachment, Message, requestJson } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useChat } from "../hooks/useChat";
 import { CommandPaletteItem, useCommandPalette } from "../hooks/useCommandPalette";
 import { getWorkspaceFromPathname, getWorkspaceRoute, WorkspaceId } from "../lib/workspaces";
+import { useAudioRecord } from "../hooks/useAudioRecord";
+import { useAudioPlayer } from "../hooks/useAudioPlayer";
+import { useRealtimeSession } from "../hooks/useRealtimeSession";
+import { isAudioInputEnabled, isAudioReplyTtsEnabled, isRealtimeVoiceEnabled, isRealtimeFallbackEnabled } from "../lib/audio-flags";
+import "../styles/realtime-v2.css";
 
 const MAX_ATTACHMENT_BYTES = 300 * 1024;
 const ALLOWED_ATTACHMENT_EXTENSIONS = [
@@ -50,6 +55,10 @@ const ALLOWED_ATTACHMENT_EXTENSIONS = [
   ".sql",
   ".sh",
   ".ps1",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
 ];
 
 function AttachmentList({
@@ -63,14 +72,27 @@ function AttachmentList({
 
   return (
     <div className="attachment-list">
-      {attachments.map((attachment, index) => (
-        <div key={`${attachment.name}-${index}`} className="attachment-chip">
-          <span>{attachment.name}</span>
-          <button className="attachment-remove" type="button" onClick={() => onRemove(index)}>
-            x
-          </button>
-        </div>
-      ))}
+      {attachments.map((attachment, index) => {
+        const isImage = (attachment.content || "").startsWith("data:image/");
+        return (
+          <div key={`${attachment.name}-${index}`} className={`attachment-chip ${isImage ? "has-preview" : ""}`}>
+            {isImage && (
+              <div className="attachment-preview">
+                <img src={attachment.content} alt={attachment.name} />
+              </div>
+            )}
+            <div className="attachment-details">
+              <span className="attachment-name">{attachment.name}</span>
+            </div>
+            <button className="attachment-remove" type="button" onClick={() => onRemove(index)}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -80,13 +102,15 @@ export default function AppShell({
 }: {
   initialWorkspace?: WorkspaceId;
 }) {
-  const { user, isLoading } = useAuth();
+  const { user, token, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const activeWorkspace = getWorkspaceFromPathname(pathname) || initialWorkspace;
   const chatEnabled = !isLoading && !!user;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -100,13 +124,8 @@ export default function AppShell({
       const fetchInterpretation = async () => {
         try {
           setKittyIsLoading(true);
-          const response = await fetch("/api/doutora-kitty/interpretation", {
-            credentials: "include",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setKittyInterpretation(data);
-          }
+          const data = await requestJson("/doutora-kitty/interpretation");
+          setKittyInterpretation(data);
         } catch (error) {
           console.error("Error fetching Doutora Kitty interpretation:", error);
         } finally {
@@ -148,7 +167,93 @@ export default function AppShell({
     deleteChat,
     renameChat,
     selectChat,
+    loadConversations,
   } = useChat(chatEnabled);
+
+  const { playTTS, stopTTS, isPlaying: isPlayingTTS } = useAudioPlayer();
+
+  const { isRecording, isProcessing: isProcessingAudio, startRecording, stopRecording, cancelRecording } = useAudioRecord({
+    chatId: activeChat?.id,
+    onTranscription: (text) => {
+      stopTTS(); // Barge-in behavior: Mute previous TTS when new voice message starts being processed or sent
+      sendMessage(text, attachments, {
+        onFinish: (finalText) => {
+          if (finalText && isAudioReplyTtsEnabled()) {
+             playTTS(finalText, activeChat?.id);
+          }
+        }
+      });
+      resetComposer();
+    },
+    onError: (err) => {
+      setAttachmentFeedback(err);
+      setAttachmentError(true);
+    }
+  });
+
+  // ── V2 Realtime — modo de voz de baixa latência (opcional) ─────────────────
+  // false = V1 (record → transcription → chat → TTS)    [default, preservado]
+  // true  = V2 (WebRTC Realtime, diretamente via OpenAI)
+  const [realtimeMode, setRealtimeMode] = useState(false);
+  const [realtimeLiveTranscript, setRealtimeLiveTranscript] = useState("");
+  const [realtimeLiveAssistant, setRealtimeLiveAssistant] = useState("");
+  const [realtimeToast, setRealtimeToast] = useState<string | null>(null);
+
+  const realtimeSession = useRealtimeSession({
+    chatId: activeChat?.id || "",
+    agentId: "chocks",
+    token,
+    onPartialTranscript: (text) => setRealtimeLiveTranscript(text),
+    onPartialAssistantText: (text) => setRealtimeLiveAssistant(text),
+    onTurnPersisted: ({ userTranscript, assistantText }) => {
+      // Limpa legendas ao vivo após persistência oficial
+      setRealtimeLiveTranscript("");
+      setRealtimeLiveAssistant("");
+      // Recarregar conversa para mostrar novas mensagens
+      loadConversations();
+    },
+    onFallback: (reason) => {
+      if (isRealtimeFallbackEnabled()) {
+        setRealtimeMode(false);
+        setRealtimeToast(`Voz avançada indisponível: ${reason}. Usando modo padrão.`);
+        setTimeout(() => setRealtimeToast(null), 5000);
+      }
+    },
+    onError: (err) => {
+      setRealtimeToast(`Erro na sessão de voz: ${err}`);
+      setTimeout(() => setRealtimeToast(null), 4000);
+    },
+  });
+
+  const handleToggleRealtimeMode = () => {
+    if (!isRealtimeVoiceEnabled()) return;
+    if (realtimeMode) {
+      realtimeSession.disconnect();
+      setRealtimeMode(false);
+      setRealtimeLiveTranscript("");
+      setRealtimeLiveAssistant("");
+    } else {
+      stopTTS(); // mutex: desativar V1 TTS ao ativar V2
+      setRealtimeMode(true);
+      void realtimeSession.connect();
+    }
+  };
+
+  // Mutex de voz: V1 desabilitada na UI quando V2 está ativo
+  const v1AudioDisabledByV2 = realtimeMode;
+
+  const handleStartRecording = () => {
+    stopTTS(); // Barge-in early: As soon as the user starts recording, stop agent voice
+    startRecording();
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [activeChat?.messages]);
 
   const commandPaletteItems = useMemo<CommandPaletteItem[]>(
     () => [
@@ -181,7 +286,9 @@ export default function AppShell({
       { id: "workspace:coordinator", label: "Ir para Fluxo de Trabalho", description: "Abre a visão de fluxos de trabalho.", category: "Navigation", icon: "W" },
       { id: "workspace:monitor", label: "Ir para Monitor", description: "Abre métricas e monitoramento.", category: "Navigation", icon: "M" },
       { id: "workspace:audit", label: "Ir para Auditoria", description: "Abre logs e trilha de auditoria.", category: "Navigation", icon: "L" },
-      { id: "workspace:code", label: "Ir para Plugins", description: "Abre a área de plugins e código.", category: "Navigation", icon: "P" },
+      { id: "workspace:skills", label: "Manual de Habilidades", description: "Veja as habilidades nativas e ferramentas.", category: "Navigation", icon: "⚡" },
+      { id: "workspace:memory", label: "Ir para Memória", description: "Veja e gerencie memórias extraídas.", category: "Navigation", icon: "🧠" },
+      { id: "workspace:memory-graph", label: "Ir para Grafo de Memória", description: "Visão em grafo do conhecimento.", category: "Navigation", icon: "🕸️" },
     ],
     [allCommands],
   );
@@ -299,6 +406,37 @@ export default function AppShell({
       handleSend();
     }
   };
+ 
+  const handlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = event.clipboardData.items;
+    let imageFound = false;
+
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          imageFound = true;
+          if (file.size > MAX_ATTACHMENT_BYTES) {
+            setAttachmentFeedback(`Imagem muito grande. Maximo: ${Math.round(MAX_ATTACHMENT_BYTES / 1024)} KB.`);
+            setAttachmentError(true);
+            continue;
+          }
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = e.target?.result as string;
+            setAttachments((prev) => [...prev, { name: `pasted-image-${Date.now()}.png`, content, mimeType: file.type }]);
+            setAttachmentFeedback(`Imagem colada.`);
+            setAttachmentError(false);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    }
+
+    if (imageFound) {
+      // Prevents the base64 or other garbage from being pasted as text if we've handled it as an image
+    }
+  };
 
   const handleFileSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -320,9 +458,21 @@ export default function AppShell({
     }
 
     try {
-      const content = await file.text();
-      setAttachments((prev) => [...prev, { name: file.name, content }]);
-      setAttachmentFeedback(`${file.name} anexado.`);
+      const isImage = [".png", ".jpg", ".jpeg", ".webp"].includes(extension);
+
+      if (isImage) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          setAttachments((prev) => [...prev, { name: file.name, content, mimeType: file.type }]);
+          setAttachmentFeedback(`${file.name} anexada.`);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const content = await file.text();
+        setAttachments((prev) => [...prev, { name: file.name, content, mimeType: file.type }]);
+        setAttachmentFeedback(`${file.name} anexado.`);
+      }
       setAttachmentError(false);
     } catch (error) {
       setAttachmentFeedback(error instanceof Error ? error.message : "Falha ao ler arquivo.");
@@ -435,7 +585,7 @@ export default function AppShell({
         />
 
         <div className="content">
-          {activeWorkspace === "files" && <FilesView />}
+          {(activeWorkspace === "files" || activeWorkspace === "code") && <FilesView />}
           {activeWorkspace === "coordinator" && (
             <WorkflowView
               chatId={activeChat?.id}
@@ -446,12 +596,12 @@ export default function AppShell({
           {activeWorkspace === "coordination" && <CoordinationView />}
           {activeWorkspace === "monitor" && <MonitorView />}
           {activeWorkspace === "audit" && <AuditView />}
-          {activeWorkspace === "code" && <PluginsView />}
-          {activeWorkspace === "memory-admin" && <MemoryAdminView />}
-          {activeWorkspace === "memory-graph" && <MemoryGraphView />}
           {activeWorkspace === "doutora-kitty" && (
             <DoutorKittyDashboard interpretation={kittyInterpretation} isLoading={kittyIsLoading} />
           )}
+          {activeWorkspace === "skills" && <SkillsView />}
+          {activeWorkspace === "memory" && <MemoryAdminView />}
+          {activeWorkspace === "memory-graph" && <MemoryGraphView />}
 
           {activeWorkspace === "conversations" &&
             (!hasMessages ? (
@@ -469,6 +619,7 @@ export default function AppShell({
                 attachmentFeedback={attachmentFeedback}
                 attachmentError={attachmentError}
                 textareaRef={textareaRef}
+                onPaste={handlePaste}
                 commandMenu={
                   <CommandAutocomplete
                     isOpen={showCommandMenu}
@@ -477,6 +628,13 @@ export default function AppShell({
                     onSelectCommand={handleCommandSelect}
                   />
                 }
+                isRecording={isRecording}
+                isProcessingAudio={isProcessingAudio}
+                onStartRecord={isAudioInputEnabled() ? handleStartRecording : undefined}
+                onStopRecord={stopRecording}
+                onCancelRecord={cancelRecording}
+                isPlayingTTS={isPlayingTTS}
+                onStopTTS={stopTTS}
               />
             ) : (
               <div className={`view chat-view chat-layout ${selectedArtifacts.length > 0 ? "with-artifact" : ""}`}>
@@ -488,12 +646,13 @@ export default function AppShell({
                         message={msg}
                         conversationId={activeChat.id}
                         onOpenArtifact={(artifact) => {
-                          // When artifact is clicked, show all artifacts from that message
                           const allArtifacts = detectArtifacts(msg.content, msg.trace);
                           setSelectedArtifacts(allArtifacts.length > 0 ? allArtifacts : [artifact]);
                         }}
+                        onPlayAudio={msg.role === "agent" && isAudioReplyTtsEnabled() ? () => playTTS(msg.content, activeChat.id) : undefined}
                       />
                     ))}
+                    <div ref={messagesEndRef} />
                   </div>
                 </div>
 
@@ -508,12 +667,28 @@ export default function AppShell({
                       streaming={Boolean(latestAgentMessageWithTrace?.streaming || isThinking)}
                     />
                     <div className="chat-composer">
+                      {/* Legendas ao vivo V2 Realtime */}
+                      {realtimeMode && (realtimeLiveTranscript || realtimeLiveAssistant) && (
+                        <div className="realtime-live-captions">
+                          {realtimeLiveTranscript && (
+                            <div className="realtime-caption-bubble user-caption">
+                              {realtimeLiveTranscript}
+                            </div>
+                          )}
+                          {realtimeLiveAssistant && (
+                            <div className="realtime-caption-bubble assistant-caption">
+                              {realtimeLiveAssistant}
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <textarea
                         ref={textareaRef}
                         value={prompt}
                         onChange={handlePromptChange}
                         placeholder="Responder..."
                         onKeyDown={handleKeyDown}
+                        onPaste={handlePaste}
                       />
                       <CommandAutocomplete
                         isOpen={showCommandMenu}
@@ -530,7 +705,109 @@ export default function AppShell({
                           <button className="toolbar-plus" type="button" onClick={openFilePicker}>
                             +
                           </button>
-                          <div className="status">{isThinking ? "Executando etapas..." : ""}</div>
+                          
+                          {isAudioInputEnabled() && !v1AudioDisabledByV2 && (
+                            <div className="audio-controls-wrap" style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "8px" }}>
+                              {isRecording ? (
+                                <>
+                                  <button className="toolbar-plus" type="button" onClick={stopRecording} style={{ color: "red" }} title="Parar gravação">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                                  </button>
+                                  <button className="toolbar-plus" type="button" onClick={cancelRecording} title="Cancelar gravação">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                  </button>
+                                  <span className="status">Gravando...</span>
+                                </>
+                              ) : (
+                                <button className="toolbar-plus" type="button" onClick={handleStartRecording} title="Gravar áudio" disabled={isProcessingAudio}>
+                                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Botão V2 Realtime — aparece somente se a flag estiver ativa */}
+                          {isRealtimeVoiceEnabled() && (
+                            <div style={{ display: "flex", gap: "6px", alignItems: "center", marginLeft: "8px" }}>
+                              <button
+                                id="btn-realtime-voice-toggle"
+                                className="toolbar-plus"
+                                type="button"
+                                onClick={handleToggleRealtimeMode}
+                                title={realtimeMode ? "Desativar voz em tempo real" : "Ativar voz em tempo real (V2)"}
+                                style={{
+                                  color: realtimeMode ? "#10b981" : undefined,
+                                  outline: realtimeMode ? "1px solid #10b981" : undefined,
+                                  borderRadius: "4px",
+                                }}
+                              >
+                                {/* Onda de rádio = voz ao vivo */}
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M2 10c0-4.4 3.6-8 8-8" />
+                                  <path d="M22 10c0-4.4-3.6-8-8-8" />
+                                  <path d="M5 13c0-2.8 2.2-5 5-5h4c2.8 0 5 2.2 5 5" />
+                                  <circle cx="12" cy="17" r="2" />
+                                  <line x1="12" y1="19" x2="12" y2="22" />
+                                </svg>
+                              </button>
+                              {/* Indicador de estado V2 */}
+                              {realtimeMode && (
+                                <span className={`status-indicator ${realtimeSession.connectionState}`}>
+                                  {realtimeSession.connectionState === "listening" && (
+                                    <div className="realtime-visualizer">
+                                      <div className="realtime-bar realtime-bar-1" />
+                                      <div className="realtime-bar realtime-bar-2" />
+                                      <div className="realtime-bar realtime-bar-3" />
+                                    </div>
+                                  )}
+                                  {realtimeSession.connectionState === "connecting" && "Conectando..."}
+                                  {realtimeSession.connectionState === "connected" && "Pronto"}
+                                  {realtimeSession.connectionState === "listening" && "Ouvindo"}
+                                  {realtimeSession.connectionState === "speaking" && "Falando..."}
+                                  {realtimeSession.connectionState === "error" && "Erro"}
+                                  {realtimeSession.connectionState === "fallback" && "V1 Ativo"}
+                                </span>
+                              )}
+                              {/* Barge-in: interromper assistant */}
+                              {realtimeMode && realtimeSession.connectionState === "speaking" && (
+                                <button
+                                  className="toolbar-plus"
+                                  type="button"
+                                  onClick={realtimeSession.interrupt}
+                                  title="Interromper assistant"
+                                  style={{ color: "#f59e0b" }}
+                                >
+                                  ⏹
+                                </button>
+                              )}
+                              {/* Mute/unmute microfone */}
+                              {realtimeMode && realtimeSession.isActive && (
+                                <button
+                                  className="toolbar-plus"
+                                  type="button"
+                                  onClick={realtimeSession.toggleMute}
+                                  title={realtimeSession.isMuted ? "Desmutar" : "Mutar microfone"}
+                                  style={{ color: realtimeSession.isMuted ? "#ef4444" : undefined }}
+                                >
+                                  {realtimeSession.isMuted ? "🔇" : "🎤"}
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {isPlayingTTS && !v1AudioDisabledByV2 && (
+                            <button className="toolbar-plus" type="button" onClick={stopTTS} style={{ color: "#3b82f6", marginLeft: "8px" }} title="Parar áudio">
+                              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                            </button>
+                          )}
+
+                          {isProcessingAudio && !v1AudioDisabledByV2 && <div className="status">Transcrevendo áudio...</div>}
+                          {isThinking && !isProcessingAudio && !v1AudioDisabledByV2 && <div className="status">Executando etapas...</div>}
                         </div>
                         <div className="chat-toolbar-right">
 
@@ -564,6 +841,30 @@ export default function AppShell({
       <ToastViewport />
       <ChocksDanceVideo hasMessages={hasMessages} />
       <EasterEggManager />
+
+      {/* Toast de feedback V2 Realtime */}
+      {realtimeToast && (
+        <div
+          role="alert"
+          style={{
+            position: "fixed",
+            bottom: "80px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(30,30,40,0.95)",
+            color: "#e2e8f0",
+            padding: "10px 18px",
+            borderRadius: "8px",
+            fontSize: "13px",
+            zIndex: 9999,
+            boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
+            maxWidth: "420px",
+            textAlign: "center",
+          }}
+        >
+          {realtimeToast}
+        </div>
+      )}
     </div>
   );
 }

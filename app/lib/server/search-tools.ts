@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import OpenAI from "openai";
 
 import type { SessionUser } from "./auth";
 
@@ -18,46 +19,12 @@ type CachedEntry = {
 const cache = new Map<string, CachedEntry>();
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const DEFAULT_MAX_RESULTS = 5;
-const DEFAULT_DAILY_LIMIT = 25;
 
 function getRateLimitFile() {
   return path.join(process.cwd(), ".chocks-local", "web-search-rate-limit.json");
 }
 
-async function readRateLimitState() {
-  const filePath = getRateLimitFile();
-  try {
-    const raw = await fs.readFile(filePath, "utf8");
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? (parsed as Record<string, number>) : {};
-  } catch {
-    return {};
-  }
-}
 
-async function writeRateLimitState(state: Record<string, number>) {
-  const filePath = getRateLimitFile();
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, JSON.stringify(state, null, 2), "utf8");
-}
-
-function getDayBucket() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-async function enforceDailyLimit(user: SessionUser) {
-  const dailyLimit = Number(process.env.SEARCH_DAILY_LIMIT || DEFAULT_DAILY_LIMIT);
-  const state = await readRateLimitState();
-  const key = `${user.id}:${getDayBucket()}`;
-  const current = state[key] || 0;
-
-  if (current >= dailyLimit) {
-    throw new Error(`Limite diário de web search atingido (${dailyLimit}/dia).`);
-  }
-
-  state[key] = current + 1;
-  await writeRateLimitState(state);
-}
 
 function getCacheKey(query: string, maxResults: number) {
   return `${query.trim().toLowerCase()}::${maxResults}`;
@@ -81,74 +48,60 @@ function writeToCache(cacheKey: string, results: WebSearchResult[]) {
 }
 
 function isWebSearchEnabled() {
-  return process.env.ALLOW_WEB_FETCH === "true" && !!process.env.SEARCH_API_KEY;
+  return process.env.ALLOW_WEB_FETCH === "true" && !!process.env.OPENAI_API_KEY;
 }
 
-async function searchWithSerpApi(query: string, maxResults: number) {
-  const apiKey = process.env.SEARCH_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("SEARCH_API_KEY não configurada.");
-  }
 
-  const params = new URLSearchParams({
-    engine: "google",
-    q: query,
-    num: String(maxResults),
-    api_key: apiKey,
-    google_domain: process.env.SEARCH_GOOGLE_DOMAIN?.trim() || "google.com",
-    gl: process.env.SEARCH_REGION?.trim() || "br",
-    hl: process.env.SEARCH_LANGUAGE?.trim() || "pt-br",
-  });
+async function searchWithOpenAI(query: string): Promise<WebSearchResult[]> {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
 
-  const url = `https://serpapi.com/search.json?${params.toString()}`;
-  console.log(`[WEB_SEARCH] Buscando: "${query}" via SerpAPI...`);
-  
+  const client = new OpenAI({ apiKey });
+
   try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-      cache: "no-store",
+    // Usamos o modelo especializado de busca da OpenAI para obter resultados grounded
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-search-preview",
+      messages: [
+        {
+          role: "user",
+          content: `Pesquise sobre: ${query}. Retorne uma lista de resultados relevantes com título, URL e um pequeno resumo. Formate como uma lista de itens claros.`,
+        },
+      ],
+      // NOTA: Não passamos 'tools' aqui para evitar o erro de modelo de busca que não aceita ferramentas
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[WEB_SEARCH] SerpAPI erro ${response.status}:`, errorText);
-      throw new Error(`SerpAPI falhou com status ${response.status}: ${errorText.slice(0, 200)}`);
+    const content = response.choices[0]?.message?.content || "";
+    
+    // Tenta dividir o conteúdo em itens individuais para que a UI mostre a contagem correta
+    const items = content.split(/\n(?=\d+\.\s+\*\*)/);
+    
+    if (items.length <= 1) {
+      return [
+        {
+          title: `Busca OpenAI: ${query}`,
+          url: "https://openai.com/search",
+          snippet: content,
+        },
+      ];
     }
 
-    const payload = (await response.json()) as {
-      organic_results?: Array<Record<string, unknown>>;
-      error?: string;
-    };
+    return items.map((item, index) => {
+      // Extrai o título (entre asteriscos)
+      const titleMatch = item.match(/\d+\.\s+\*\*(.*?)\*\*/);
+      const title = titleMatch ? titleMatch[1] : `Resultado ${index + 1}`;
+      
+      // Tenta achar uma URL no bloco
+      const urlMatch = item.match(/\]\((https?:\/\/.*?)\)/) || item.match(/(https?:\/\/[^\s\)]+)/);
+      const url = urlMatch ? urlMatch[1] : "https://openai.com/search";
 
-    if (payload.error) {
-      console.error(`[WEB_SEARCH] SerpAPI retornou erro:`, payload.error);
-      throw new Error(`SerpAPI error: ${payload.error}`);
-    }
+      // O snippet é o resto do texto sem o título
+      const snippet = item.replace(/\d+\.\s+\*\*(.*?)\*\*/, "").trim();
 
-    console.log(`[WEB_SEARCH] ✓ Sucesso! ${payload.organic_results?.length || 0} resultados`);
-
-    return (payload.organic_results || [])
-      .slice(0, maxResults)
-      .map((item) => {
-        const highlighted = Array.isArray(item.snippet_highlighted_words) ? item.snippet_highlighted_words : [];
-        return {
-          title: typeof item.title === "string" ? item.title : "Sem título",
-          url: typeof item.link === "string" ? item.link : "",
-          snippet:
-            typeof item.snippet === "string"
-              ? item.snippet
-              : typeof highlighted[0] === "string"
-                ? String(highlighted[0])
-                : "",
-          date: typeof item.date === "string" ? item.date : undefined,
-        };
-      })
-      .filter((item) => item.url);
+      return { title, url, snippet };
+    });
   } catch (error) {
-    console.error(`[WEB_SEARCH] Erro ao buscar:`, error instanceof Error ? error.message : String(error));
+    console.error(`[WEB_SEARCH_OPENAI] Erro:`, error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
@@ -161,7 +114,7 @@ export async function searchWeb(
   },
 ) {
   if (!isWebSearchEnabled()) {
-    throw new Error("Web search desabilitado. Defina WEB_FETCH_ALLOWLIST=true no .env.");
+    throw new Error("Web search desabilitado. Defina ALLOW_WEB_FETCH=true no .env.");
   }
 
   const query = String(input.query || "").trim();
@@ -177,20 +130,20 @@ export async function searchWeb(
     return {
       ok: true,
       cached: true,
-      provider: "serpapi",
+      provider: "openai",
       query,
       results: cached,
     };
   }
 
-  await enforceDailyLimit(user);
-  const results = await searchWithSerpApi(query, maxResults);
+  // Removemos o rate limit diário forçado para o usuário já que a OpenAI tem seus próprios limites
+  const results = await searchWithOpenAI(query);
   writeToCache(cacheKey, results);
 
   return {
     ok: true,
     cached: false,
-    provider: "serpapi",
+    provider: "openai",
     query,
     results,
   };
@@ -198,19 +151,16 @@ export async function searchWeb(
 
 export const webSearchToolDefinition = {
   type: "function",
-  name: "web_search",
-  description:
-    "Buscar informações atuais na web quando a resposta depender de fatos recentes. Retorna resultados com título, URL, snippet e data.",
-  parameters: {
-    type: "object",
-    properties: {
-      query: { type: "string", description: "Consulta curta e objetiva para busca na web." },
-      max_results: {
-        type: "number",
-        description: "Quantidade máxima de resultados relevantes. Padrão 5, máximo 10.",
+  function: {
+    name: "web_search",
+    description: "Buscar na web usando o motor de busca nativo da OpenAI.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "O termo a ser buscado." }
       },
-    },
-    required: ["query"],
-    additionalProperties: false,
-  },
+      required: ["query"],
+      additionalProperties: false
+    }
+  }
 } as const;

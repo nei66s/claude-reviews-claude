@@ -182,13 +182,21 @@ export function extractWebSources(trace?: TraceEntry[]): WebSearchSource[] {
   const results: WebSearchSource[] = [];
 
   for (const entry of trace) {
-    if (entry.label !== "web_search" || entry.state !== "complete") {
+    const label = (entry.label || "").toLowerCase();
+    // Aceita qualquer label que contenha 'search' ou 'web' para ser mais robusto
+    if ((!label.includes("search") && !label.includes("web")) || entry.state !== "complete") {
       continue;
     }
 
     const payload = entry.payload && typeof entry.payload === "object" ? (entry.payload as Record<string, unknown>) : null;
     const output = payload?.output && typeof payload.output === "object" ? (payload.output as Record<string, unknown>) : null;
-    const searchResults = Array.isArray(output?.results) ? output.results : [];
+    
+    // Tenta achar a lista de resultados em payload.output.results ou direto no payload.results
+    const searchResults = Array.isArray(output?.results) 
+      ? output.results 
+      : Array.isArray(payload?.results) 
+        ? payload.results 
+        : [];
 
     for (const item of searchResults) {
       if (!item || typeof item !== "object") continue;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/server/request";
 import { generateKittyInterpretation, getFeedbackHistory } from "@/lib/server/doutora-kitty";
 import { getPsychologicalProfile } from "@/lib/server/psychological-profile";
+import { getUserProfile } from "@/lib/server/memory/repository";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +15,18 @@ export async function GET(request: NextRequest) {
       userId = "demo-user";
     }
 
-    // Buscar perfil psicológico do usuário
+    // Buscar perfil psicológico do usuário (feedbacks)
     let profile = await getPsychologicalProfile(userId);
+
+    // Buscar perfil de memória do usuário (fatos/preferências de longo prazo)
+    let memoryProfile = await getUserProfile(userId);
 
     // Se não houver perfil do usuário, tentar buscar perfil demo
     if (!profile && userId !== "demo-user") {
       profile = await getPsychologicalProfile("demo-user");
+    }
+    if (!memoryProfile && userId !== "demo-user") {
+      memoryProfile = await getUserProfile("demo-user");
     }
 
     // Buscar histórico de feedback
@@ -30,10 +37,10 @@ export async function GET(request: NextRequest) {
       feedbackHistory = await getFeedbackHistory("demo-user");
     }
 
-    // Se ainda não houver perfil, retornar um mock
+    // Se ainda não houver perfil psicométrico, mas houver memória, criamos um mock básico para o resto
     if (!profile) {
-      return NextResponse.json({
-        profile: {
+      // Mock básico
+      profile = {
           userId: userId,
           tonalPreference: "balanced",
           depthPreference: "balanced",
@@ -46,33 +53,15 @@ export async function GET(request: NextRequest) {
           likeCount: 0,
           dislikeCount: 0,
           lastUpdated: new Date(),
-        },
-        summary: "👀 Ainda não tenho dados suficientes para analisar seu perfil. Deixa você dar alguns feedbacks que vou aprender!",
-        strengths: ["⭐ Pode começar a dar feedback pra eu entender você melhor!"],
-        suggestions: ["Dá alguns likes e dislikes em minhas respostas pra eu aprender suas preferências!"],
-        preferenceInsights: {
-          tonal: "📊 Sem dados ainda",
-          depth: "📊 Sem dados ainda",
-          structure: "📊 Sem dados ainda",
-          pace: "📊 Sem dados ainda",
-          exampleType: "📊 Sem dados ainda",
-          responseLength: "📊 Sem dados ainda",
-        },
-        feedbackStats: {
-          totalFeedback: 0,
-          totalLikes: 0,
-          totalDislikes: 0,
-          likePercentage: 0,
-          recentTrend: "stable" as const,
-          consistencyScore: 0,
-        },
-      });
+      };
     }
 
-    // Gerar interpretação
+    // Gerar interpretação enriquecida com memórias
     const interpretation = await generateKittyInterpretation(
       profile,
       feedbackHistory,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      memoryProfile as any
     );
 
     return NextResponse.json(interpretation);

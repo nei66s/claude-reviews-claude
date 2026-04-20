@@ -9,6 +9,7 @@ export interface TraceEntry {
 export interface Attachment {
   name: string;
   content?: string;
+  mimeType?: string;
 }
 
 export interface Message {
@@ -23,6 +24,12 @@ export interface Message {
   helperAgentId?: string;
   handoffLabel?: string;
   collaborationLabel?: string;
+  /** Como a mensagem foi originada */
+  inputMethod?: "text" | "voice" | "realtime_voice";
+  /** Qual canal de transporte foi utilizado */
+  transport?: "standard" | "realtime";
+  /** ID de idempotência de turno (apenas para voz Realtime) */
+  correlationId?: string;
 }
 
 export interface Chat {
