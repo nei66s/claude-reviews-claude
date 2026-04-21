@@ -90,7 +90,6 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey });
 
     // A OpenAI Realtime API retorna um client_secret ephemeral para uso no browser
-    // @ts-expect-error — o SDK pode não ter tipagem completa para realtime.sessions.create
     const session = await (openai as unknown as { beta: { realtime: { sessions: { create: (params: Record<string, unknown>) => Promise<{ id: string; client_secret: string }> } } } }).beta.realtime.sessions.create({
       model: "gpt-4o-realtime-preview",
       voice,

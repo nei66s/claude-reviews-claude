@@ -5,6 +5,14 @@ import { AuthProvider } from "./lib/auth";
 export const metadata: Metadata = {
   title: "Pimpotasma",
   description: "Assistente pessoal inteligente da Pimpotasma com ferramentas, workflows e automação",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Pimpotasma",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
@@ -24,10 +32,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <head>
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="format-detection" content="telephone=no" />
-      </head>
       <body>
         <AuthProvider>
           {children}
