@@ -23,6 +23,7 @@ import SkillsView from "./SkillsView";
 import MemoryAdminView from "./MemoryAdminView";
 import MemoryGraphView from "./MemoryGraphView";
 import EasterEggManager from "./EasterEggManager";
+import Downbar from "./Downbar";
 import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
 import type { Artifact } from "../lib/artifactDetection";
 import { detectArtifacts } from "../lib/artifactDetection";
@@ -139,7 +140,31 @@ export default function AppShell({
 
 
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+  const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
+
+  useEffect(() => {
+    // Apenas para desktop (dispositivos com mouse)
+    const isDesktop = window.matchMedia('(pointer: fine)').matches;
+    if (!isDesktop) return;
+
+    let timeout: NodeJS.Timeout;
+    if (isHoveringSidebar) {
+      setCollapsed(false);
+      // Se estiver em modo mobile/tablet (barra oculta por left: -280px), abre o menu mobile
+      if (window.innerWidth <= 1024) {
+        setIsMobileMenuOpen(true);
+      }
+    } else {
+      timeout = setTimeout(() => {
+        setCollapsed(true);
+        if (window.innerWidth <= 1024) {
+          setIsMobileMenuOpen(false);
+        }
+      }, 300);
+    }
+    return () => clearTimeout(timeout);
+  }, [isHoveringSidebar]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -150,6 +175,7 @@ export default function AppShell({
   const [selectedArtifacts, setSelectedArtifacts] = useState<Artifact[]>([]);
   const [kittyInterpretation, setKittyInterpretation] = useState(null);
   const [kittyIsLoading, setKittyIsLoading] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
 
   const allCommands = useSlashCommands();
   const filteredCommands = prompt.startsWith("/")
@@ -535,7 +561,13 @@ export default function AppShell({
   };
 
   return (
-    <div className={`app ${collapsed ? "sidebar-collapsed" : ""}`}>
+    <div className={`app ${collapsed ? "sidebar-collapsed" : ""} ${isMobileMenuOpen ? "mobile-menu-open" : ""}`}>
+      {/* Gatilho invisível para desktop no canto esquerdo */}
+      <div 
+        className="sidebar-desktop-hover-trigger"
+        onMouseEnter={() => setIsHoveringSidebar(true)}
+      />
+
       <input
         ref={fileInputRef}
         type="file"
@@ -546,13 +578,21 @@ export default function AppShell({
 
       <Sidebar
         collapsed={collapsed}
-        onToggle={() => setCollapsed(!collapsed)}
+        onMouseEnter={() => setIsHoveringSidebar(true)}
+        onMouseLeave={() => setIsHoveringSidebar(false)}
+        activeWorkspace={activeWorkspace}
+        mobileOpen={isMobileMenuOpen} // Added mobileOpen prop
+        onMobileClose={() => setIsMobileMenuOpen(false)} // Added close handler
         conversations={conversations}
         activeChatId={activeChat?.id}
-        onSelectChat={selectChat}
+        onSelectChat={(chat) => {
+          selectChat(chat);
+          setIsMobileMenuOpen(false); // Close menu on selection
+        }}
         onDuplicateChat={(chatId) => {
           void duplicateChat(chatId);
           navigateToWorkspace("conversations");
+          setIsMobileMenuOpen(false);
         }}
         onDeleteChat={deleteChat}
         onRenameChat={(chatId, title) => {
@@ -561,9 +601,25 @@ export default function AppShell({
         onNewChat={() => {
           void createNewChat();
           navigateToWorkspace("conversations");
+          setIsMobileMenuOpen(false);
         }}
+        onSelectWorkspace={(ws) => {
+          navigateToWorkspace(ws);
+          setIsMobileMenuOpen(false);
+        }}
+      />
+
+      <Downbar
         activeWorkspace={activeWorkspace}
-        onSelectWorkspace={navigateToWorkspace}
+        onSelectWorkspace={(ws) => {
+          navigateToWorkspace(ws);
+          setIsMobileMenuOpen(false);
+        }}
+        onNewChat={() => {
+          void createNewChat();
+          navigateToWorkspace("conversations");
+          setIsMobileMenuOpen(false);
+        }}
       />
 
       <main className="main">
@@ -573,6 +629,7 @@ export default function AppShell({
           userName={user?.displayName || "Admin Pimpotasma"}
           userAvatar={user?.avatar}
           isDesktop={typeof window !== 'undefined' && (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__ !== undefined}
+          onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} // Added menu toggle
           onClearChat={() => {
             if (activeChat?.id) {
               void deleteChat(activeChat.id);

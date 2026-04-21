@@ -34,6 +34,7 @@
     "node_modules",
     "agent-ts",
     "prototype-ts",
-    "Old"
+    "Old",
+    "scripts"
   ]
 }

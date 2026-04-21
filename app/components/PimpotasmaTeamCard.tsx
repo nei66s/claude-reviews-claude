@@ -125,7 +125,7 @@ export function PimpotasmaTeamCard() {
           justifyContent: 'center',
         }}>
           <Image
-            src="/pimpim.png"
+            src="/pimpotasma.png"
             alt="Pimpim - CEO"
             width={48}
             height={48}

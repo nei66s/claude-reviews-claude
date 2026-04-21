@@ -10,6 +10,11 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Pimpotasma",
   },
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
   formatDetection: {
     telephone: false,
   },

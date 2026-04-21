@@ -293,9 +293,10 @@ A Fase 1 está tecnicamente validada e possui evidência suficiente para progres
 **Fase 12 — Governança persistente da ingestão**
 
 ### Objetivo
-- implementar governança persistente da ingestão (rate-limit/estado no banco)
-- garantir estabilidade dos sinais ao longo dos dias
-- observar o que entra automaticamente via chat e o que precisa de correção manual
+- Implementar governança persistente da ingestão (rate-limit/estado no banco).
+- **[CONCLUÍDO] Padronização de Prompts (Roadmap Fase 1):** Migração para estrutura XML e remoção de vícios de IA.
+- Garantir estabilidade dos sinais ao longo dos dias.
+- Observar o que entra automaticamente via chat e o que precisa de correção manual.
 
 ### O que já existe
 - evidência suficiente da Fase 1 (59 capturas / 23 correções)

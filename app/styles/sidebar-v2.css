@@ -1,22 +1,25 @@
 /* ===== SIDEBAR V2 — Agent Navigation Hub ===== */
 
 .sidebar-v2 {
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--sidebar);
   backdrop-filter: blur(16px);
   border-right: 1px solid var(--line);
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
   overflow: hidden;
 }
 
 .app:not(.sidebar-collapsed) .sidebar-v2 {
   width: 280px;
+  opacity: 1;
 }
 
 .app.sidebar-collapsed .sidebar-v2 {
-  width: 72px;
+  width: 0;
+  opacity: 0;
+  border-right: none;
 }
 
 /* ── Brand ── */
@@ -479,8 +482,4 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 900px) {
-  .sidebar-v2 {
-    display: none;
-  }
-}
+/* Handled in globals.css */

@@ -93,7 +93,7 @@ export function TeamsDashboard({ onTeamSelect }: { onTeamSelect?: (teamId: strin
                 justifyContent: 'center',
               }}>
                 <Image
-                  src="/pimpim.png"
+                  src="/pimpotasma.png"
                   alt="Pimpim - CEO"
                   width={80}
                   height={80}

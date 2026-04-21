@@ -7,7 +7,6 @@ import { WorkspaceId } from "../lib/workspaces";
 
 interface SidebarProps {
   collapsed: boolean;
-  onToggle: () => void;
   conversations?: Chat[];
   activeChatId?: string;
   onSelectChat: (chat: Chat) => void;
@@ -17,11 +16,14 @@ interface SidebarProps {
   onNewChat: () => void;
   activeWorkspace: WorkspaceId;
   onSelectWorkspace: (id: WorkspaceId) => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 export default function Sidebar({ 
   collapsed, 
-  onToggle, 
   conversations = [], 
   activeChatId, 
   onSelectChat,
@@ -31,6 +33,10 @@ export default function Sidebar({
   onNewChat,
   activeWorkspace,
   onSelectWorkspace,
+  mobileOpen = false,
+  onMobileClose,
+  onMouseEnter,
+  onMouseLeave,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -77,7 +83,15 @@ export default function Sidebar({
   ];
 
   return (
-    <aside className="sidebar-v2">
+    <>
+      {mobileOpen && (
+        <div className="sidebar-v2-overlay" onClick={onMobileClose} />
+      )}
+      <aside 
+        className={`sidebar-v2 ${mobileOpen ? "mobile-open" : ""}`}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
       {/* Brand */}
       <div className="sidebar-v2-brand">
         <div className="sidebar-v2-brand-left">
@@ -99,13 +113,6 @@ export default function Sidebar({
             </div>
           )}
         </div>
-        <button className="sidebar-v2-collapse-btn" onClick={onToggle} title={collapsed ? "Expandir" : "Recolher"}>
-          <svg viewBox="0 0 24 24" width="18" height="18" style={{ transform: collapsed ? "scaleX(-1)" : "none" }}>
-            <rect x="3.5" y="5" width="17" height="14" rx="2.4"></rect>
-            <path d="M9 5v14"></path>
-            <path d="M14 9l3 3-3 3"></path>
-          </svg>
-        </button>
       </div>
 
       {/* Workspaces */}
@@ -241,6 +248,7 @@ export default function Sidebar({
 
       {/* Footer */}
       <div className="sidebar-v2-footer" />
-    </aside>
+      </aside>
+    </>
   );
 }
