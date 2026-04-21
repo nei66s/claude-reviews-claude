@@ -27,9 +27,11 @@ import { chatToolDefinitions, runChatTool } from "@/lib/server/chat-tools";
 import { listFileEntries } from "@/lib/server/files";
 import { getPsychologicalProfile, generateProfilePrompt, type PsychologicalProfile } from "@/lib/server/psychological-profile";
 import { orchestrateMemoryCandidates } from "@/lib/server/memory/orchestrator";
+import { getUserProfile } from "@/lib/server/memory/repository";
 import { extractMemoryCandidates } from "@/lib/server/memory/extract-memory-candidates";
 import { isMemoryOrchestratorEnabled } from "@/lib/server/memory/flags";
-import { buildContextPack, type ContextPack } from "@/lib/server/memory/context-builder";
+import { buildContextPack } from "@/lib/server/memory/context-builder";
+import type { ContextPack } from "@/lib/server/memory/types";
 import { extractImageMemoryCandidates } from "@/lib/server/memory/image-extractor";
 
 export const runtime = "nodejs";
@@ -1661,6 +1663,10 @@ async function maybeAutoCaptureMemoryOrchestrator(params: {
   if (!hasDatabase()) {
     return;
   }
+  
+  // Buscar perfil atual para evitar redundância (Fase 15)
+  const profile = await getUserProfile(params.user.id).catch(() => null);
+  const currentProfileSummary = profile?.summaryShort || "";
 
   const { candidates, stats } = await extractMemoryCandidates({
     input: {
@@ -1669,6 +1675,7 @@ async function maybeAutoCaptureMemoryOrchestrator(params: {
       userPrompt: params.prompt,
       recentUserTexts: params.recentUserTexts,
       createdBy: "chat_stream_deterministic_v1",
+      currentProfileSummary,
     },
     apiKey: params.apiKey,
     llmModel: process.env.OPENAI_MEMORY_EXTRACTION_MODEL?.trim() || params.model,
@@ -2231,6 +2238,7 @@ export async function POST(request: NextRequest) {
                 agentType: selectedAgentId ?? undefined,
                 taskType: "chat",
                 limitItems: 12,
+                query: prompt,
               }).catch(() => null)
             : Promise.resolve(null),
         ]);

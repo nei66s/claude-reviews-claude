@@ -18,6 +18,7 @@ type LlmCandidateShape = {
   confidenceScore?: unknown;
   relevanceScore?: unknown;
   sensitivityLevel?: unknown;
+  reason?: unknown;
 };
 
 function normalizeSnippet(input: string) {
@@ -76,26 +77,32 @@ function buildExtractorText(prompt: string, recentUserTexts?: string[]) {
 
 function buildSystemPrompt() {
   return [
-    "Você é um extractor de memória do usuário para um sistema de memória pessoal e auditável.",
-    "Tarefa: sugerir APENAS memórias duráveis e úteis do USUÁRIO (não do assistente).",
+    "Você é um especialista em Extração de Memória Semântica e Perfilamento de Usuário.",
+    "Sua tarefa é analisar a conversa e identificar APENAS informações duráveis, úteis e declaradas explicitamente pelo USUÁRIO.",
     "",
-    "REGRAS DE OURO (CRÍTICO):",
-    "- EXTRAIA APENAS fatos sobre a PESSOA do usuário (identidade, história pessoal, preferências, objetivos, estilo de trabalho).",
-    "- IGNORE COMPLETAMENTE fatos de conhecimento geral, história, ciência, notícias ou curiosidades que o usuário esteja discutindo ou perguntando.",
-    "- Se o usuário fizer uma PERGUNTA informativa (ex: 'Quem foi Saul?'), NÃO extraia o conteúdo da pergunta como um fato dele.",
-    "- NÃO faça inferências psicológicas ou suposições. Use apenas o que foi declarado explicitamente sobre ele.",
-    "- Ignore detalhes operacionais (ex: 'baixe o arquivo x') ou efêmeros.",
-    "- Se houver dado sensível (senha, cpf, cartão etc), NÃO extraia e marque como sensitivityLevel=\"blocked\".",
+    "DIFERENCIAÇÃO CRÍTICA (EFÊMERO vs DURÁVEL):",
+    "- NÃO EXTRAIA: Intenções momentâneas, ordens de execução ou estados passageiros (ex: 'Estou com fome', 'Abra o VS Code', 'Gostei dessa resposta específica').",
+    "- EXTRAIA: Traços de personalidade, fatos biográficos, preferências constantes, restrições de trabalho e objetivos de longo prazo.",
+    "  * Exemplo de EXTRAÇÃO: Se o usuário diz 'Eu detesto café doce', extraia preferência: 'Não gosta de café com açúcar'.",
     "",
-    "Categorias Permitidas:",
-    "- identity (nome, profissão, local onde mora, fatos biográficos)",
-    "- preference (gostos, desgostos, o que prefere em respostas)",
-    "- goal (objetivos de longo prazo ou desejos expressos)",
-    "- interaction_style (como ele quer que você se comporte)",
+    "REGRAS DE OURO:",
+    "- FOCO NO USUÁRIO: Extraia apenas fatos sobre o humano, não sobre o assistente ou o sistema.",
+    "- SEM INFERÊNCIAS: Não tente 'ler as entrelinhas'. Se ele não disse explicitamente, não invente.",
+    "- CATEGORIZAÇÃO ESTADUAL:",
+    "  * identity: Nome, idade, local, profissão, relacionamentos pessoais, histórico (ex: 'Moro em SP', 'Sou dev').",
+    "  * preference: Gostos, desgostos, favoritos, opiniões fortes (ex: 'Amo Python', 'Odeio tons pastéis').",
+    "  * goal: Objetivos, projetos em andamento, desejos para o futuro (ex: 'Quero aprender Rust', 'Estou criando uma V2').",
+    "  * interaction_style: Instruções de como ele quer ser tratado ou como as respostas devem ser (ex: 'Seja direto', 'Use emojis').",
+    "",
+    "- SEGURANÇA: Se o texto contiver PII sensível (senhas, chaves de API, documentos), marque como sensitivityLevel='blocked' ou ignore.",
+    "",
+    "CONGESTÃO DE CONHECIMENTO (DEDUPLICAÇÃO):",
+    "- Abaixo você receberá o 'Perfil Atual' do usuário.",
+    "- NÃO EXTRAIA informações que já estejam claramente presentes no Perfil Atual, a menos que haja uma mudança ou contradição.",
     "",
     "SAÍDA:",
-    "Retorne SOMENTE JSON válido no formato: {\"candidates\":[{\"type\":...,\"category\":...,\"content\":...,\"normalizedValue\":...,\"confidenceScore\":0..1,\"relevanceScore\":0..1,\"sensitivityLevel\":\"low|medium|high|blocked\"}]}",
-    "Limite: no máximo 5 candidatos.",
+    "Retorne SOMENTE um JSON válido: {\"candidates\":[{\"type\":\"declared_fact|preference|goal|interaction_style\",\"category\":\"identity|preference|goal|interaction_style\",\"content\":\"Texto curto e claro em 3ª pessoa\",\"normalizedValue\":\"chave_unica:valor\",\"confidenceScore\":0.0-1.0,\"relevanceScore\":0.0-1.0,\"sensitivityLevel\":\"low|medium|high\",\"reason\":\"Breve justificativa do porquê isso é durável\"}]}",
+    "Limite: 3-5 candidatos de alta qualidade.",
   ].join("\n");
 }
 
@@ -183,6 +190,7 @@ function toCandidate(
       relevanceScore,
       sensitivityLevel,
       status: "candidate",
+      reason: typeof item.reason === "string" ? item.reason : "Extraído via LLM v15",
       validFrom: null,
       validUntil: null,
       createdBy: "llm_extractor_v1",
@@ -232,7 +240,8 @@ export async function extractLlmAssistedMemoryCandidates(params: {
 
   const client = new OpenAI({ apiKey: params.apiKey });
   const systemPrompt = buildSystemPrompt();
-  const userPrompt = `Texto do usuário (recente + mensagem atual):\n${text}`;
+  const profileSummary = params.input.currentProfileSummary ? `Perfil Atual do Usuário:\n${params.input.currentProfileSummary}\n\n` : "";
+  const userPrompt = `${profileSummary}Texto do usuário (recente + mensagem atual):\n${text}`;
 
   const response = await client.responses.create({
     model: params.model,

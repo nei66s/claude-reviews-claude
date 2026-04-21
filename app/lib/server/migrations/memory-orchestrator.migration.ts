@@ -34,13 +34,21 @@ CREATE TABLE IF NOT EXISTS public.user_memory_items (
 );
 
 -- FKs (evitando acoplamento que quebre deletes existentes de conversas/mensagens)
-ALTER TABLE public.user_memory_items
-  ADD CONSTRAINT user_memory_items_user_id_fk
-  FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_memory_items_user_id_fk') THEN
+    ALTER TABLE public.user_memory_items
+      ADD CONSTRAINT user_memory_items_user_id_fk
+      FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+  END IF;
+END $$;
 
-ALTER TABLE public.user_memory_items
-  ADD CONSTRAINT user_memory_items_source_message_id_fk
-  FOREIGN KEY (source_message_id) REFERENCES public.messages(id) ON DELETE SET NULL;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_memory_items_source_message_id_fk') THEN
+    ALTER TABLE public.user_memory_items
+      ADD CONSTRAINT user_memory_items_source_message_id_fk
+      FOREIGN KEY (source_message_id) REFERENCES public.messages(id) ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- Índices básicos para lookup por usuário e status
 CREATE INDEX IF NOT EXISTS idx_user_memory_items_user_status_updated
@@ -65,9 +73,13 @@ CREATE TABLE IF NOT EXISTS public.user_profile (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE public.user_profile
-  ADD CONSTRAINT user_profile_user_id_fk
-  FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_profile_user_id_fk') THEN
+    ALTER TABLE public.user_profile
+      ADD CONSTRAINT user_profile_user_id_fk
+      FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+  END IF;
+END $$;
 
 -- Auditoria de mudanças (trilha mínima)
 CREATE TABLE IF NOT EXISTS public.memory_audit_log (
@@ -86,6 +98,27 @@ CREATE INDEX IF NOT EXISTS idx_memory_audit_log_user_created
   ON public.memory_audit_log (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_memory_audit_log_item_created
   ON public.memory_audit_log (memory_item_id, created_at DESC);
+
+-- Governança de ingestão (Fase 12)
+CREATE TABLE IF NOT EXISTS public.memory_ingestion_governance (
+  id BIGSERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES public.app_users(id) ON DELETE CASCADE,
+  message_id BIGINT NULL REFERENCES public.messages(id) ON DELETE SET NULL,
+  conversation_id TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('processing', 'completed', 'skipped', 'error', 'rate_limited')),
+  reason TEXT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Índice para verificar se mensagem já foi processada
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mig_message_id_unique
+  ON public.memory_ingestion_governance (message_id)
+  WHERE message_id IS NOT NULL;
+
+-- Índice para rate-limit por usuário
+CREATE INDEX IF NOT EXISTS idx_mig_user_created
+  ON public.memory_ingestion_governance (user_id, created_at DESC);
 `;
 
 export default MEMORY_ORCHESTRATOR_MIGRATION;

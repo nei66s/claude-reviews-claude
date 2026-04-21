@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { requestJson } from "../lib/api";
 import styles from "./SkillsView.module.css";
 import { isTauri } from "../lib/desktop";
-import MemoryAdminView from "./MemoryAdminView";
-import MemoryGraphView from "./MemoryGraphView";
 
 interface SkillItem {
   id?: string;
@@ -37,7 +35,7 @@ const NATIVE_SKILLS: SkillItem[] = [
   { icon: "🐚", label: "Terminal Direto", desc: "Executa qualquer comando CMD/PowerShell com resposta instantânea.", example: "ipconfig", category: "native", badge: "PC" },
 ];
 
-type SkillTab = "all" | "native" | "tools" | "plugins" | "memory-admin" | "memory-graph";
+type SkillTab = "all" | "native" | "tools" | "plugins";
 
 export default function SkillsView() {
   const [activeTab, setActiveTab] = useState<SkillTab>("all");
@@ -168,12 +166,6 @@ export default function SkillsView() {
         <div className={`${styles["skills-tab"]} ${activeTab === "all" ? styles.active : ""}`} onClick={() => setActiveTab("all")}>
           <span>Visão Geral</span>
         </div>
-        <div className={`${styles["skills-tab"]} ${activeTab === "memory-admin" ? styles.active : ""}`} onClick={() => setActiveTab("memory-admin")}>
-          <span>🧠 Memória (Admin)</span>
-        </div>
-        <div className={`${styles["skills-tab"]} ${activeTab === "memory-graph" ? styles.active : ""}`} onClick={() => setActiveTab("memory-graph")}>
-          <span>🕸️ Grafo Neural</span>
-        </div>
         {isTauri() && (
           <div className={`${styles["skills-tab"]} ${activeTab === "native" ? styles.active : ""}`} onClick={() => setActiveTab("native")}>
             <span>⚡ Nativas</span>
@@ -187,49 +179,44 @@ export default function SkillsView() {
         </div>
       </nav>
 
-      <main className={styles["skills-content"]} style={{ padding: (activeTab === 'memory-admin' || activeTab === 'memory-graph') ? '0' : '40px' }}>
-        {activeTab === "memory-admin" && <MemoryAdminView />}
-        {activeTab === "memory-graph" && <MemoryGraphView />}
-        
-        {(activeTab !== "memory-admin" && activeTab !== "memory-graph") && (
-          loading ? (
-            <div style={{ textAlign: "center", padding: "40px" }}>Sincronizando sistemas...</div>
-          ) : (
-            <div className={styles["skills-grid"]}>
-              {filtered.map((skill, idx) => (
-                <div key={`${skill.label}-${idx}`} className={`${styles["skill-card"]} ${skill.enabled === false ? styles.disabled : ""}`} style={{ animationDelay: `${idx * 0.03}s` }}>
-                  {skill.badge && <span className={styles["skill-badge"]}>{skill.badge}</span>}
-                  <div className={styles["skill-card-head"]}>
-                    <div className={styles["skill-card-icon"]}>{skill.icon}</div>
-                    <div style={{ flex: 1 }}>
-                      <div className={styles["skill-card-label"]}>{skill.label}</div>
-                      {skill.status && <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 'bold', textTransform: 'uppercase' }}>{skill.status}</div>}
-                    </div>
-                    {(skill.category === "plugin") && (
-                      <label className="toggle-switch">
-                        <input type="checkbox" checked={skill.enabled} onChange={() => togglePlugin(skill.id!, !!skill.enabled)} />
-                        <span className="slider"></span>
-                      </label>
-                    )}
+      <main className={styles["skills-content"]} style={{ padding: '40px' }}>
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "40px" }}>Sincronizando sistemas...</div>
+        ) : (
+          <div className={styles["skills-grid"]}>
+            {filtered.map((skill, idx) => (
+              <div key={`${skill.label}-${idx}`} className={`${styles["skill-card"]} ${skill.enabled === false ? styles.disabled : ""}`} style={{ animationDelay: `${idx * 0.03}s` }}>
+                {skill.badge && <span className={styles["skill-badge"]}>{skill.badge}</span>}
+                <div className={styles["skill-card-head"]}>
+                  <div className={styles["skill-card-icon"]}>{skill.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div className={styles["skill-card-label"]}>{skill.label}</div>
+                    {skill.status && <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 'bold', textTransform: 'uppercase' }}>{skill.status}</div>}
                   </div>
-                  <p className={styles["skill-card-desc"]}>{skill.desc}</p>
-                  
-                  <div className={styles["skill-card-tags"]}>
-                    <span className={`${styles["skill-tag"]} ${styles[skill.category]}`}>{skill.category}</span>
-                    {skill.enabled === false && <span className={styles["skill-tag"]} style={{ color: '#ef4444' }}>Desativado</span>}
-                  </div>
-
-                  {skill.example && (
-                    <div className={styles["skill-card-footer"]}>
-                      <div className={styles["skill-example"]}>
-                        “{skill.example}”
-                      </div>
-                    </div>
+                  {(skill.category === "plugin") && (
+                    <label className="toggle-switch">
+                      <input type="checkbox" checked={skill.enabled} onChange={() => togglePlugin(skill.id!, !!skill.enabled)} />
+                      <span className="slider"></span>
+                    </label>
                   )}
                 </div>
-              ))}
-            </div>
-          )
+                <p className={styles["skill-card-desc"]}>{skill.desc}</p>
+                
+                <div className={styles["skill-card-tags"]}>
+                  <span className={`${styles["skill-tag"]} ${styles[skill.category]}`}>{skill.category}</span>
+                  {skill.enabled === false && <span className={styles["skill-tag"]} style={{ color: '#ef4444' }}>Desativado</span>}
+                </div>
+
+                {skill.example && (
+                  <div className={styles["skill-card-footer"]}>
+                    <div className={styles["skill-example"]}>
+                      “{skill.example}”
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </main>
     </div>

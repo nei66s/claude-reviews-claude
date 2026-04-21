@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
     return {
       afterFiles: [
         {
+          // Excluir expressamente o /api/memory para que o Next.js use as rotas locais
+          source: "/api/memory/:path*",
+          destination: "/api/memory/:path*",
+        },
+        {
           source: "/api/:path*",
           destination: "http://127.0.0.1:3001/:path*",
         },

@@ -256,8 +256,11 @@ Detecta:
 ### Conclusão do estado atual
 O write path está funcional.
 O read path está funcional.
-A Fase 1 está tecnicamente validada.
-Ainda não há massa crítica para iniciar a Fase 2.
+A Fase 1 está tecnicamente validada e possui evidência suficiente para progressão.
+**Pronto para a Fase 2.**
+- Capturas automáticas: 59
+- Correções manuais: 23
+- Dias corridos: 4
 
 ---
 
@@ -276,8 +279,8 @@ Ainda não há massa crítica para iniciar a Fase 2.
 | 8 | Auditoria e régua de prontidão | Concluída | auditoria visível, estado de prontidão para fase 2 | observar uso real agora |
 | 9 | Leitura da memória no chat | Concluída | context pack injetado nas instructions, flag separada de leitura | ranking por intenção ainda simples |
 | 10 | Validação funcional ponta a ponta | Concluída | nome, preferência, objetivo, recall em nova conversa | continuar uso real |
-| 11 | Observação real de uso | Em andamento | UI mostrando auditoria, prontidão para fase 2, correções manuais disponíveis | acumular uso real, correções manuais reais, observar comportamento ao longo dos dias |
-| 12 | Governança persistente da ingestão | Pendente | prompt da fase 2 já preparado | persistir rate-limit/estado de ingestão no banco |
+| 11 | Observação real de uso | Concluída | UI mostrando auditoria, prontidão para fase 2, correções manuais disponíveis | evidência de massa crítica atingida (59 capturas, 23 correções) |
+| 12 | Governança persistente da ingestão | Em andamento | prompt da fase 2 já preparado | persistir rate-limit/estado de ingestão no banco |
 | 13 | Refino de qualidade do contexto | Pendente | base pronta | melhorar seleção do context pack por intenção/taskType, evitar duplicação no summary |
 | 14 | Auditoria avançada | Pendente | auditoria básica pronta | drill-down por item, filtros melhores, leitura de padrões de erro |
 | 15 | Extração mais inteligente | Pendente | extractor determinístico validado | heurística mais rica ou LLM, só depois de evidência suficiente |
@@ -287,22 +290,21 @@ Ainda não há massa crítica para iniciar a Fase 2.
 ---
 
 ## Fase atual
-**Fase 11 — Observação real de uso**
+**Fase 12 — Governança persistente da ingestão**
 
 ### Objetivo
-- observar o comportamento no uso real
-- medir qualidade da captura
-- identificar ruído, duplicação, falso positivo e necessidade de correção manual
+- implementar governança persistente da ingestão (rate-limit/estado no banco)
+- garantir estabilidade dos sinais ao longo dos dias
+- observar o que entra automaticamente via chat e o que precisa de correção manual
 
 ### O que já existe
-- UI mostrando auditoria
-- UI mostrando prontidão para fase 2
-- correções manuais já disponíveis
+- evidência suficiente da Fase 1 (59 capturas / 23 correções)
+- UI de prontidão funcional
+- estrutura de auditoria pronta
 
 ### O que falta
-- acumular uso real
-- ver correções manuais reais
-- observar comportamento ao longo dos dias
+- persistência do estado de ingestão
+- rate-limit distribuído/no banco
 
 ---
 
@@ -320,13 +322,13 @@ Ao alterar qualquer coisa:
 
 ## Resumo executivo
 Hoje o Memory Orchestrator:
-- captura memória automaticamente
+- captura memória automaticamente (59 capturas até agora)
 - salva no banco
 - audita mudanças
 - recompila perfil
-- expõe UI de inspeção
+- expõe UI de inspeção (com 23 correções manuais realizadas)
 - lê memória no chat principal
 - usa memória em novas conversas
 
-Ainda não é hora da Fase 2.
-Agora o foco é observação real de uso.
+**Estamos na Fase 2.**
+Foco atual: Governança persistente da ingestão.

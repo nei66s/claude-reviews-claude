@@ -46,6 +46,7 @@ export type CreateUserMemoryItemInput = {
   validFrom?: string | null;
   validUntil?: string | null;
   createdBy?: string;
+  reason?: string;
 };
 
 export type UserProfile = {
@@ -95,4 +96,46 @@ export type CreateMemoryAuditLogEntryInput = {
   newStatus?: MemoryItemStatus | null;
   reason?: string;
   actor?: string;
+};
+
+export type IngestionStatus = "processing" | "completed" | "skipped" | "error" | "rate_limited";
+
+export type IngestionGovernanceEntry = {
+  id: number;
+  userId: string;
+  messageId: number | null;
+  conversationId: string;
+  status: IngestionStatus;
+  reason: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateIngestionLogInput = {
+  userId: string;
+  messageId: number | null;
+  conversationId: string;
+  status: IngestionStatus;
+  reason?: string;
+};
+
+export type BuildContextInput = {
+  userId: string;
+  agentType?: string;
+  taskType?: string;
+  limitItems?: number;
+  includeTypes?: MemoryItemType[];
+  query?: string;
+  priorityCategories?: string[];
+};
+
+export type ContextPack = {
+  userId: string;
+  summaryShort: string;
+  summaryLong: string;
+  keyFacts: unknown[];
+  activeGoals: unknown[];
+  interactionPreferences: Record<string, unknown>;
+  knownConstraints: unknown[];
+  memoryItems: Array<Pick<UserMemoryItem, "id" | "type" | "category" | "content" | "normalizedValue" | "sensitivityLevel">>;
 };

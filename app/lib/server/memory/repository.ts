@@ -8,8 +8,11 @@ import {
   MEMORY_SENSITIVITY_LEVELS,
 } from "./constants";
 import type {
+  CreateIngestionLogInput,
   CreateMemoryAuditLogEntryInput,
   CreateUserMemoryItemInput,
+  IngestionGovernanceEntry,
+  IngestionStatus,
   MemoryAuditLogEntry,
   MemoryAuditAction,
   MemoryItemStatus,
@@ -46,14 +49,16 @@ async function ensureMemoryOrchestratorSchema(db?: DbLike) {
           user_memory_items: string | null;
           user_profile: string | null;
           memory_audit_log: string | null;
+          memory_ingestion_governance: string | null;
         }>(
-          "select to_regclass('public.user_memory_items') as user_memory_items, to_regclass('public.user_profile') as user_profile, to_regclass('public.memory_audit_log') as memory_audit_log",
+          "select to_regclass('public.user_memory_items') as user_memory_items, to_regclass('public.user_profile') as user_profile, to_regclass('public.memory_audit_log') as memory_audit_log, to_regclass('public.memory_ingestion_governance') as memory_ingestion_governance",
         );
         const row = result.rows[0];
         const missing: string[] = [];
         if (!row?.user_memory_items) missing.push("public.user_memory_items");
         if (!row?.user_profile) missing.push("public.user_profile");
         if (!row?.memory_audit_log) missing.push("public.memory_audit_log");
+        if (!row?.memory_ingestion_governance) missing.push("public.memory_ingestion_governance");
 
         if (missing.length > 0) {
           throw new Error(
@@ -490,6 +495,26 @@ export async function upsertUserProfile(input: UpsertUserProfileInput, db?: DbLi
   return mapUserProfileRow(result.rows[0]);
 }
 
+/**
+ * Lista todos os IDs de usuário que possuem algum item de memória ou perfil.
+ */
+export async function listUsersWithMemory(db?: DbLike): Promise<string[]> {
+  await ensureMemoryOrchestratorSchema(db);
+  const client = db ?? getDb();
+  const res = await client.query<{ user_id: string }>(
+    `
+    select distinct user_id
+    from (
+      select user_id from public.user_memory_items
+      union
+      select user_id from public.user_profile
+    ) sub
+    order by user_id
+    `,
+  );
+  return res.rows.map((r) => r.user_id);
+}
+
 export async function insertMemoryAuditLogEntry(
   input: CreateMemoryAuditLogEntryInput,
   db?: DbLike,
@@ -629,6 +654,113 @@ export async function listMemoryAuditEvents(
   );
 
   return (result.rows as Row[]).map(mapAuditEventRow);
+}
+
+export async function getIngestionLogByMessageId(
+  messageId: number,
+  db?: DbLike,
+): Promise<IngestionGovernanceEntry | null> {
+  await ensureMemoryOrchestratorSchema(db);
+  const client = db ?? getDb();
+
+  const result = await client.query(
+    `
+    select *
+    from public.memory_ingestion_governance
+    where message_id = $1
+    limit 1
+    `,
+    [messageId],
+  );
+
+  return result.rows[0] ? mapIngestionLogRow(result.rows[0]) : null;
+}
+
+export async function insertIngestionLog(
+  input: CreateIngestionLogInput,
+  db?: DbLike,
+): Promise<IngestionGovernanceEntry> {
+  await ensureMemoryOrchestratorSchema(db);
+  const client = db ?? getDb();
+
+  const result = await client.query(
+    `
+    insert into public.memory_ingestion_governance (
+      user_id,
+      message_id,
+      conversation_id,
+      status,
+      reason
+    ) values (
+      $1, $2, $3, $4, $5
+    )
+    on conflict (message_id) where message_id is not null
+    do update set
+      status = excluded.status,
+      reason = excluded.reason,
+      updated_at = now()
+    returning *
+    `,
+    [input.userId, input.messageId ?? null, input.conversationId, input.status, input.reason ?? null],
+  );
+
+  return mapIngestionLogRow(result.rows[0]);
+}
+
+export async function countRecentIngestions(userId: string, hours: number, db?: DbLike): Promise<number> {
+  await ensureMemoryOrchestratorSchema(db);
+  const client = db ?? getDb();
+
+  const result = await client.query(
+    `
+    select count(*) as count
+    from public.memory_ingestion_governance
+    where user_id = $1
+      and status in ('completed', 'processing')
+      and created_at >= now() - interval '1 hour' * $2
+    `,
+    [userId, hours],
+  );
+
+  return readRowNumber(result.rows[0] as Row, "count", 0);
+}
+
+export async function listIngestionLogs(
+  userId: string,
+  limit = 50,
+  db?: DbLike,
+): Promise<IngestionGovernanceEntry[]> {
+  await ensureMemoryOrchestratorSchema(db);
+  const client = db ?? getDb();
+
+  const result = await client.query(
+    `
+    select *
+    from public.memory_ingestion_governance
+    where user_id = $1
+    order by created_at desc
+    limit $2
+    `,
+    [userId, limit],
+  );
+
+  return (result.rows as Row[]).map(mapIngestionLogRow);
+}
+
+function mapIngestionLogRow(row: Row): IngestionGovernanceEntry {
+  return {
+    id: readRowNumber(row, "id", 0),
+    userId: readRowString(row, "user_id"),
+    messageId: (() => {
+      const value = readRowValue(row, "message_id");
+      return value === null || value === undefined ? null : Number(value);
+    })(),
+    conversationId: readRowString(row, "conversation_id"),
+    status: readRowString(row, "status") as IngestionStatus,
+    reason: readRowValue(row, "reason") ? String(readRowValue(row, "reason")) : null,
+    createdAt: readRowDateIso(row, "created_at") ?? nowIso(),
+    updatedAt: readRowDateIso(row, "updated_at") ?? nowIso(),
+  };
 }
 
 export async function withMemoryTransaction<T>(fn: (db: DbLike) => Promise<T>): Promise<T> {

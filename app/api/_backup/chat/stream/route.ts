@@ -17,7 +17,8 @@ import { getPsychologicalProfile, generateProfilePrompt, type PsychologicalProfi
 import { orchestrateMemoryCandidates } from "@/lib/server/memory/orchestrator";
 import { extractMemoryCandidates } from "@/lib/server/memory/extract-memory-candidates";
 import { isMemoryOrchestratorEnabled } from "@/lib/server/memory/flags";
-import { buildContextPack, type ContextPack } from "@/lib/server/memory/context-builder";
+import { buildContextPack } from "@/lib/server/memory/context-builder";
+import type { ContextPack } from "@/lib/server/memory/types";
 
 export const runtime = "nodejs";
 

@@ -6,6 +6,7 @@ export type ExtractorInput = {
   userPrompt: string;
   recentUserTexts?: string[];
   createdBy?: string;
+  currentProfileSummary?: string;
 };
 
 export type ExtractedCandidate = Omit<CreateUserMemoryItemInput, "id" | "userId">;

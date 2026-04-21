@@ -50,13 +50,14 @@ function readMigrationSql({ fs, path }) {
 
 async function checkSchema(pool) {
   const regs = await pool.query(
-    "select to_regclass('public.user_memory_items') as user_memory_items, to_regclass('public.user_profile') as user_profile, to_regclass('public.memory_audit_log') as memory_audit_log",
+    "select to_regclass('public.user_memory_items') as user_memory_items, to_regclass('public.user_profile') as user_profile, to_regclass('public.memory_audit_log') as memory_audit_log, to_regclass('public.memory_ingestion_governance') as memory_ingestion_governance",
   );
   const row = regs.rows?.[0] ?? {};
   const missing = [];
   if (!row.user_memory_items) missing.push("public.user_memory_items");
   if (!row.user_profile) missing.push("public.user_profile");
   if (!row.memory_audit_log) missing.push("public.memory_audit_log");
+  if (!row.memory_ingestion_governance) missing.push("public.memory_ingestion_governance");
   return { ok: missing.length === 0, missing };
 }
 

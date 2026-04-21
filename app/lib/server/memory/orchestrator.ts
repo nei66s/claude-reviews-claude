@@ -15,13 +15,16 @@ import {
   updateUserMemoryItemStatus,
   updateUserMemoryItemFields,
   withMemoryTransaction,
+  getIngestionLogByMessageId,
+  insertIngestionLog,
+  countRecentIngestions,
 } from "./repository";
 import { reconcileCandidates } from "./reconciler";
 import { compileUserProfileFromActiveMemory } from "./profile-compiler";
 
 export type OrchestrateCandidatesInput = {
   userId: string;
-  candidates: Array<Omit<CreateUserMemoryItemInput, "userId" | "status"> & { userId?: string; status?: MemoryItemStatus }>;
+  candidates: Array<Omit<CreateUserMemoryItemInput, "userId" | "status" | "id"> & { userId?: string; status?: MemoryItemStatus; id?: string }>;
   actor?: string;
   reason?: string;
   compileProfile?: boolean;
@@ -181,6 +184,63 @@ export async function orchestrateMemoryCandidates(input: OrchestrateCandidatesIn
   const compileProfile = input.compileProfile ?? true;
 
   const candidates = input.candidates.map((candidate) => coerceCandidate(candidate, input.userId));
+
+  // --- Governança de ingestão (Fase 12) ---
+  const sourceMessageId = candidates.find((c) => c.sourceMessageId)?.sourceMessageId;
+  const conversationId = candidates.find((c) => c.sourceConversationId)?.sourceConversationId || "unknown";
+
+  if (sourceMessageId) {
+    const existingLog = await getIngestionLogByMessageId(sourceMessageId);
+    if (existingLog && (existingLog.status === "completed" || existingLog.status === "processing")) {
+      console.info(`[MemoryOrchestrator] Message ${sourceMessageId} already processed or processing. Skipping.`);
+      return {
+        userId: input.userId,
+        inserted: { active: 0, contradicted: 0, candidate: 0 },
+        skippedDuplicates: candidates.length,
+        updatedExisting: { contradicted: 0 },
+        auditEntries: 0,
+        profileCompiled: false,
+        items: { inserted: [], updated: [] },
+      };
+    }
+  }
+
+  // Rate-limit persistente: máx 100 ingestões por dia por usuário
+  const dailyLimit = 100;
+  const recentCount = await countRecentIngestions(input.userId, 24);
+  if (recentCount >= dailyLimit) {
+    console.warn(`[MemoryOrchestrator] Rate limit reached for user ${input.userId} (${recentCount}/${dailyLimit}).`);
+    if (sourceMessageId) {
+      await insertIngestionLog({
+        userId: input.userId,
+        messageId: sourceMessageId,
+        conversationId,
+        status: "rate_limited",
+        reason: `Daily limit of ${dailyLimit} ingestions reached.`,
+      });
+    }
+    return {
+      userId: input.userId,
+      inserted: { active: 0, contradicted: 0, candidate: 0 },
+      skippedDuplicates: candidates.length,
+      updatedExisting: { contradicted: 0 },
+      auditEntries: 0,
+      profileCompiled: false,
+      items: { inserted: [], updated: [] },
+    };
+  }
+
+  // Registrar início do processamento
+  if (sourceMessageId) {
+    await insertIngestionLog({
+      userId: input.userId,
+      messageId: sourceMessageId,
+      conversationId,
+      status: "processing",
+    });
+  }
+  // ----------------------------------------
+
   const decisions = await reconcileCandidates(candidates);
 
   const toInsert = decisions.filter((d) => d.kind !== "skip_duplicate") as Array<
@@ -190,68 +250,95 @@ export async function orchestrateMemoryCandidates(input: OrchestrateCandidatesIn
     .filter((d) => d.kind === "insert_active")
     .flatMap((d) => d.contradictExistingIds.map((id) => ({ id })));
 
-  const result = await withMemoryTransaction(async (db) => {
-    const insertedItems: UserMemoryItem[] = [];
-    const updatedItems: UserMemoryItem[] = [];
-    let auditCount = 0;
+  try {
+    const result = await withMemoryTransaction(async (db) => {
+      const insertedItems: UserMemoryItem[] = [];
+      const updatedItems: UserMemoryItem[] = [];
+      let auditCount = 0;
 
-    for (const { id } of toUpdate) {
-      const updated = await updateUserMemoryItemStatus(input.userId, id, "contradicted", db);
-      if (updated) {
-        updatedItems.push(updated);
+      for (const { id } of toUpdate) {
+        const updated = await updateUserMemoryItemStatus(input.userId, id, "contradicted", db);
+        if (updated) {
+          updatedItems.push(updated);
+          const audit: CreateMemoryAuditLogEntryInput = {
+            memoryItemId: updated.id,
+            userId: input.userId,
+            action: "contradicted",
+            previousStatus: "active",
+            newStatus: "contradicted",
+            reason: reason || "contradicted by higher-priority incoming item",
+            actor,
+          };
+          await insertMemoryAuditLogEntry(audit, db);
+          auditCount += 1;
+        }
+      }
+
+      for (const decision of toInsert) {
+        const item = await insertUserMemoryItem(decision.candidate, db);
+        insertedItems.push(item);
+
         const audit: CreateMemoryAuditLogEntryInput = {
-          memoryItemId: updated.id,
+          memoryItemId: item.id,
           userId: input.userId,
-          action: "contradicted",
-          previousStatus: "active",
-          newStatus: "contradicted",
-          reason: reason || "contradicted by higher-priority incoming item",
+          action: auditActionForStatus(item.status),
+          previousStatus: null,
+          newStatus: item.status,
+          reason: reason || decision.reason,
           actor,
         };
         await insertMemoryAuditLogEntry(audit, db);
         auditCount += 1;
       }
-    }
 
-    for (const decision of toInsert) {
-      const item = await insertUserMemoryItem(decision.candidate, db);
-      insertedItems.push(item);
+      const shouldCompile =
+        compileProfile && (insertedItems.some((i) => i.status === "active") || updatedItems.length > 0);
 
-      const audit: CreateMemoryAuditLogEntryInput = {
-        memoryItemId: item.id,
+      const profile = shouldCompile ? await compileUserProfileFromActiveMemory(input.userId, db) : undefined;
+
+      // --- Finalizar governança (Fase 12) ---
+      if (sourceMessageId) {
+        await insertIngestionLog(
+          {
+            userId: input.userId,
+            messageId: sourceMessageId,
+            conversationId,
+            status: "completed",
+          },
+          db,
+        );
+      }
+      // --------------------------------------
+
+      return { insertedItems, updatedItems, auditCount, profile, profileCompiled: !!profile };
+    });
+
+    const inserted = {
+      active: result.insertedItems.filter((i) => i.status === "active").length,
+      contradicted: result.insertedItems.filter((i) => i.status === "contradicted").length,
+      candidate: result.insertedItems.filter((i) => i.status === "candidate").length,
+    };
+
+    return {
+      userId: input.userId,
+      inserted,
+      skippedDuplicates: decisions.filter((d) => d.kind === "skip_duplicate").length,
+      updatedExisting: { contradicted: result.updatedItems.length },
+      auditEntries: result.auditCount,
+      profileCompiled: result.profileCompiled,
+      profile: result.profile,
+      items: { inserted: result.insertedItems, updated: result.updatedItems },
+    };
+  } catch (error) {
+    if (sourceMessageId) {
+      await insertIngestionLog({
         userId: input.userId,
-        action: auditActionForStatus(item.status),
-        previousStatus: null,
-        newStatus: item.status,
-        reason: reason || decision.reason,
-        actor,
-      };
-      await insertMemoryAuditLogEntry(audit, db);
-      auditCount += 1;
+        messageId: sourceMessageId,
+        conversationId,
+        status: "error",
+        reason: error instanceof Error ? error.message : String(error),
+      });
     }
-
-    const shouldCompile =
-      compileProfile && (insertedItems.some((i) => i.status === "active") || updatedItems.length > 0);
-
-    const profile = shouldCompile ? await compileUserProfileFromActiveMemory(input.userId, db) : undefined;
-
-    return { insertedItems, updatedItems, auditCount, profile, profileCompiled: !!profile };
-  });
-
-  const inserted = {
-    active: result.insertedItems.filter((i) => i.status === "active").length,
-    contradicted: result.insertedItems.filter((i) => i.status === "contradicted").length,
-    candidate: result.insertedItems.filter((i) => i.status === "candidate").length,
-  };
-
-  return {
-    userId: input.userId,
-    inserted,
-    skippedDuplicates: decisions.filter((d) => d.kind === "skip_duplicate").length,
-    updatedExisting: { contradicted: result.updatedItems.length },
-    auditEntries: result.auditCount,
-    profileCompiled: result.profileCompiled,
-    profile: result.profile,
-    items: { inserted: result.insertedItems, updated: result.updatedItems },
-  };
+    throw error;
+  }
 }

@@ -94,7 +94,7 @@ export async function reconcileCandidates(
     decisions.push({
       kind: "insert_active",
       candidate: { ...typedCandidate, status: "active" },
-      reason: "no blocking conflicts found; promoting to active",
+      reason: candidate.reason || "no blocking conflicts found; promoting to active",
       contradictExistingIds,
     });
   }
