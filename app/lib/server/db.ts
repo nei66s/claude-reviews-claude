@@ -37,6 +37,10 @@ export function hasDatabase() {
 
 export function getDb() {
   if (!connectionString) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      // Return a dummy pool that won't actually be used but keeps the code from crashing
+      return new Pool({ connectionString: 'postgres://localhost:5432/dummy' });
+    }
     throw new Error("DATABASE_URL is not configured.");
   }
 
@@ -98,6 +102,9 @@ export async function dbQuery<T extends QueryResultRow = QueryResultRow>(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      if (!connectionString && process.env.NEXT_PHASE === 'phase-production-build') {
+        return { rows: [] } as unknown as QueryResult<T>;
+      }
       const db = getDb();
       return (await db.query<T>(text, params)) as QueryResult<T>;
     } catch (error) {

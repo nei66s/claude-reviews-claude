@@ -8,10 +8,8 @@ dotenv.config() // Then load .env as fallback
 const { Pool } = pg
 
 const DATABASE_URL = process.env.DATABASE_URL
+// Removed top-level throw to avoid build failures when DATABASE_URL is missing
 
-if (!DATABASE_URL) {
-  throw new Error('DATABASE_URL not set in environment')
-}
 
 function parsePositiveInt(value: string | undefined) {
   const parsed = Number(value)
@@ -38,6 +36,18 @@ function getPoolConfig() {
   const max = parsePositiveInt(process.env.PG_POOL_MAX) ?? (isProd ? 10 : 1)
   const idleTimeoutMillis = parsePositiveInt(process.env.PG_POOL_IDLE_TIMEOUT_MS) ?? (isProd ? 30_000 : 1_000)
   const connectionTimeoutMillis = parsePositiveInt(process.env.PG_POOL_CONNECTION_TIMEOUT_MS) ?? 5_000
+
+  if (!DATABASE_URL) {
+    // During Next.js build, we provide a dummy string to avoid pool initialization errors
+    // if the module is just being imported/traced.
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return {
+        connectionString: 'postgres://localhost:5432/dummy',
+        max: 1,
+      }
+    }
+    throw new Error('DATABASE_URL not set in environment')
+  }
 
   return {
     connectionString: DATABASE_URL,
@@ -73,6 +83,12 @@ export async function closePool() {
 }
 
 export async function query<T extends QueryResultRow = QueryResultRow>(text: string, params: any[] = []) {
+  if (!DATABASE_URL) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return { rows: [] } as unknown as pg.QueryResult<T>
+    }
+    throw new Error('DATABASE_URL not set in environment')
+  }
   return getPool().query<T>(text, params)
 }
 

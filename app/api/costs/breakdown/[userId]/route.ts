@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCostBreakdown } from '@/lib/agent/costTracker';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Native Cost Breakdown API
  * Replaces the proxy to port 3001 with direct calls to the cost tracker.
