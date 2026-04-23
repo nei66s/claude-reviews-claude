@@ -772,7 +772,7 @@ app.post('/chat/stream', async (req: Request, res: Response) => {
     const lastAgentId = messages.slice().reverse().find((m: { role: string; agentId?: string }) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId
     const resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks'
 
-    const result = await streamAgent(agentMessages as { role: "user" | "assistant" | "system" | "tool"; content: string | null }[], {
+    const result = await streamAgent(messages, {
       chatId,
       userId: user.id,
       displayName: user.displayName,

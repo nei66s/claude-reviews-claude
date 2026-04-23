@@ -6,7 +6,7 @@ import { getWorkflowState } from "@/lib/server/store";
 export async function GET(request: NextRequest) {
   const user = requireUser(request);
   if (!user) {
-    return NextResponse.json({ error: "NÃ£o autorizado." }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   }
 
   const chatId = request.nextUrl.searchParams.get("chatId")?.trim() || "";
