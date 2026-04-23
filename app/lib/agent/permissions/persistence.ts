@@ -87,7 +87,7 @@ export async function loadAskRules(): Promise<PersistedAskRule[]> {
 export async function saveDenyRule(
   id: string,
   tools: string | string[],
-  conditionJson: any,
+  conditionJson: unknown,
   reason: string
 ): Promise<void> {
   const toolsStr = Array.isArray(tools) ? tools.join(',') : tools
@@ -106,7 +106,7 @@ export async function saveDenyRule(
 export async function saveAskRule(
   id: string,
   tools: string | string[],
-  conditionJson: any,
+  conditionJson: unknown,
   message: string
 ): Promise<void> {
   const toolsStr = Array.isArray(tools) ? tools.join(',') : tools
@@ -166,7 +166,7 @@ export async function isRuleApproved(ruleId: string, chatId: string): Promise<bo
 /**
  * List all active approvals for a chat
  */
-export async function listApprovalsForChat(chatId: string): Promise<any[]> {
+export async function listApprovalsForChat(chatId: string): Promise<unknown[]> {
   const res = await query(
     `SELECT rule_id, approved_at, expires_at FROM permission_approvals
      WHERE chat_id = $1 AND (expires_at IS NULL OR expires_at > NOW())

@@ -7,7 +7,7 @@ import { getCostBreakdown } from '@/lib/agent/costTracker';
  */
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {

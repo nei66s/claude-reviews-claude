@@ -54,8 +54,8 @@ type AgentContext = {
   approvedTools?: string[]
   selectedAgentId?: string
   helperAgentId?: string
-  memoryContext?: any
-  psychProfile?: any
+  memoryContext?: unknown
+  psychProfile?: unknown
   systemPromptOverride?: string
   maxTokens?: number
 }
@@ -82,13 +82,13 @@ function buildSystemPrompt(context?: AgentContext) {
 
   let profilePrompts = ''
   if (context?.psychProfile) {
-    const profile = context.psychProfile
+    const profile = context.psychProfile as { profile_prompt?: string }
     profilePrompts = `\n\n<psychological_profile>\n${profile.profile_prompt || ''}\n</psychological_profile>`
   }
 
   let memoryPrompts = ''
   if (context?.memoryContext) {
-    const mem = context.memoryContext
+    const mem = context.memoryContext as { summaryShort?: string; traits?: string[]; topics?: string[] }
     memoryPrompts = `\n\n<user_context>\nSummary: ${mem.summaryShort || ''}\nTraits: ${mem.traits?.join(', ') || ''}\nTopics: ${mem.topics?.join(', ') || ''}\n</user_context>`
   }
   
@@ -161,7 +161,8 @@ export async function runAgent(
     }
 
     const toolOutputs: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = []
-    for (const call of toolCalls as any[]) {
+    for (const callObject of toolCalls) {
+      const call = callObject as { id: string; function: { name: string; arguments: string }; type: string }
       trace.push({
         type: 'tool_call',
         name: call.function.name,
@@ -216,9 +217,13 @@ export async function runAgent(
   }
 
   const finalMessage = response.choices[0].message
+  const outputText = typeof finalMessage.content === 'string' 
+    ? finalMessage.content 
+    : (Array.isArray(finalMessage.content) ? 'Complex content' : '');
+
   return { 
     response: { 
-      output_text: finalMessage.content || '',
+      output_text: outputText || '',
       id: response.id
     }, 
     trace 
@@ -325,7 +330,8 @@ export async function streamAgent(
     }
 
     // Process tool calls
-    for (const call of (assistantMessage as any).tool_calls) {
+    for (const callObject of (assistantMessage as { tool_calls?: unknown[] }).tool_calls || []) {
+      const call = callObject as { id: string; function: { name: string; arguments: string }; type: string }
       const callEntry: ToolTraceEntry = {
         type: 'tool_call',
         name: call.function.name,
@@ -376,8 +382,11 @@ export async function streamAgent(
     }
   }
 
+  const lastMsg = currentMessages[currentMessages.length - 1]
+  const finalOutput = typeof lastMsg.content === 'string' ? lastMsg.content : '';
+
   return { 
-    response: { output_text: currentMessages[currentMessages.length - 1].content || '' }, 
+    response: { output_text: finalOutput || '' }, 
     trace 
   }
 }

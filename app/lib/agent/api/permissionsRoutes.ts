@@ -55,8 +55,9 @@ router.post('/deny-rules', async (req, res) => {
     })
 
     return res.json({ ok: true, id })
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -68,8 +69,9 @@ router.get('/deny-rules', async (req, res) => {
   try {
     const rules = await loadDenyRules()
     return res.json(rules)
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -82,8 +84,9 @@ router.delete('/deny-rules/:id', async (req, res) => {
     const { id } = req.params
     await deleteDenyRule(id)
     return res.json({ ok: true, deleted: id })
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -114,8 +117,9 @@ router.post('/ask-rules', async (req, res) => {
     })
 
     return res.json({ ok: true, id })
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -127,8 +131,9 @@ router.get('/ask-rules', async (req, res) => {
   try {
     const rules = await loadAskRules()
     return res.json(rules)
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -141,8 +146,9 @@ router.delete('/ask-rules/:id', async (req, res) => {
     const { id } = req.params
     await deleteAskRule(id)
     return res.json({ ok: true, deleted: id })
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -169,8 +175,9 @@ router.post('/approvals', async (req, res) => {
 
     await recordApproval(ruleId, chatId, expiresInMs)
     return res.json({ ok: true, ruleId, chatId })
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -183,8 +190,9 @@ router.get('/approvals/:chatId', async (req, res) => {
     const { chatId } = req.params
     const approvals = await listApprovalsForChat(chatId)
     return res.json(approvals)
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -197,8 +205,9 @@ router.delete('/approvals/:ruleId/:chatId', async (req, res) => {
     const { ruleId, chatId } = req.params
     await revokeApproval(ruleId, chatId)
     return res.json({ ok: true, revoked: { ruleId, chatId } })
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 
@@ -211,8 +220,9 @@ router.get('/status/:ruleId/:chatId', async (req, res) => {
     const { ruleId, chatId } = req.params
     const approved = await isRuleApproved(ruleId, chatId)
     return res.json({ ruleId, chatId, approved })
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+  } catch (err) {
+    const error = err as { message?: string };
+    return res.status(500).json({ error: error.message })
   }
 })
 

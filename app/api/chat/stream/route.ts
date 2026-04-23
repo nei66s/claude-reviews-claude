@@ -20,7 +20,6 @@ import { streamAgent, triageAgent } from "@/lib/agent/llm";
 import { initializePersistentState } from "@/lib/agent/initialization";
 import { AGENT_PROFILES } from "@/lib/familyRouting";
 import { getPsychologicalProfile } from "@/lib/server/psychological-profile";
-import { AGENT_PROFILES } from "@/lib/familyRouting";
 
 export const runtime = "nodejs";
 
@@ -196,7 +195,7 @@ export async function POST(request: NextRequest) {
     console.warn("[Triage] Failed, falling back to current context:", err);
   }
 
-  const selectedAgentName = (AGENT_PROFILES as any)[selectedAgentId]?.name || selectedAgentId;
+  const selectedAgentName = (AGENT_PROFILES as Record<string, { name: string }>)[selectedAgentId]?.name || selectedAgentId;
 
   const readable = new ReadableStream<Uint8Array>({
     start: async (controller) => {
@@ -217,7 +216,7 @@ export async function POST(request: NextRequest) {
         ]);
 
         const agentMessages = messages.map((m) => ({
-          role: m.role === "agent" ? "assistant" : (m.role as any),
+          role: m.role === "agent" ? "assistant" : (m.role as "user" | "assistant" | "system" | "tool"),
           content: m.content,
         }));
 

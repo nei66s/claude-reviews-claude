@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+
 
 export type AgentId =
   | "chocks"
@@ -33,23 +33,7 @@ export type AgentRoutingResult = {
   cleanedInput: string;
 };
 
-const FOLLOW_UP_HINTS = [
-  "e isso",
-  "e agora",
-  "continua",
-  "continue",
-  "segue",
-  "segue nisso",
-  "faz isso",
-  "manda ver",
-  "pode seguir",
-  "como assim",
-  "explica melhor",
-  "detalha",
-  "melhora isso",
-  "ajusta isso",
-  "faz sentido",
-];
+
 
 function normalizeText(value: string) {
   return value
@@ -234,7 +218,7 @@ export function getAgentRouting(input: string): AgentRoutingResult {
   }
 
   // 2. Second Pass: Check for keywords if no name was mentioned
-  for (const [id, profile] of Object.entries(AGENT_PROFILES)) {
+  for (const [, profile] of Object.entries(AGENT_PROFILES)) {
     const keywords = profile.keywords || [];
     if (keywords.some(kw => normalizedInput.includes(normalizeText(kw)))) {
       return {

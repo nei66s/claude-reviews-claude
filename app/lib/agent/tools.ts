@@ -18,7 +18,7 @@ import { sendMessage } from './coordination/mailbox'
 
 const execp = promisify(exec)
 
-export type ToolResult = { ok: boolean; output?: any }
+export type ToolResult = { ok: boolean; output?: unknown }
 
 export type ToolStatus = {
   name: string
@@ -230,7 +230,7 @@ async function readTextFile(absPath: string) {
   return fs.readFile(absPath, 'utf8')
 }
 
-function normalizeWorkflowStep(step: any, index: number): WorkflowStep {
+function normalizeWorkflowStep(step: { id?: string; text?: string; status?: string }, index: number): WorkflowStep {
   const text = String(step?.text || '').trim()
   if (!text) throw new Error(`workflow step ${index + 1} missing text`)
 
@@ -716,7 +716,33 @@ export function getToolStatuses(context?: Pick<ToolContext, 'permissionMode'>): 
   ]
 }
 
-export async function runTool(tool: string, input: any, context?: ToolContext): Promise<ToolResult> {
+export async function runTool(tool: string, inputRaw: { [key: string]: unknown }, context?: ToolContext): Promise<ToolResult> {
+  const input = inputRaw as {
+    path?: string;
+    from_path?: string;
+    to_path?: string;
+    content?: string;
+    pattern?: string;
+    find?: string;
+    replace?: string;
+    replace_all?: boolean;
+    limit?: number;
+    cmd?: string;
+    url?: string;
+    append?: boolean;
+    regex?: boolean;
+    query?: string;
+    args?: Record<string, unknown>;
+    steps?: unknown[];
+    goal?: string;
+    message?: string;
+    agent_id?: string;
+    text?: string;
+    id?: string;
+    done?: boolean;
+    summary?: string;
+    [key: string]: unknown;
+  };
   assertToolPermission(tool, context)
 
   if (tool === 'file_read' || tool === 'file.read') {
@@ -897,9 +923,10 @@ $out = & cmd /c "${String(cmd).replace(/"/g, '\\"')}" 2>&1 | Out-String;
       })
       const decoded = Buffer.from(b64out.trim(), 'base64').toString('utf-8').trim()
       return { ok: true, output: { stdout: decoded, stderr: '' } }
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { stderr?: string; message?: string };
       // Fallback: captura stderr do erro
-      const errOut = String(err?.stderr || err?.message || '').trim()
+      const errOut = String(error?.stderr || error?.message || '').trim()
       return { ok: true, output: { stdout: '', stderr: errOut } }
     }
   }
@@ -1013,7 +1040,7 @@ $out = & cmd /c "${String(cmd).replace(/"/g, '\\"')}" 2>&1 | Out-String;
 
   if (tool === 'workflow_replace') {
     const goal = String(input?.goal || '').trim()
-    const stepsInput = input?.steps
+    const stepsInput = (input?.steps || []) as { id?: string; text?: string; status?: string }[]
     if (!goal) throw new Error('input.goal required')
     if (!Array.isArray(stepsInput) || stepsInput.length === 0) throw new Error('input.steps must be a non-empty array')
 

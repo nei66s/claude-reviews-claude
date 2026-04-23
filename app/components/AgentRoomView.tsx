@@ -17,7 +17,14 @@ const AGENT_SEQUENCE: AgentId[] = [
 
 export default function AgentRoomView() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(true);
+
+  // Pausa a sala se a aba não estiver visível
+  useEffect(() => {
+    const handleVisibility = () => setIsActive(!document.hidden);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
   const [speed] = useState(25000); // 25 segundos base (mais lento conforme solicitado)
   const [isThinking, setIsThinking] = useState(false);
   const [isUserPresent, setIsUserPresent] = useState(true);

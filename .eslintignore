@@ -1,0 +1,10 @@
+# Ignore noisy folders
+scratch/
+scripts/
+src-tauri/
+dist/
+build/
+.next/
+node_modules/
+*.demo.ts
+*.test.ts

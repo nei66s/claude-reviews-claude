@@ -154,7 +154,7 @@ async function resolveDesktopPath() {
   return null
 }
 
-async function tryDirectDesktopList(messages: any[], req: Request) {
+async function tryDirectDesktopList(messages: { role: string; content: string }[], req: Request) {
   const userText = getLastUserMessageText(messages)
   if (!parseDesktopListIntent(userText)) return null
 
@@ -185,13 +185,14 @@ async function tryDirectDesktopList(messages: any[], req: Request) {
     approvedTools: getApprovedTools(req),
   })
   const callId = `direct_desktop_${Date.now()}`
-  const entries = Array.isArray(out?.output?.entries) ? out.output.entries : []
-  const sortedEntries = [...entries].sort((a: any, b: any) => {
+  const outputObj = out?.output as { entries?: unknown[] };
+  const entries = Array.isArray(outputObj?.entries) ? outputObj.entries : [];
+  const sortedEntries = [...entries as { type?: string; name?: string }[]].sort((a, b) => {
     if (a?.type !== b?.type) return a?.type === 'dir' ? -1 : 1
     return String(a?.name || '').localeCompare(String(b?.name || ''), 'pt-BR', { sensitivity: 'base' })
   })
   const preview = sortedEntries.slice(0, 40)
-  const lines = preview.map((entry: any) => `${entry.type === 'dir' ? 'Pasta' : 'Arquivo'}  ${entry.name}`)
+  const lines = preview.map((entry: { type?: string; name?: string }) => `${entry.type === 'dir' ? 'Pasta' : 'Arquivo'}  ${entry.name}`)
   const summary = `${entries.length} ${entries.length === 1 ? 'item encontrado' : 'itens encontrados'}`
   const suffix = entries.length > preview.length ? `\n\nMostrando ${preview.length} de ${entries.length} itens.` : ''
 
@@ -221,7 +222,7 @@ function getRequestUser(req: Request): RequestUser {
   return { id, displayName }
 }
 
-function getLastUserMessageText(messages: any[]) {
+function getLastUserMessageText(messages: { role: string; content: string | unknown }[]) {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index]
     if (message?.role === 'user' && typeof message?.content === 'string' && message.content.trim()) {
@@ -256,7 +257,7 @@ function parseDirectTerminalIntent(text: string): string | null {
   return null
 }
 
-async function tryDirectTerminal(messages: any[], req: Request) {
+async function tryDirectTerminal(messages: { role: string; content: string | unknown }[], req: Request) {
   const userText = getLastUserMessageText(messages)
   const cmd = parseDirectTerminalIntent(userText)
   if (!cmd) return null
@@ -362,7 +363,7 @@ function parseDirectReadIntent(text: string): DirectReadIntent | null {
   return { path: extractedPath }
 }
 
-async function tryDirectDelete(messages: any[], req: Request) {
+async function tryDirectDelete(messages: { role: string; content: string | unknown }[], req: Request) {
   const userText = getLastUserMessageText(messages)
   const intent = parseDirectDeleteIntent(userText)
   if (!intent) return null
@@ -399,7 +400,7 @@ async function tryDirectDelete(messages: any[], req: Request) {
   }
 }
 
-async function tryDirectRead(messages: any[], req: Request) {
+async function tryDirectRead(messages: { role: string; content: string | unknown }[], req: Request) {
   const userText = getLastUserMessageText(messages)
   const intent = parseDirectReadIntent(userText)
   if (!intent) return null
@@ -553,7 +554,7 @@ app.post('/chat', async (req: Request, res: Response) => {
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'messages required (array)' })
 
   // Simple moderation: join user messages and check
-  const userText = messages.map((m: any) => m.content || '').join('\n')
+  const userText = messages.map((m: { content?: string }) => m.content || '').join('\n')
   try {
     const mod = await moderateText(userText)
     if (!mod.allowed) return res.status(403).json({ error: 'content blocked by moderation', details: mod })
@@ -592,7 +593,7 @@ app.post('/chat', async (req: Request, res: Response) => {
     const selectedAgentId = typeof req.body?.selectedAgentId === 'string' ? req.body.selectedAgentId : undefined
     const helperAgentId = typeof req.body?.helperAgentId === 'string' ? req.body.helperAgentId : undefined
     const chat = chatId ? await getConversationById(chatId, user.id) : null
-    const lastAgentId = messages.slice().reverse().find((m: any) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId
+    const lastAgentId = messages.slice().reverse().find((m: { role: string; agentId?: string }) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId
     const resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks'
 
     // 🧠 Check instincts BEFORE calling LLM (< 50ms vs 2-5s)
@@ -768,10 +769,10 @@ app.post('/chat/stream', async (req: Request, res: Response) => {
     const selectedAgentId = typeof req.body?.selectedAgentId === 'string' ? req.body.selectedAgentId : undefined
     const helperAgentId = typeof req.body?.helperAgentId === 'string' ? req.body.helperAgentId : undefined
     const chat = chatId ? await getConversationById(chatId, user.id) : null
-    const lastAgentId = messages.slice().reverse().find((m: any) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId
+    const lastAgentId = messages.slice().reverse().find((m: { role: string; agentId?: string }) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId
     const resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks'
 
-    const result = await streamAgent(messages, {
+    const result = await streamAgent(agentMessages as { role: "user" | "assistant" | "system" | "tool"; content: string | null }[], {
       chatId,
       userId: user.id,
       displayName: user.displayName,
@@ -867,6 +868,7 @@ app.post('/tools/run', async (req: Request, res: Response) => {
     }
 
     // Dispatch PreToolUse hook
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const hookRegistry = require('./hooks/index.js').getHookRegistry?.() || null
     if (hookRegistry) {
       await hookRegistry.dispatch({

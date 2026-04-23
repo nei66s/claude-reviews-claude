@@ -1,5 +1,5 @@
 
-import { getDb, hasDatabase, dbQuery } from "../db";
+import { hasDatabase, dbQuery } from "../db";
 
 let schemaReady: Promise<void> | null = null;
 

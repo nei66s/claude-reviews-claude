@@ -71,7 +71,7 @@ export async function saveHook(
   category: 'team' | 'message' | 'permission' | 'plan',
   event: string,
   hookType: 'pre' | 'post' | 'error',
-  payloadJson: any
+  payloadJson: unknown
 ): Promise<void> {
   await query(
     `INSERT INTO swarm_hooks (id, category, event, hook_type, payload_json, enabled)

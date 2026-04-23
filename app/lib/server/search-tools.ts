@@ -1,4 +1,4 @@
-import fs from "node:fs/promises";
+
 import path from "node:path";
 import OpenAI from "openai";
 
@@ -20,9 +20,7 @@ const cache = new Map<string, CachedEntry>();
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const DEFAULT_MAX_RESULTS = 5;
 
-function getRateLimitFile() {
-  return path.join(process.cwd(), ".chocks-local", "web-search-rate-limit.json");
-}
+
 
 
 
@@ -107,7 +105,7 @@ async function searchWithOpenAI(query: string): Promise<WebSearchResult[]> {
 }
 
 export async function searchWeb(
-  user: SessionUser,
+  _user: SessionUser,
   input: {
     query: string;
     max_results?: number;

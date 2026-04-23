@@ -83,7 +83,7 @@ class PermissionPipeline {
   }
 
   // Step 4: Content-specific checks
-  async step4_ContentSpecific(tool: string, input: any, context: PermissionContext): Promise<PermissionCheckResult> {
+  async step4_ContentSpecific(tool: string, input: Record<string, unknown>, context: PermissionContext): Promise<PermissionCheckResult> {
     // Example: block file operations outside project root
     if (tool === 'file_read' || tool === 'file_write') {
       const path = input?.path || input?.from_path
@@ -130,7 +130,7 @@ class PermissionPipeline {
   }
 
   // Step 6: Safety checks (moderation, rate limits)
-  async step6_SafetyChecks(tool: string, input: any, context: PermissionContext): Promise<PermissionCheckResult> {
+  async step6_SafetyChecks(tool: string, input: Record<string, unknown>, context: PermissionContext): Promise<PermissionCheckResult> {
     const chatId = context.chatId || 'unknown'
     const now = Date.now()
 
@@ -176,7 +176,7 @@ class PermissionPipeline {
 
     // Content moderation: check tool input for harmful content
     if (input && typeof input === 'object') {
-      for (const [key, value] of Object.entries(input)) {
+      for (const [, value] of Object.entries(input as Record<string, unknown>)) {
         if (typeof value === 'string' && value.length > 0) {
           try {
             const modResult = await moderateText(value)
@@ -214,7 +214,7 @@ class PermissionPipeline {
   /**
    * Run full 7-step pipeline
    */
-  async check(tool: string, input: any, context: PermissionContext): Promise<PermissionCheckResult> {
+  async check(tool: string, input: Record<string, unknown>, context: PermissionContext): Promise<PermissionCheckResult> {
     let result = await this.step1_DenyRules(tool, context)
     if (!result.allowed) return result
 
