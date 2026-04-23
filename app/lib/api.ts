@@ -14,11 +14,12 @@ export interface Attachment {
 
 export interface Message {
   id?: string; // ID da mensagem para feedback
-  role: "user" | "agent";
+  role: "user" | "agent" | "system";
   content: string;
   streaming?: boolean;
   trace?: TraceEntry[];
   attachments?: Attachment[];
+  timestamp?: string;
   feedback?: "like" | "dislike" | null;
   agentId?: string;
   helperAgentId?: string;

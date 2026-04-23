@@ -128,7 +128,7 @@ export default function MemoryAdminPage() {
   const [userList, setUserList] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("");
-  const [limit, setLimit] = useState(50);
+  const [limit, setLimit] = useState(500);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [items, setItems] = useState<UserMemoryItem[]>([]);
@@ -184,7 +184,7 @@ export default function MemoryAdminPage() {
 
   const auditQueryString = useMemo(() => {
     const params = new URLSearchParams();
-    params.set("limit", "40");
+    params.set("limit", "100");
     return `?${params.toString()}`;
   }, []);
 
@@ -199,7 +199,7 @@ export default function MemoryAdminPage() {
         requestJson(`/memory/users/${encodeURIComponent(userId)}/profile`),
         requestJson(`/memory/users/${encodeURIComponent(userId)}/items${queryString}`),
         requestJson(`/memory/users/${encodeURIComponent(userId)}/audit${auditQueryString}`),
-        requestJson(`/memory/users/${encodeURIComponent(userId)}/ingestion?limit=20`),
+        requestJson(`/memory/users/${encodeURIComponent(userId)}/ingestion?limit=100`),
       ]);
       setProfile(profileResp?.profile ?? null);
       setItems(Array.isArray(itemsResp?.items) ? (itemsResp.items as UserMemoryItem[]) : []);
@@ -409,9 +409,9 @@ export default function MemoryAdminPage() {
             style={{ ...inputStyle, width: 90 }}
             type="number"
             min={1}
-            max={200}
+            max={1000}
             value={limit}
-            onChange={(e) => setLimit(Math.max(1, Math.min(200, Number(e.target.value) || 50)))}
+            onChange={(e) => setLimit(Math.max(1, Math.min(1000, Number(e.target.value) || 500)))}
           />
         </div>
 

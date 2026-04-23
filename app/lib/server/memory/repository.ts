@@ -259,7 +259,7 @@ export async function listUserMemoryItemsByUserId(
     where.push(`type = $${params.length}`);
   }
 
-  const limit = Number.isFinite(opts.limit as number) ? Math.max(1, Math.min(200, opts.limit as number)) : 50;
+  const limit = Number.isFinite(opts.limit as number) ? Math.max(1, Math.min(1000, opts.limit as number)) : 100;
   params.push(limit);
 
   const result = await client.query(
@@ -632,7 +632,7 @@ export async function listMemoryAuditEvents(
   await ensureMemoryOrchestratorSchema(db);
   const client = db ?? getDb();
 
-  const limit = Number.isFinite(opts.limit as number) ? Math.max(1, Math.min(200, opts.limit as number)) : 50;
+  const limit = Number.isFinite(opts.limit as number) ? Math.max(1, Math.min(500, opts.limit as number)) : 100;
   const memoryItemId = typeof opts.memoryItemId === "string" && opts.memoryItemId.trim() ? opts.memoryItemId.trim() : null;
 
   const result = await client.query(

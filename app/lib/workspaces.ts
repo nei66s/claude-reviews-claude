@@ -11,6 +11,7 @@ export const workspaceRouteById = {
   memory: "/memory",
   "memory-graph": "/memory-graph",
   code: "/code",
+  "agent-room": "/agent-room",
 } as const;
 
 export type WorkspaceId = keyof typeof workspaceRouteById;

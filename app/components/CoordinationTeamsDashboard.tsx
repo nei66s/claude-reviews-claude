@@ -93,7 +93,7 @@ export function TeamsDashboard({ onTeamSelect }: { onTeamSelect?: (teamId: strin
                 justifyContent: 'center',
               }}>
                 <Image
-                  src="/pimpotasma.png"
+                  src="/pimpim-v3.png"
                   alt="Pimpim - CEO"
                   width={80}
                   height={80}
@@ -118,7 +118,7 @@ export function TeamsDashboard({ onTeamSelect }: { onTeamSelect?: (teamId: strin
                 justifyContent: 'center',
               }}>
                 <Image
-                  src="/betinha-avatar.jpg"
+                  src="/betinha-v2.png"
                   alt="Betinha - CFO"
                   width={80}
                   height={80}
@@ -143,7 +143,7 @@ export function TeamsDashboard({ onTeamSelect }: { onTeamSelect?: (teamId: strin
                 justifyContent: 'center',
               }}>
                 <Image
-                  src="/chocks-avatar-face.jpg"
+                  src="/chocks-v3.png"
                   alt="Chocks - Assistente"
                   width={80}
                   height={80}
@@ -168,7 +168,7 @@ export function TeamsDashboard({ onTeamSelect }: { onTeamSelect?: (teamId: strin
                 justifyContent: 'center',
               }}>
                 <Image
-                  src="/chubaka-fome.png"
+                  src="/chubaka-real.png"
                   alt="Chubaka"
                   width={80}
                   height={80}
@@ -193,7 +193,32 @@ export function TeamsDashboard({ onTeamSelect }: { onTeamSelect?: (teamId: strin
                 justifyContent: 'center',
               }}>
                 <Image
-                  src="/kitty-avatar.jpg"
+                  src="/bento-real.png"
+                  alt="Bento - Testador"
+                  width={80}
+                  height={80}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '600' }}>🛡️ Bento</div>
+              <div style={{ fontSize: '11px', opacity: 0.8 }}>Testador</div>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                margin: '0 auto 8px',
+                backgroundColor: '#fff',
+                border: '3px solid rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Image
+                  src="/kitty-v2.png"
                   alt="Kitty - Comunicadora"
                   width={80}
                   height={80}
@@ -203,13 +228,113 @@ export function TeamsDashboard({ onTeamSelect }: { onTeamSelect?: (teamId: strin
               <div style={{ fontSize: '13px', fontWeight: '600' }}>🐱 Kitty</div>
               <div style={{ fontSize: '11px', opacity: 0.8 }}>Comunicadora</div>
             </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                margin: '0 auto 8px',
+                backgroundColor: '#fff',
+                border: '3px solid rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Image
+                  src="/miltinho-real.png"
+                  alt="Miltinho - Amigo"
+                  width={80}
+                  height={80}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '600' }}>👓 Miltinho</div>
+              <div style={{ fontSize: '11px', opacity: 0.8 }}>Pragmático</div>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                margin: '0 auto 8px',
+                backgroundColor: '#fff',
+                border: '3px solid rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Image
+                  src="/repeteco-real.png"
+                  alt="Repeteco - Conselheiro"
+                  width={80}
+                  height={80}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '600' }}>🧸 Repeteco</div>
+              <div style={{ fontSize: '11px', opacity: 0.8 }}>Conselheiro</div>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                margin: '0 auto 8px',
+                backgroundColor: '#fff',
+                border: '3px solid rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Image
+                  src="/jorginho-real.png"
+                  alt="Jorginho - Protetor"
+                  width={80}
+                  height={80}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '600' }}>🛡️ Jorginho</div>
+              <div style={{ fontSize: '11px', opacity: 0.8 }}>Protetor</div>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                margin: '0 auto 8px',
+                backgroundColor: '#fff',
+                border: '3px solid rgba(236, 72, 153, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Image
+                  src="/isa-real.png"
+                  alt="Isa - Primeira-Dama"
+                  width={80}
+                  height={80}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#ec4899' }}>💖 Isa</div>
+              <div style={{ fontSize: '11px', opacity: 0.8 }}>Primeira-Dama</div>
+            </div>
           </div>
         </div>
 
         <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
           <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Sobre a Pimpotasma:</div>
           <p style={{ fontSize: '13px', lineHeight: '1.6', margin: 0, opacity: 0.95 }}>
-            A gente é uma família de verdade. Pimpim comanda como CEO, Betinha cuida da parte financeira e operacional (e é a namorada do Chocks 💚), Bento é crítico e protetor, Kitty criativa demais, Chubaka testando tudo que é lançamento. Chocks? Ele é a gente conversando com você - mas quem toma as decisões é o Pimpim. Juntos resolvemos qualquer problema através de workflows e coordenação automática.
+            A gente é uma família de verdade. Pimpim comanda como CEO, Isa é a Primeira-Dama e guia do coração do Pimpim 💖, Betinha cuida da parte financeira e operacional (e é a namorada do Chocks 💚), Bento é crítico e protetor, Kitty criativa demais, Chubaka testando tudo que é lançamento. Chocks? Ele é a gente conversando com você - mas quem toma as decisões é o Pimpim. Juntos resolvemos qualquer problema através de workflows e coordenação automática.
           </p>
         </div>
       </div>

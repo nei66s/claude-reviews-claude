@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { ChevronDown, ChevronUp, Download, FileText, Globe, PanelsTopLeft } from "lucide-react";
@@ -74,14 +74,14 @@ function getPdfTrace(trace: TraceEntry[] | undefined) {
 function SourcesList({ trace }: { trace?: TraceEntry[] }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const sources = extractWebSources(trace);
-  
+
   if (sources.length === 0) return null;
 
   return (
     <div className={`artifact-sources-container ${isExpanded ? "is-expanded" : ""}`}>
-      <button 
-        type="button" 
-        className="artifact-sources-header" 
+      <button
+        type="button"
+        className="artifact-sources-header"
         onClick={() => setIsExpanded(!isExpanded)}
         title={isExpanded ? "Recolher fontes" : "Ver fontes consultadas"}
       >
@@ -99,10 +99,10 @@ function SourcesList({ trace }: { trace?: TraceEntry[] }) {
             <div key={`${source.url}-${index}`} className="artifact-source-item">
               <div className="artifact-source-index">[{index + 1}]</div>
               <div className="artifact-source-content">
-                <a 
-                  href={source.url} 
-                  target="_blank" 
-                  rel="noreferrer" 
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noreferrer"
                   className="artifact-source-link"
                 >
                   {source.title}
@@ -136,9 +136,9 @@ function buildAgentProfile(agentId?: string | null) {
 
   return {
     id: safeId,
-    name: displayName,
-    subtitle: fallbackProfile.subtitle || (safeId === "agente" ? "Agente" : `ID ${safeId}`),
-    avatarSrc: fallbackProfile.avatarSrc,
+    name: safeId === "agente" ? "Agente" : displayName,
+    subtitle: safeId === "agente" ? "Aguardando..." : (fallbackProfile.subtitle || `ID ${safeId}`),
+    avatarSrc: safeId === "agente" ? undefined : fallbackProfile.avatarSrc,
     fallbackEmoji: fallback,
   } satisfies AgentProfile;
 }
@@ -166,26 +166,57 @@ export default function MessageBubble({
   onOpenArtifact?: (artifact: Artifact) => void;
   onPlayAudio?: () => void;
 }) {
+  const funnyActivities = useMemo(() => [
+    "Comendo uns cookies delícia...",
+    "Tomando um banho de espuma...",
+    "Consultando o dicionário de palavras difíceis...",
+    "Brincando de esconde-esconde com os dados...",
+    "Desenhando a resposta com giz de cera...",
+    "Limpando os óculos pra enxergar melhor...",
+    "Dando um abraço no servidor...",
+    "Apostando corrida com os bits...",
+    "Procurando a resposta embaixo do tapete...",
+    "Tomando um suquinho de laranja...",
+    "Fazendo um aviãozinho de papel com o pedido...",
+    "Contando até dez antes de responder...",
+    "Pedindo um abraço pra Betinha...",
+    "Tirando uma soneca de 5 segundos...",
+    "Limpando a bota pra ficar bonito...",
+    "Catando as palavras que caíram no chão..."
+  ], []);
+
+  const currentActivity = useMemo(() => {
+    const seed = (message.id ? String(message.id).length : 0) + (message.content?.length || 0);
+    return funnyActivities[seed % funnyActivities.length];
+  }, [message.id, message.content, funnyActivities]);
+
+  // 🚀 Resiliência de Identidade: Só mostra quem é o agente se houver conteúdo real
+  // ou se o streaming terminou. Evita flicker de trocas de triagem rápidas.
   const isAgent = message.role === "agent";
+  const showWorkingState = isAgent && message.streaming && (!message.content || message.content.length < 5);
+
   const agentProfile = buildAgentProfile(message.agentId);
   const helperAgentProfile = message.helperAgentId ? buildAgentProfile(message.helperAgentId) : null;
   const memoryNotice = isAgent ? getMemoryCaptureTrace(message.trace) : null;
   const pdfNotice = isAgent ? getPdfTrace(message.trace) : null;
   const primaryArtifact = isAgent ? pickPrimaryArtifact(message.content, message.trace) : null;
-  const showWorkingState = isAgent && message.streaming && !message.content.trim();
-  
   const messageId = message.id ? String(message.id) : "";
 
   return (
-    <div className={`message ${message.role} ${message.streaming ? "is-streaming" : ""}`}>
+    <div className={`message ${message.role} ${agentProfile.id ? `agent-${agentProfile.id}` : ""} ${message.streaming ? "is-streaming" : ""}`}>
       <div className="message-row">
-        {isAgent && (
+        {isAgent && !showWorkingState && (
           <div className={`message-badge-group ${helperAgentProfile ? "with-helper" : ""}`}>
-            <div className="message-badge message-badge-primary" title={agentProfile.name}>
-              <div className="message-badge-inner">
-                <AgentFace agent={agentProfile} size={40} />
+            {agentProfile.id !== "agente" ? (
+              <div className="message-badge message-badge-primary" title={agentProfile.name}>
+                <div className="message-badge-inner">
+                  <AgentFace agent={agentProfile} size={40} />
+                </div>
+                {agentProfile.id === "pimpim" && <div className="agent-crown">👑</div>}
               </div>
-            </div>
+            ) : (
+              <div className="message-badge message-skeleton-badge" />
+            )}
             {helperAgentProfile ? (
               <div className="message-badge message-badge-helper" title={`${helperAgentProfile.name} ajudando`}>
                 <div className="message-badge-inner">
@@ -196,8 +227,8 @@ export default function MessageBubble({
           </div>
         )}
         <div className="bubble">
-          {isAgent && (
-            <div className="chocks-header">
+          {isAgent && !showWorkingState && (
+            <div className="chocks-header" style={{ opacity: agentProfile.id === "agente" ? 0.3 : 1 }}>
               <div className="agent-title-group">
                 <span className="chocks-label">{agentProfile.name}</span>
                 <span className="chocks-subtitle">{agentProfile.subtitle}</span>
@@ -240,28 +271,32 @@ export default function MessageBubble({
           {isAgent && message.collaborationLabel ? <div className="agent-collaboration">{message.collaborationLabel}</div> : null}
 
           {showWorkingState ? (
-            <div className="agent-working-panel">
-              <div className="agent-working-avatars">
-                <div className="agent-working-avatar primary">
-                  <AgentFace agent={agentProfile} size={34} />
-                </div>
-                {helperAgentProfile ? (
-                  <div className="agent-working-avatar secondary">
-                    <AgentFace agent={helperAgentProfile} size={30} />
+            <div className="agent-working-panel generic-thinking">
+              {agentProfile.id !== "agente" && (
+                <div className="agent-working-avatars">
+                  <div className="agent-working-avatar primary">
+                    <AgentFace agent={agentProfile} size={34} />
                   </div>
-                ) : null}
-              </div>
+                  {helperAgentProfile ? (
+                    <div className="agent-working-avatar secondary">
+                      <AgentFace agent={helperAgentProfile} size={30} />
+                    </div>
+                  ) : null}
+                </div>
+              )}
               <div className="agent-working-copy">
                 <div className="agent-working-title">
-                  {helperAgentProfile
-                    ? `${agentProfile.name} e ${helperAgentProfile.name} estao trabalhando nisso`
-                    : `${agentProfile.name} esta trabalhando nisso`}
+                  {agentProfile.id === "agente" 
+                    ? "Pensando..." 
+                    : (helperAgentProfile
+                       ? `${agentProfile.name} e ${helperAgentProfile.name} estao trabalhando`
+                       : `${agentProfile.name} esta trabalhando`)}
                 </div>
-                <div className="agent-working-subtitle">
-                  {helperAgentProfile
-                    ? `${agentProfile.name} puxou a resposta e ${helperAgentProfile.name} entrou como apoio especialista.`
-                    : `Analisando o pedido e montando a resposta.`}
-                </div>
+                {agentProfile.id !== "agente" && (
+                  <div className="agent-working-subtitle">
+                    {currentActivity}
+                  </div>
+                )}
                 <div className="agent-working-dots" aria-hidden="true">
                   <span />
                   <span />
@@ -270,7 +305,7 @@ export default function MessageBubble({
               </div>
             </div>
           ) : null}
-          
+
           {memoryNotice && (
             <div className="memory-notice">
               <div className="memory-notice-title">

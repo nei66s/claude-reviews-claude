@@ -63,11 +63,11 @@ export function ChocksIdentityCard() {
           justifyContent: 'center',
         }}>
           <Image
-            src="/chocks-avatar-face.jpg"
+            src="/chocks-v3.png"
             alt={identity.name}
             width={56}
             height={56}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '52% 45%' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </div>
         <div className="identity-info">

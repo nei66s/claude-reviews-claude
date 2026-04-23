@@ -135,16 +135,24 @@ export default function WelcomeScreen({
           <div className="welcome-v2-avatar-wrap">
             <div className="welcome-v2-avatar">
               <Image
-                src="/chocks-avatar-face.jpg"
+                src="/chocks-v3.png"
                 alt="Chocks by Pimpotasma"
                 width={80}
                 height={80}
-                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "52% 45%" }}
+                priority
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
             <StatusDot online={agentOnline} />
           </div>
           <div className="welcome-v2-hero-text">
+            {/* Graffiti de invasão se o Urubu foi o último a falar */}
+            {typeof window !== "undefined" && document.body.classList.contains("urubutopia-active") && (
+              <>
+                <div className="welcome-graffiti">HACKED BY URUBU</div>
+                <div className="welcome-graffiti-small">CADE O MEU PIX?</div>
+              </>
+            )}
             <div className="welcome-v2-greeting">
               <span className="welcome-v2-greeting-emoji">{greeting.emoji}</span>
               {greeting.text}
@@ -163,8 +171,8 @@ export default function WelcomeScreen({
             <span>{agentOnline ? "Agente online" : "Agente offline"}</span>
           </div>
           <button className="welcome-v2-status-pill neutral interactable" onClick={() => onNavigate("skills")}>
-             <span>⚡</span>
-             <span>Ver Habilidades e Ferramentas</span>
+            <span>⚡</span>
+            <span>Ver Habilidades e Ferramentas</span>
           </button>
           <div className="welcome-v2-status-pill neutral hint" style={{ marginLeft: "auto" }}>
             <span>⌨️</span>
@@ -283,26 +291,26 @@ export default function WelcomeScreen({
         {/* Download Section (Visible only in Browser) */}
         {!isTauri() && (
           <div className="welcome-v2-section download-section">
-             <div className="welcome-v2-section-label">Acesso Nativo</div>
-             <a 
-                href="https://pimpotasma.com.br/download/pimpotasma.exe" 
-                className="welcome-v2-download-btn"
-                title="Baixar versão nativa para Windows"
-              >
-                <div className="download-btn-content">
-                  <div className="download-btn-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                  </div>
-                  <div className="download-btn-text">
-                    <span className="download-btn-title">Baixar App Desktop</span>
-                    <span className="download-btn-subtitle">Para Windows (Acesso nativo a arquivos e CMD)</span>
-                  </div>
+            <div className="welcome-v2-section-label">Acesso Nativo</div>
+            <a
+              href="https://pimpotasma.com.br/download/pimpotasma.exe"
+              className="welcome-v2-download-btn"
+              title="Baixar versão nativa para Windows"
+            >
+              <div className="download-btn-content">
+                <div className="download-btn-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
                 </div>
-              </a>
+                <div className="download-btn-text">
+                  <span className="download-btn-title">Baixar App Desktop</span>
+                  <span className="download-btn-subtitle">Para Windows (Acesso nativo a arquivos e CMD)</span>
+                </div>
+              </div>
+            </a>
           </div>
         )}
 

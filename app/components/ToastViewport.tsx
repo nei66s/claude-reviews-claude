@@ -12,7 +12,7 @@ export default function ToastViewport() {
   return (
     <div className="toast-viewport" aria-live="polite" aria-atomic="true">
       {toasts.map((toast) => (
-        <div key={toast.id} className={`toast-card ${toast.tone}`}>
+        <div key={toast.id} className={`toast-card ${toast.tone === 'danger' ? 'toast-danger' : toast.tone}`}>
           <div className="toast-copy">
             <div className="toast-title">{toast.title}</div>
             {toast.description ? <div className="toast-description">{toast.description}</div> : null}

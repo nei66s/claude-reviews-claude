@@ -11,6 +11,7 @@ interface TopbarProps {
   onClearChat: () => void;
   onShareChat: () => void;
   onOpenSettings: () => void;
+  onNewChat?: () => void;
   onMenuToggle?: () => void;
   userName?: string;
   userAvatar?: string | null;
@@ -23,6 +24,7 @@ export default function Topbar({
   onClearChat,
   onShareChat,
   onOpenSettings,
+  onNewChat,
   onMenuToggle,
   userName,
   userAvatar,
@@ -121,14 +123,28 @@ export default function Topbar({
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <div className="topbar-title">{title}</div>
+        <div className="topbar-title">
+          {typeof title === 'string' && (title.startsWith('[') || title.startsWith('{')) ? 'Nova conversa' : title}
+        </div>
       </div>
       
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+      <div className="topbar-actions">
+        <div className="seed-wallet" title="Carteira de Sementes Pimpotasma">
+          <span className="seed-wallet-icon">🌾</span>
+          <span className="seed-wallet-value">1.420,00</span>
+        </div>
         <PingMonitor />
-      </div>
+        <button
+          className="topbar-new-chat-btn"
+          onClick={onNewChat}
+          title="Nova conversa"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+          </svg>
+        </button>
 
-      <div className="topbar-actions" style={{ gap: '8px' }}>
         {userName && (
           <div style={{ position: 'relative' }} ref={menuRef}>
             <button

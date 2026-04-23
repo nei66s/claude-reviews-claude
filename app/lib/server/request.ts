@@ -26,3 +26,5 @@ export function requireUser(request: NextRequest) {
 
   return verifyToken(token);
 }
+
+export const requireUserAgentRoom = requireUser;

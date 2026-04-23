@@ -298,12 +298,22 @@ export async function orchestrateMemoryCandidates(input: OrchestrateCandidatesIn
 
       // --- Finalizar governança (Fase 12) ---
       if (sourceMessageId) {
+        const active = insertedItems.filter((i) => i.status === "active").length;
+        const candidates = insertedItems.filter((i) => i.status === "candidate").length;
+        const contradicted = updatedItems.length;
+        const parts = [];
+        if (active > 0) parts.push(`${active} active`);
+        if (candidates > 0) parts.push(`${candidates} candidates`);
+        if (contradicted > 0) parts.push(`${contradicted} updated`);
+        const summary = parts.length > 0 ? `Completed: ${parts.join(", ")}` : "Completed: no changes";
+
         await insertIngestionLog(
           {
             userId: input.userId,
             messageId: sourceMessageId,
             conversationId,
             status: "completed",
+            reason: input.reason || summary,
           },
           db,
         );

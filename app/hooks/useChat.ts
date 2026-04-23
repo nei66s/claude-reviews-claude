@@ -394,103 +394,84 @@ export function useChat(enabled = true) {
       if (!trimmedContent && attachments.length === 0) return;
 
       sendLockRef.current = true;
+      setIsThinking(true);
 
       let chat = activeChat;
+      const isFirstMessage = !chat || (chat.messages?.length || 0) === 0;
 
+      // 1. Prepara a conversa se for nova
       if (!chat) {
         chat = {
           id: crypto.randomUUID(),
           title: "Nova conversa",
           messages: [],
         };
-
-        setConversations((prev) => [chat as Chat, ...prev]);
-        setActiveChat(chat);
-
-        try {
-          await persistConversation(chat);
-        } catch (err) {
-          console.error("Failed to create chat before sending:", err);
-        }
       }
 
-      let coordinationData: CoordinationData = {
-        teamId: coordinationTeamId,
-        agents: coordinationAgents,
-      };
-      let selectedAgent = getCoordinationAgent(coordinationData.agents, "chocks");
-      let showHandoff = false;
-
-      coordinationData =
-        coordinationTeamId && coordinationAgents.length > 0
-          ? { teamId: coordinationTeamId, agents: coordinationAgents }
-          : await loadCoordinationData();
-
-      if (!coordinationData.teamId || coordinationData.agents.length === 0) {
-        throw new Error("Agentes de coordenação indisponíveis.");
-      }
-
+      // 🚀 HARD RESET: Identifica o agente ANTES de criar a bolha.
+      // Resetamos para 'undefined' para evitar que o "fantasma" do agente anterior (Chocks) apareça.
       const routingSource = [trimmedContent, ...attachments.map((attachment) => attachment.name)]
         .filter(Boolean)
         .join(" ");
       const previousAgentId = getLastAgentId(chat);
-      const explicitAgentId = findExplicitCoordinationAgentId(routingSource, coordinationData.agents);
-      const suggestedAgentId = explicitAgentId
-        ? null
-        : await requestTriageAgentId({
-            input: routingSource,
-            agents: coordinationData.agents,
-            previousAgentId,
-          });
-      const routing = triageCoordinationAgent({
-        input: routingSource,
-        agents: coordinationData.agents,
-        previousAgentId,
-        suggestedAgentId,
-      });
-      const selectedAgentId = pickDefaultAgentId(coordinationData.agents, routing.primaryAgentId);
-      selectedAgent = getCoordinationAgent(coordinationData.agents, selectedAgentId);
-      const helperAgent = routing.helperAgentId
-        ? getCoordinationAgent(coordinationData.agents, routing.helperAgentId)
-        : null;
-      const visibleUserContent = routing.cleanedInput.trim() || trimmedContent || "[arquivo anexado]";
-      const isFirstMessage = (chat.messages?.length || 0) === 0;
-      const newTitle = isFirstMessage
-        ? (visibleUserContent || attachments[0]?.name || "Nova conversa").substring(0, 30)
-        : chat.title;
-      showHandoff =
-        (previousAgentId && selectedAgent.id !== previousAgentId) ||
-        (!previousAgentId && isFirstMessage && selectedAgent.id !== "chocks");
+      const explicitAgentId = findExplicitCoordinationAgentId(routingSource, coordinationAgents);
+      
+      // Lista de gatilhos de continuação (hints) para manter o contexto sem triage
+      const continuationHints = ["e agora", "continua", "mais", "segue", "voce", "ele", "ela"];
+      const normalizedInput = trimmedContent.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const isContinuation = normalizedInput && continuationHints.some(hint => normalizedInput.includes(hint));
 
+      // Só usamos o agente anterior se for uma continuação óbvia. Caso contrário, deixamos o Despachante decidir em background.
+      const initialAgentId = explicitAgentId || (isContinuation ? previousAgentId : undefined) || undefined;
+
+      const visibleUserContent = trimmedContent || "[arquivo anexado]";
       const userMsg: Message = {
         role: "user",
         content: visibleUserContent,
         attachments: attachments.map((attachment) => ({ name: attachment.name, content: attachment.content })),
       };
+
+      // Mensagem inicial do agente (agora com agentId dinâmico/indefinido)
       const initialAgentMsg: Message = {
         role: "agent",
         content: "",
         streaming: true,
-        agentId: selectedAgent.id,
-        helperAgentId: helperAgent?.id,
-        handoffLabel: showHandoff ? `${selectedAgent.name} assumiu a conversa` : undefined,
-        collaborationLabel: helperAgent ? `${selectedAgent.name} chamou ${helperAgent.name} para ajudar` : undefined,
+        agentId: initialAgentId,
       };
+
       const updatedMessages = [...(chat.messages || []), userMsg, initialAgentMsg];
+      const newTitle = isFirstMessage
+        ? (visibleUserContent || (attachments[0]?.name) || "Nova conversa").substring(0, 30)
+        : chat.title;
+
       const optimisticChat: Chat = { ...chat, title: newTitle, messages: updatedMessages };
 
+      // 2. ATUALIZAÇÃO OTIMISTA IMEDIATA (Limpa a Welcome Screen aqui)
       setActiveChat(optimisticChat);
-      setConversations((prev) => [
-        optimisticChat,
-        ...prev.filter((item) => item.id !== optimisticChat.id),
-      ]);
-      setIsThinking(true);
-      let fullContent = "";
+      setConversations((prev) => {
+        const otherPrev = prev.filter((item) => item.id !== optimisticChat.id);
+        return [optimisticChat, ...otherPrev];
+      });
 
+      // 3. Processamento de Background (Persistência)
       try {
+        if (isFirstMessage) {
+          void persistConversation(chat).catch(err => console.error("Background persistence error:", err));
+        }
+
+        let coordinationData: CoordinationData =
+          coordinationTeamId && coordinationAgents.length > 0
+            ? { teamId: coordinationTeamId, agents: coordinationAgents }
+            : await loadCoordinationData();
+
+        // 5. Inicia o streaming real imediatamente após o envio
         const abortController = new AbortController();
         abortControllerRef.current = abortController;
         const token = localStorage.getItem("chocks_token");
+        
+        // Usamos o agentId detectado explicitamente no início, ou deixamos em branco para o backend decidir
+        const finalRequestedAgentId = initialAgentId;
+
         const response = await fetch("/api/chat/stream", {
           method: "POST",
           signal: abortController.signal,
@@ -500,24 +481,20 @@ export function useChat(enabled = true) {
           },
           body: JSON.stringify({
             chatId: optimisticChat.id,
-            selectedAgentId: selectedAgent.id,
-            helperAgentId: helperAgent?.id || null,
+            selectedAgentId: finalRequestedAgentId,
             coordinationTeamId: coordinationData.teamId,
             messages: updatedMessages.slice(0, -1).map((message) => {
               if (message.role !== "user" || !Array.isArray(message.attachments) || message.attachments.length === 0) {
                 return message;
               }
-
               const attachmentText = message.attachments
                 .map((attachment) => {
                   const isImage = (attachment.content || "").startsWith("data:image/");
                   const nameLine = `Arquivo anexado: ${attachment.name}${isImage ? " (Imagem)" : ""}`;
-                  // Não injeta o base64 da imagem no prompt de texto
                   const contentLine = (attachment.content && !isImage) ? `\n${attachment.content}` : "";
                   return `${nameLine}${contentLine}`;
                 })
                 .join("\n\n");
-
               return {
                 ...message,
                 content: [message.content, attachmentText].filter(Boolean).join("\n\n").trim(),
@@ -534,10 +511,10 @@ export function useChat(enabled = true) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        let fullContent = "";
 
         while (true) {
           const { value, done } = await reader.read();
-
           if (done) {
             buffer += decoder.decode();
           } else {
@@ -549,11 +526,9 @@ export function useChat(enabled = true) {
 
           for (const rawEvent of events) {
             if (!rawEvent.trim()) continue;
-
             const lines = rawEvent.split("\n");
             const eventLine = lines.find((line) => line.startsWith("event:"));
             const dataLine = lines.find((line) => line.startsWith("data:"));
-
             if (!eventLine || !dataLine) continue;
 
             const eventName = eventLine.slice(6).trim();
@@ -566,8 +541,6 @@ export function useChat(enabled = true) {
                 const msgs = [...prev.messages];
                 const last = msgs[msgs.length - 1];
                 if (last?.role === "agent") {
-                  last.agentId = last.agentId || selectedAgent.id;
-                  last.helperAgentId = last.helperAgentId || helperAgent?.id;
                   last.content = fullContent;
                 }
                 return { ...prev, messages: msgs };
@@ -580,8 +553,6 @@ export function useChat(enabled = true) {
                 const msgs = [...prev.messages];
                 const last = msgs[msgs.length - 1];
                 if (last?.role === "agent") {
-                  last.agentId = last.agentId || selectedAgent.id;
-                  last.helperAgentId = last.helperAgentId || helperAgent?.id;
                   last.trace = [...(last.trace || []), payload as TraceEntry];
                 }
                 return { ...prev, messages: msgs };
@@ -590,15 +561,25 @@ export function useChat(enabled = true) {
 
             if (eventName === "done") {
               const finalOutputText = payload.output_text || fullContent;
+              const finalAgentId = payload.agentId as string | undefined;
+              
               setActiveChat((prev) => {
                 if (!prev) return null;
                 const msgs = [...prev.messages];
                 const last = msgs[msgs.length - 1];
                 if (last?.role === "agent") {
-                  last.agentId = last.agentId || selectedAgent.id;
-                  last.helperAgentId = last.helperAgentId || helperAgent?.id;
                   last.content = finalOutputText;
                   last.streaming = false;
+                  if (finalAgentId) {
+                    // Se o agente mudou em relação ao palpite otimista, atualiza o ID e o label de handoff
+                    if (finalAgentId !== last.agentId) {
+                      last.agentId = finalAgentId;
+                      const finalAgent = coordinationAgents.find(a => a.id === finalAgentId);
+                      if (finalAgent) {
+                        last.handoffLabel = `${finalAgent.name} assumiu a conversa`;
+                      }
+                    }
+                  }
                   if (typeof payload.messageId === "string" && payload.messageId.trim()) {
                     last.id = payload.messageId.trim();
                   }
@@ -614,10 +595,7 @@ export function useChat(enabled = true) {
               }
             }
           }
-
-          if (done) {
-            break;
-          }
+          if (done) break;
         }
       } catch (err) {
         console.error("Stream error:", err);
@@ -626,14 +604,9 @@ export function useChat(enabled = true) {
           const msgs = [...prev.messages];
           const last = msgs[msgs.length - 1];
           if (last?.role === "agent") {
-            const fallbackAgent = getCoordinationAgent(coordinationData.agents, selectedAgent.id);
-            last.agentId = last.agentId || fallbackAgent.id;
-            last.helperAgentId = last.helperAgentId || helperAgent?.id;
-            last.handoffLabel =
-              last.handoffLabel || (showHandoff ? `${fallbackAgent.name} assumiu a conversa` : undefined);
             const aborted = err instanceof Error && err.name === "AbortError";
             last.content = aborted
-              ? fullContent.trim() || "Resposta interrompida por voce."
+              ? "Resposta interrompida por voce."
               : err instanceof Error && err.message.trim()
                 ? err.message
                 : "Nao foi possivel enviar a mensagem agora.";
@@ -658,7 +631,7 @@ export function useChat(enabled = true) {
           return { ...prev, messages: msgs };
         });
         if (options?.onFinish) {
-           options.onFinish(""); // Notifica que terminou, mas com erro/vazio
+           options.onFinish("");
         }
       } finally {
         abortControllerRef.current = null;

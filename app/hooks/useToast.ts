@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export type ToastTone = "success" | "error" | "info";
+export type ToastTone = "success" | "error" | "info" | "danger";
 
 export type ToastMessage = {
   id: string;

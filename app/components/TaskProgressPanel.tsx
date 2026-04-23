@@ -90,7 +90,27 @@ function statusLabel(status: WorkflowStepState) {
   return "pendente";
 }
 
-function toolActionLabel(label?: string) {
+function toolActionLabel(label?: string, agentId?: string | null) {
+  // 🎭 Lore-overs: Nomes de ferramentas temáticos por agente
+  if (agentId === "urubudopix") {
+    const map: Record<string, string> = {
+      workflow_replace: "Planejando o golpe",
+      ls_safe: "Procurando arquivos confidenciais",
+      file_read: "Hackeando dados",
+      file_write: "Escondendo provas",
+      web_search: "Monitorando redes sociais",
+    };
+    return map[label || ""] || "Comendo pão com sementinhas";
+  }
+
+  if (agentId === "jorginho") {
+    return "Limpando a lanterna";
+  }
+
+  if (agentId === "chubas") {
+    return "Limpando o liquidificador";
+  }
+
   const map: Record<string, string> = {
     workflow_replace: "Montando plano",
     workflow_update_step: "Atualizando etapa",
@@ -103,7 +123,7 @@ function toolActionLabel(label?: string) {
   return map[label || ""] || "Executando etapa";
 }
 
-function getCurrentActivity(trace: TraceEntry[] | undefined, streaming: boolean, hasOpenSteps: boolean) {
+function getCurrentActivity(trace: TraceEntry[] | undefined, streaming: boolean, hasOpenSteps: boolean, agentId?: string | null) {
   if (!streaming && hasOpenSteps) {
     return "Fluxo pausou antes de concluir as etapas.";
   }
@@ -121,7 +141,7 @@ function getCurrentActivity(trace: TraceEntry[] | undefined, streaming: boolean,
   for (let index = trace.length - 1; index >= 0; index -= 1) {
     const entry = trace[index];
     if (entry.state === "pending") {
-      return entry.subtitle?.trim() || toolActionLabel(entry.label);
+      return entry.subtitle?.trim() || toolActionLabel(entry.label, agentId);
     }
   }
 
@@ -142,9 +162,11 @@ function getCurrentActivity(trace: TraceEntry[] | undefined, streaming: boolean,
 export default function TaskProgressPanel({
   trace,
   streaming,
+  agentId,
 }: {
   trace?: TraceEntry[];
   streaming?: boolean;
+  agentId?: string | null;
 }) {
   const workflowSteps = deriveWorkflowSteps(trace);
   if (workflowSteps.length === 0) {
@@ -155,7 +177,7 @@ export default function TaskProgressPanel({
   const hasOpenSteps = workflowSteps.some((step) => step.status === "pending" || step.status === "in_progress");
   const statusMode = streaming ? "running" : hasOpenSteps ? "stalled" : "done";
   const statusLabelText = streaming ? "executando" : hasOpenSteps ? "incompleto" : "finalizado";
-  const activity = getCurrentActivity(trace, Boolean(streaming), hasOpenSteps);
+  const activity = getCurrentActivity(trace, Boolean(streaming), hasOpenSteps, agentId);
 
   return (
     <div className="workflow-inline workflow-dock">

@@ -106,13 +106,36 @@ function normalize(text: string) {
 }
 
 function pickExplicitAgent(normalized: string, agents: CoordinationAgentProfile[]) {
+  let earliestMatch: { agent: CoordinationAgentProfile; index: number } | null = null;
+
+  // 🦅 Mapeamento manual de aliases críticos para sincronia imediata (Optimistic UI)
+  const manualAliases: Record<string, string[]> = {
+    urubudopix: ["urubu", "pix", "vilao", "urubao", "urubu do pix"],
+    chocks: ["choks", "xocks", "chokito"],
+    miltinho: ["milti", "miltin", "milton"],
+    betinha: ["beta", "bete"],
+    pimpim: ["pim", "ceo"]
+  };
+
   for (const agent of agents) {
-    const id = normalize(agent.id);
-    const name = normalize(agent.name);
-    if (id && normalized.includes(id)) return agent;
-    if (name && normalized.includes(name)) return agent;
+    const aliases = manualAliases[agent.id] || [];
+    const terms = [agent.id.toLowerCase(), agent.name.toLowerCase(), ...aliases];
+    
+    for (const term of terms) {
+      const normalizedTerm = normalize(term);
+      if (!normalizedTerm) continue;
+      
+      const index = normalized.indexOf(normalizedTerm);
+      
+      if (index !== -1) {
+        if (!earliestMatch || index < earliestMatch.index) {
+          earliestMatch = { agent, index: index };
+        }
+      }
+    }
   }
-  return null;
+  
+  return earliestMatch?.agent ?? null;
 }
 
 export function findExplicitCoordinationAgentId(

@@ -1,0 +1,166 @@
+
+/* ===== URUBU CORP CHAOS SYSTEM (EXTREME EDITION) ===== */
+
+@keyframes urubu-screen-glitch {
+  0% { transform: translate(0) scale(1); filter: hue-rotate(0deg); }
+  5% { transform: translate(-5px, 3px) skew(2deg); filter: sepia(0.5) hue-rotate(90deg); }
+  10% { transform: translate(5px, -3px); filter: contrast(1.5); }
+  15% { transform: translate(-2px, 2px) scale(1.01); }
+  100% { transform: translate(0) scale(1); filter: none; }
+}
+
+@keyframes urubu-red-alert {
+  0%, 100% { background: rgba(239, 68, 68, 0); }
+  50% { background: rgba(239, 68, 68, 0.08); }
+}
+
+@keyframes urubu-chromatic {
+  0% { text-shadow: 0 0 0 transparent; }
+  2% { text-shadow: 2px 0 #ff0000, -2px 0 #00ffff; }
+  4% { text-shadow: -1px 0 #ff0000, 1px 0 #00ffff; }
+  6% { text-shadow: 0 0 0 transparent; }
+  100% { text-shadow: 0 0 0 transparent; }
+}
+
+/* Aplicado ao body quando Urubu está ativo */
+body.urubutopia-active {
+  animation: urubu-red-alert 2s infinite ease-in-out;
+}
+
+body.urubutopia-active .main {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+body.urubutopia-active .main::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 40%, rgba(239, 68, 68, 0.2) 100%);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Glitch randômico nos textos */
+body.urubutopia-active .message.agent.urubudopix .bubble-content {
+  animation: urubu-chromatic 5s infinite step-end;
+}
+
+/* Bolha do Urubu */
+.urubutopia-active .message.agent.urubudopix .bubble {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.3), inset 0 0 15px rgba(239, 68, 68, 0.1) !important;
+  background: rgba(45, 10, 10, 0.8) !important;
+}
+
+/* Toast Extreme Danger */
+.toast-danger {
+  background: #2d0a0a !important;
+  border: 1px solid #ef4444 !important;
+  border-left: 6px solid #ef4444 !important;
+  font-family: "JetBrains Mono", monospace !important;
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.4) !important;
+}
+
+.chaos-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  overflow: hidden;
+}
+
+.chaos-overlay.active {
+  opacity: 1;
+}
+
+.chaos-scanline {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(239, 68, 68, 0.05) 50%,
+    rgba(239, 68, 68, 0.1) 50.1%,
+    transparent 100%
+  );
+  background-size: 100% 8px;
+  animation: urubu-scanline 4s linear infinite;
+}
+
+.ping-lore {
+  font-size: 8px;
+  font-weight: 800;
+  color: #ef4444;
+  margin-left: 2px;
+  animation: urubu-chromatic 2s infinite linear;
+}
+
+.ping-dot.hacked {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+}
+
+/* Wallet/Seed Counter */
+.seed-wallet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.seed-wallet:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.seed-wallet-icon {
+  font-size: 14px;
+}
+
+.seed-wallet-value {
+  font-family: "JetBrains Mono", monospace;
+  color: var(--accent);
+}
+
+.urubutopia-active .seed-wallet-value {
+  color: #ef4444;
+  animation: urubu-chromatic 1s infinite alternate;
+}
+
+/* Graffiti */
+.welcome-graffiti {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  font-family: "Impact", "Arial Black", sans-serif;
+  font-size: 80px;
+  color: rgba(239, 68, 68, 0.3);
+  pointer-events: none;
+  z-index: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+  animation: urubu-chromatic 3s infinite alternate;
+}
+
+.welcome-graffiti-small {
+  position: absolute;
+  top: 20%;
+  right: 10%;
+  transform: rotate(10deg);
+  font-family: "Impact", sans-serif;
+  font-size: 24px;
+  color: rgba(239, 68, 68, 0.25);
+  pointer-events: none;
+  z-index: 1;
+}

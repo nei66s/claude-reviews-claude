@@ -26,7 +26,7 @@ export function PimpotasmaTeamCard() {
   // Modal state: tracks which easter egg modal is currently displayed
   const [modal, setModal] = useState<"pimpim_quotes" | "chocks_gallery" | "unleashed" | "none">("none");
   const [modalSeed, setModalSeed] = useState<number>(1);
-  
+
   // Click counter for triple-click detection on Pimpim card
   const [clickCount, setClickCount] = useState(0);
 
@@ -125,7 +125,7 @@ export function PimpotasmaTeamCard() {
           justifyContent: 'center',
         }}>
           <Image
-            src="/pimpotasma.png"
+            src="/pimpim-v3.png"
             alt="Pimpim - CEO"
             width={48}
             height={48}
@@ -207,7 +207,7 @@ export function PimpotasmaTeamCard() {
           justifyContent: 'center',
         }}>
           <Image
-            src="/betinha-avatar.jpg"
+            src="/betinha-v2.png"
             alt="Betinha - CFO"
             width={48}
             height={48}

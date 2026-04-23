@@ -46,7 +46,7 @@ export async function invalidateConversationCacheForUser(user: SessionUser) {
 
 export type ChatMessage = {
   id?: string;
-  role: "user" | "agent";
+  role: "user" | "agent" | "system";
   content: string;
   streaming?: boolean;
   agentId?: string | null;

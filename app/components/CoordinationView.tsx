@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { AGENT_PROFILES, getAgentProfile } from '../lib/familyRouting'
 import { TeamsDashboard } from '@/components/CoordinationTeamsDashboard'
 import { WorkflowsDashboard } from '@/components/CoordinationWorkflowsDashboard'
 import { ErrorsDashboard } from '@/components/CoordinationErrorsDashboard'
 
 interface FamilyMember {
+  id: string
   name: string
   role: string
   personality: string
@@ -95,8 +97,8 @@ export function CoordinationView() {
         color: 'white',
         boxShadow: '0 8px 32px rgba(236, 72, 153, 0.2)',
       }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: 0, marginBottom: '8px' }}>🎪 Pimpotasma Swarm</h1>
-        <p style={{ margin: 0, opacity: 0.9, fontSize: '14px' }}>Coordenação de Agentes Inteligentes da Família</p>
+        <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: 0, marginBottom: '8px' }}>🎪 Gestão de Empresas</h1>
+        <p style={{ margin: 0, opacity: 0.9, fontSize: '14px' }}>Coordenação de Equipes e Agentes Inteligentes</p>
       </div>
 
       {/* Tabs Navigation - Melhorado */}
@@ -226,7 +228,7 @@ export function CoordinationView() {
             </div>
           ) : (
             <div>
-              <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: '600' }}>Membros da Família Pimpotasma</h3>
+              <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: '600' }}>Membros das Empresas</h3>
               {isLoadingMembers ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Carregando...</div>
               ) : (
@@ -260,17 +262,13 @@ export function CoordinationView() {
                     >
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                         <div style={{ fontSize: '32px', marginRight: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', overflow: 'hidden' }}>
-                          {member.name === 'Pimpim' ? (
-                            <Image src="/pimpotasma.png" alt="Pimpim" width={40} height={40} style={{ objectFit: 'cover' }} />
-                          ) : member.name === 'Betinha' ? (
-                            <Image src="/betinha-avatar.jpg" alt="Betinha" width={40} height={40} style={{ objectFit: 'cover' }} />
-                          ) : member.name === 'Kitty' ? (
-                            <Image src="/kitty-avatar.jpg" alt="Kitty" width={40} height={40} style={{ objectFit: 'cover' }} />
-                          ) : member.name === 'Chubas' ? (
-                            <Image src="/chuba-rosto.png" alt="Chubas" width={40} height={40} style={{ objectFit: 'cover' }} />
-                          ) : (
-                            getRoleEmoji(member.role)
-                          )}
+                          {(() => {
+                            const profile = getAgentProfile(member.id);
+                            if (profile.avatarSrc) {
+                              return <Image src={profile.avatarSrc} alt={profile.name} width={40} height={40} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />;
+                            }
+                            return getRoleEmoji(member.role);
+                          })()}
                         </div>
                         <div>
                           <div style={{ fontWeight: '600', fontSize: '16px', color: 'var(--text)' }}>{member.name}</div>

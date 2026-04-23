@@ -1,24 +1,55 @@
 /* ===== WELCOME SCREEN V2 — Agent Dashboard ===== */
 
 @keyframes welcome-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes welcome-glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.15); }
-  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0), 0 0 32px rgba(16, 185, 129, 0.25); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.15);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0), 0 0 32px rgba(16, 185, 129, 0.25);
+  }
 }
 
 @keyframes welcome-gradient-move {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes welcome-dot-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.7; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.4);
+    opacity: 0.7;
+  }
 }
 
 /* ── Layout ── */
@@ -73,7 +104,7 @@
 }
 
 .welcome-v2-avatar img {
-  transform: scaleX(-1);
+  /* removed flip */
 }
 
 .ws-status-dot {
@@ -502,7 +533,7 @@
   transform: translateY(-4px);
   border-color: rgba(16, 185, 129, 0.5);
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.06));
-  box-shadow: 
+  box-shadow:
     0 12px 32px -8px rgba(16, 185, 129, 0.15),
     0 0 0 1px rgba(16, 185, 129, 0.1);
 }
@@ -549,7 +580,7 @@
 }
 
 .download-section {
-    margin-top: 8px;
+  margin-top: 8px;
 }
 
 /* ── Responsive ── */
@@ -557,17 +588,21 @@
   .welcome-v2-quick-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .welcome-v2-explore-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .welcome-v2-hero {
     flex-direction: column;
     text-align: center;
     gap: 16px;
   }
+
   .welcome-v2-title {
     text-align: center;
   }
+
   .welcome-v2-status-strip {
     justify-content: center;
   }
@@ -577,6 +612,7 @@
   .welcome-view-v2 {
     padding: 20px 14px 32px;
   }
+
   .welcome-v2-quick-grid {
     grid-template-columns: repeat(2, 1fr);
   }

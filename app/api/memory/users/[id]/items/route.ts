@@ -9,8 +9,8 @@ import { isDatabaseBusyError } from "@/lib/server/db";
 
 function parseLimit(value: string | null) {
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return 50;
-  return Math.max(1, Math.min(200, Math.floor(parsed)));
+  if (!Number.isFinite(parsed)) return 100;
+  return Math.max(1, Math.min(1000, Math.floor(parsed)));
 }
 
 function parseStatus(value: string | null): MemoryItemStatus | undefined {

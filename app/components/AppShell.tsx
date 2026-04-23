@@ -25,6 +25,8 @@ import MemoryGraphView from "./MemoryGraphView";
 import EasterEggManager from "./EasterEggManager";
 import Downbar from "./Downbar";
 import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
+import UrubuChaosEngine from "./UrubuChaosEngine";
+import AgentRoomView from "./AgentRoomView";
 import type { Artifact } from "../lib/artifactDetection";
 import { detectArtifacts } from "../lib/artifactDetection";
 import { Attachment, Message, requestJson } from "../lib/api";
@@ -308,13 +310,14 @@ export default function AppShell({
       })),
       { id: "workspace:conversations", label: "Ir para Conversas", description: "Abre a visão principal do chat.", category: "Navigation", icon: "C" },
       { id: "workspace:files", label: "Ir para Arquivos", description: "Abre o navegador de arquivos.", category: "Navigation", icon: "F" },
-      { id: "workspace:coordination", label: "Ir para Coordenação", description: "Abre a coordenação de agentes.", category: "Navigation", icon: "A" },
+      { id: "workspace:coordination", label: "Ir para Empresa", description: "Veja as empresas e membros.", category: "Navigation", icon: "A" },
       { id: "workspace:coordinator", label: "Ir para Fluxo de Trabalho", description: "Abre a visão de fluxos de trabalho.", category: "Navigation", icon: "W" },
       { id: "workspace:monitor", label: "Ir para Monitor", description: "Abre métricas e monitoramento.", category: "Navigation", icon: "M" },
       { id: "workspace:audit", label: "Ir para Auditoria", description: "Abre logs e trilha de auditoria.", category: "Navigation", icon: "L" },
       { id: "workspace:skills", label: "Manual de Habilidades", description: "Veja as habilidades nativas e ferramentas.", category: "Navigation", icon: "⚡" },
       { id: "workspace:memory", label: "Ir para Memória", description: "Veja e gerencie memórias extraídas.", category: "Navigation", icon: "🧠" },
       { id: "workspace:memory-graph", label: "Ir para Grafo de Memória", description: "Visão em grafo do conhecimento.", category: "Navigation", icon: "🕸️" },
+      { id: "workspace:agent-room", label: "Sala de Convivência", description: "Veja os agentes conversando entre si.", category: "Navigation", icon: "🎭" },
     ],
     [allCommands],
   );
@@ -560,6 +563,12 @@ export default function AppShell({
     }
   };
 
+  const lastMessage = activeChat?.messages && activeChat.messages.length > 0 
+    ? activeChat.messages[activeChat.messages.length - 1] 
+    : null;
+  const currentActiveAgentId = lastMessage?.role === "agent" ? lastMessage.agentId : null;
+  const isCurrentlyStreaming = !!lastMessage?.streaming || isThinking;
+
   return (
     <div className={`app ${collapsed ? "sidebar-collapsed" : ""} ${isMobileMenuOpen ? "mobile-menu-open" : ""}`}>
       {/* Gatilho invisível para desktop no canto esquerdo */}
@@ -629,7 +638,11 @@ export default function AppShell({
           userName={user?.displayName || "Admin Pimpotasma"}
           userAvatar={user?.avatar}
           isDesktop={typeof window !== 'undefined' && (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__ !== undefined}
-          onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} // Added menu toggle
+          onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          onNewChat={() => {
+            void createNewChat();
+            navigateToWorkspace("conversations");
+          }}
           onClearChat={() => {
             if (activeChat?.id) {
               void deleteChat(activeChat.id);
@@ -657,10 +670,11 @@ export default function AppShell({
             <DoutorKittyDashboard interpretation={kittyInterpretation} isLoading={kittyIsLoading} />
           )}
           {activeWorkspace === "skills" && <SkillsView />}
-          {activeWorkspace === "memory" && <MemoryAdminView />}
-          {activeWorkspace === "memory-graph" && <MemoryGraphView />}
+          { activeWorkspace === "memory" && <MemoryAdminView /> }
+          { activeWorkspace === "memory-graph" && <MemoryGraphView /> }
+          { activeWorkspace === "agent-room" && <AgentRoomView /> }
 
-          {activeWorkspace === "conversations" &&
+          { activeWorkspace === "conversations" &&
             (!hasMessages ? (
               <WelcomeScreen
                 prompt={prompt}
@@ -722,6 +736,7 @@ export default function AppShell({
                     <TaskProgressPanel
                       trace={latestAgentMessageWithTrace?.trace}
                       streaming={Boolean(latestAgentMessageWithTrace?.streaming || isThinking)}
+                      agentId={latestAgentMessageWithTrace?.agentId}
                     />
                     <div className="chat-composer">
                       {/* Legendas ao vivo V2 Realtime */}
@@ -898,6 +913,10 @@ export default function AppShell({
       <ToastViewport />
       <ChocksDanceVideo hasMessages={hasMessages} />
       <EasterEggManager />
+      <UrubuChaosEngine 
+        activeAgentId={currentActiveAgentId} 
+        isStreaming={isCurrentlyStreaming} 
+      />
 
       {/* Toast de feedback V2 Realtime */}
       {realtimeToast && (
