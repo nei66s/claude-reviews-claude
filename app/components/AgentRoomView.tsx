@@ -17,7 +17,7 @@ const AGENT_SEQUENCE: AgentId[] = [
 
 export default function AgentRoomView() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isActive, setIsActive] = useState(true);
+  const [, setIsActive] = useState(false);
   const [speed] = useState(25000); // 25 segundos base (mais lento conforme solicitado)
   const [isThinking, setIsThinking] = useState(false);
   const [isUserPresent, setIsUserPresent] = useState(true);
@@ -29,7 +29,6 @@ export default function AgentRoomView() {
   const [vandalism, setVandalism] = useState<string[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const activityTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   const { synergy, isLooping, updateSynergy } = useAgentIntelligence(messages);

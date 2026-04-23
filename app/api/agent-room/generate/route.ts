@@ -51,7 +51,7 @@ REGRAS DE OURO:
 
   try {
     console.log(`[AgentRoomGenerate] Generating for ${selectedAgentId}...`);
-    const history = messages.map((m: any) => {
+    const history = messages.map((m: { agentId: string; role: string; content: string }) => {
       const isMe = m.agentId === selectedAgentId;
       const agentName = AGENT_PROFILES[m.agentId as keyof typeof AGENT_PROFILES]?.name || "Alguém";
       
@@ -93,11 +93,12 @@ REGRAS DE OURO:
       content: cleanContent,
       agentId: selectedAgentId
     });
-  } catch (error: any) {
-    console.error("[AgentRoomGenerate] Failed:", error);
+  } catch (error) {
+    const err = error as Error;
+    console.error("[AgentRoomGenerate] Failed:", err);
     return Response.json({ 
-      error: error.message || String(error),
-      stack: error.stack 
+      error: err.message || String(err),
+      stack: err.stack 
     }, { status: 500 });
   }
 }

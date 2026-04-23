@@ -139,8 +139,8 @@ export async function runAgent(
     messages: [
       { role: 'system', content: buildSystemPrompt(context) },
       ...messages,
-    ] as any,
-    tools: toolDefinitions as any,
+    ] as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+    tools: toolDefinitions as OpenAI.Chat.Completions.ChatCompletionTool[],
     tool_choice: 'auto',
     parallel_tool_calls: false,
     max_tokens: context?.maxTokens,
@@ -160,7 +160,7 @@ export async function runAgent(
       }
     }
 
-    const toolOutputs: any[] = []
+    const toolOutputs: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = []
     for (const call of toolCalls as any[]) {
       trace.push({
         type: 'tool_call',
@@ -169,7 +169,7 @@ export async function runAgent(
         arguments: call.function.arguments || '',
       })
 
-      let args: any = {}
+      let args: Record<string, unknown> = {}
       try {
         args = JSON.parse(call.function.arguments || '{}')
       } catch (err) {
@@ -210,8 +210,8 @@ export async function runAgent(
         ...messages,
         message,
         ...toolOutputs
-      ] as any,
-      tools: toolDefinitions as any,
+      ] as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+      tools: toolDefinitions as OpenAI.Chat.Completions.ChatCompletionTool[],
     })
   }
 
@@ -241,7 +241,7 @@ export async function runSimpleChat(
     messages: [
       { role: 'system', content: systemPrompt },
       ...messages,
-    ] as any,
+    ] as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
     max_tokens: maxTokens,
     temperature: 0.8
   })
@@ -265,22 +265,22 @@ export async function streamAgent(
   const client = new OpenAI({ apiKey: OPENAI_KEY })
   const trace: ToolTraceEntry[] = []
   
-  let currentMessages: any[] = [
+  const currentMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
     { role: 'system', content: buildSystemPrompt(context) },
-    ...messages,
+    ...messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
   ]
 
   for (let i = 0; i < MAX_TOOL_LOOPS; i += 1) {
     const stream = await client.chat.completions.create({
       model: MODEL,
       messages: currentMessages,
-      tools: toolDefinitions as any,
+      tools: toolDefinitions as OpenAI.Chat.Completions.ChatCompletionTool[],
       tool_choice: 'auto',
       stream: true,
     })
 
     let fullContent = ''
-    let toolCalls: any[] = []
+    const toolCalls: Array<{ id: string; function: { name: string; arguments: string }, index?: number }> = []
 
     for await (const chunk of stream) {
       const delta = chunk.choices[0]?.delta
@@ -305,7 +305,7 @@ export async function streamAgent(
     }
 
     // Add assistant message to history
-    const assistantMessage: any = { role: 'assistant', content: fullContent || null }
+    const assistantMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam = { role: 'assistant', content: fullContent || null }
     if (toolCalls.length > 0) {
       assistantMessage.tool_calls = toolCalls
         .filter(tc => tc.id) // Ensure we only include complete calls
@@ -325,7 +325,7 @@ export async function streamAgent(
     }
 
     // Process tool calls
-    for (const call of assistantMessage.tool_calls) {
+    for (const call of (assistantMessage as any).tool_calls) {
       const callEntry: ToolTraceEntry = {
         type: 'tool_call',
         name: call.function.name,
@@ -335,7 +335,7 @@ export async function streamAgent(
       trace.push(callEntry)
       callbacks.onTrace?.(callEntry)
 
-      let args: any = {}
+      let args: Record<string, unknown> = {}
       try {
         args = JSON.parse(call.function.arguments || '{}')
       } catch (err) {

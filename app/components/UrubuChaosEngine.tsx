@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { showToast } from "../hooks/useToast";
 
 interface UrubuChaosEngineProps {
@@ -24,6 +23,15 @@ const CHAOS_MESSAGES = [
 export default function UrubuChaosEngine({ activeAgentId, isStreaming }: UrubuChaosEngineProps) {
   const lastActiveRef = useRef<string | null>(null);
   const chaosTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const triggerChaos = useCallback(() => {
+    const msg = CHAOS_MESSAGES[Math.floor(Math.random() * CHAOS_MESSAGES.length)];
+    showToast({
+      tone: msg.tone || "danger",
+      title: msg.title,
+      description: msg.description,
+    });
+  }, []);
 
   useEffect(() => {
     const isUrubu = activeAgentId === "urubudopix";
@@ -73,16 +81,7 @@ export default function UrubuChaosEngine({ activeAgentId, isStreaming }: UrubuCh
     return () => {
       if (chaosTimeoutRef.current) clearTimeout(chaosTimeoutRef.current);
     };
-  }, [activeAgentId, isStreaming]);
-
-  const triggerChaos = () => {
-    const msg = CHAOS_MESSAGES[Math.floor(Math.random() * CHAOS_MESSAGES.length)];
-    showToast({
-      tone: msg.tone || "danger",
-      title: msg.title,
-      description: msg.description,
-    });
-  };
+  }, [activeAgentId, isStreaming, triggerChaos]);
 
   return (
     <div className={`chaos-overlay ${activeAgentId === "urubudopix" ? "active" : ""}`}>

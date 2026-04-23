@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Attachment, Chat, Message, requestJson, TraceEntry } from "../lib/api";
-import { findExplicitCoordinationAgentId, triageCoordinationAgent } from "../lib/coordinationRouting";
+import { findExplicitCoordinationAgentId } from "../lib/coordinationRouting";
 
 const LOCAL_CHAT_CACHE_KEY = "chocks_conversations_cache_v1";
 
@@ -96,44 +96,6 @@ function getLastAgentId(chat: Chat | null) {
   return null;
 }
 
-function getCoordinationAgent(
-  agents: CoordinationAgentProfile[],
-  agentId: string | null,
-): CoordinationAgentProfile {
-  const safeId = agentId || "chocks";
-  return agents.find((agent) => agent.id === safeId) ?? { id: safeId, name: safeId };
-}
-
-function pickDefaultAgentId(agents: CoordinationAgentProfile[], preferredId: string | null) {
-  if (preferredId && agents.some((agent) => agent.id === preferredId)) {
-    return preferredId;
-  }
-
-  const chocks = agents.find((agent) => agent.id === "chocks");
-  return chocks?.id ?? agents[0]?.id ?? "chocks";
-}
-
-async function requestTriageAgentId(params: {
-  input: string;
-  agents: CoordinationAgentProfile[];
-  previousAgentId: string | null;
-}) {
-  try {
-    const data = await requestJson("/coordination/triage", {
-      method: "POST",
-      body: JSON.stringify({
-        input: params.input,
-        agents: params.agents,
-        previousAgentId: params.previousAgentId,
-      }),
-    });
-
-    return typeof data?.agentId === "string" ? data.agentId : null;
-  } catch (error) {
-    console.error("Failed to triage agent with LLM:", error);
-    return null;
-  }
-}
 
 export function useChat(enabled = true) {
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
@@ -459,7 +421,7 @@ export function useChat(enabled = true) {
           void persistConversation(chat).catch(err => console.error("Background persistence error:", err));
         }
 
-        let coordinationData: CoordinationData =
+        const coordinationData: CoordinationData =
           coordinationTeamId && coordinationAgents.length > 0
             ? { teamId: coordinationTeamId, agents: coordinationAgents }
             : await loadCoordinationData();

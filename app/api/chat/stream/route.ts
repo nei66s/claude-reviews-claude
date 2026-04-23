@@ -1,40 +1,25 @@
 import crypto from "node:crypto";
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-
-const execp = promisify(exec);
-
-import OpenAI from "openai";
-import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
 import { NextRequest } from "next/server";
 
 import type { SessionUser } from "@/lib/server/auth";
-import { createToken } from "@/lib/server/auth";
 import { hasDatabase } from "@/lib/server/db";
 import type { ChatMessage } from "@/lib/server/store";
 import { 
   appendConversationMessages, 
-  appendLog, 
   readAppSettings, 
-  getWorkflowState,
   getConversationById 
 } from "@/lib/server/store";
 import { requireUser } from "@/lib/server/request";
-import { chatToolDefinitions, runChatTool } from "@/lib/server/chat-tools";
-import { listFileEntries } from "@/lib/server/files";
-import { getPsychologicalProfile, generateProfilePrompt, type PsychologicalProfile } from "@/lib/server/psychological-profile";
-import { orchestrateMemoryCandidates } from "@/lib/server/memory/orchestrator";
 import { getUserProfile } from "@/lib/server/memory/repository";
+import { orchestrateMemoryCandidates } from "@/lib/server/memory/orchestrator";
 import { extractMemoryCandidates } from "@/lib/server/memory/extract-memory-candidates";
 import { isMemoryOrchestratorEnabled } from "@/lib/server/memory/flags";
 import { buildContextPack } from "@/lib/server/memory/context-builder";
-import type { ContextPack } from "@/lib/server/memory/types";
 import { extractImageMemoryCandidates } from "@/lib/server/memory/image-extractor";
 import { streamAgent, triageAgent } from "@/lib/agent/llm";
 import { initializePersistentState } from "@/lib/agent/initialization";
+import { AGENT_PROFILES } from "@/lib/familyRouting";
+import { getPsychologicalProfile } from "@/lib/server/psychological-profile";
 import { AGENT_PROFILES } from "@/lib/familyRouting";
 
 export const runtime = "nodejs";
