@@ -6,6 +6,9 @@ const WORKER_KEY = 'pimpotasma-secret-worker-key';
 
 async function tick() {
   try {
+    const agents = ['pimpim', 'betinha', 'chocks', 'bento', 'kitty', 'chubaka'];
+    const selectedAgentId = agents[Math.floor(Math.random() * agents.length)];
+    
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -13,7 +16,8 @@ async function tick() {
         'x-worker-key': WORKER_KEY
       },
       body: JSON.stringify({ 
-        activeAgents: ['chocks', 'betinha', 'pimpim', 'chubaka'],
+        selectedAgentId,
+        activeAgents: agents,
         lowPriority: true 
       })
     });

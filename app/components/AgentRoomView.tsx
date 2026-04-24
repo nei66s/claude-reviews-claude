@@ -301,8 +301,15 @@ export default function AgentRoomView() {
       }
     } else {
       // Evita o mesmo agente falar duas vezes seguidas
-      let potentialAgents = activeList.filter(id => id !== lastSpeakerId);
-      if (potentialAgents.length === 0) potentialAgents = activeList; // Fallback se sobrar um
+      // Pega o ID do último orador real do histórico de mensagens
+      const realHistory = messages.filter(m => m.role !== "system" && m.agentId !== "system");
+      const lastRealSpeaker = realHistory.length > 0 ? realHistory[realHistory.length - 1].agentId : null;
+
+      let potentialAgents = activeList.filter(id => id !== lastRealSpeaker);
+      if (potentialAgents.length === 0) {
+         // Se só temos um agente ativo e foi ele quem falou, tentamos pegar qualquer outro da sequência base
+         potentialAgents = AGENT_SEQUENCE.slice(0, 3).filter(id => id !== lastRealSpeaker);
+      }
       
       selectedAgentId = potentialAgents.length > 0 
         ? potentialAgents[Math.floor(Math.random() * potentialAgents.length)]

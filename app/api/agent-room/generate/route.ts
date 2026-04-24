@@ -35,15 +35,23 @@ export async function POST(request: NextRequest) {
   // REGRAS DE TURNO: 
   // 1. Não permite que o mesmo agente fale duas vezes seguidas (mesmo com notícias no meio)
   if (selectedAgentId === lastSpeaker) {
-    console.log(`[AgentRoom] Blocking ${selectedAgentId} - already spoke last.`);
-    return Response.json({ 
-      skipped: true, 
-      reason: `Blocked: ${selectedAgentId} was the last human/agent speaker.` 
-    });
+    console.log(`[AgentRoom] Selected agent ${selectedAgentId} already spoke last. Rerouting...`);
+    
+    // Tenta encontrar outro agente disponível na lista de ativos
+    const others = activeAgents.filter(id => typeof id === "string" && id !== lastSpeaker);
+    if (others.length > 0) {
+       selectedAgentId = others[Math.floor(Math.random() * others.length)];
+       console.log(`[AgentRoom] Rerouted speaker to: ${selectedAgentId}`);
+    } else {
+       // Fallback se não houver mais ninguém ativo (pega alguém da família padrão)
+       const fallbackPool = ["pimpim", "betinha", "bento", "kitty"].filter(id => id !== lastSpeaker);
+       selectedAgentId = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
+       console.log(`[AgentRoom] Forced guest speaker: ${selectedAgentId}`);
+    }
   }
 
-  // 2. Se houver poucos agentes ativos, evita que fiquem apenas dois jogando ping-pong
-  if (selectedAgentId === secondLastSpeaker && agentHistory.length > 2 && Math.random() > 0.5) {
+  // 2. Se houver muitos agentes ativos, evita que fiquem apenas dois jogando ping-pong
+  if (selectedAgentId === secondLastSpeaker && agentHistory.length > 2 && Math.random() > 0.6) {
      console.log(`[AgentRoom] Throttling ${selectedAgentId} to encourage 3rd person participation.`);
      return Response.json({ skipped: true, reason: "Variety throttle: waiting for a third person." });
   }
