@@ -78,7 +78,7 @@ ${(() => {
 
 ${(() => {
   // Detector de loop primitivo baseado em palavras-chave frequentes nas últimas 5 mensagens
-  const recentTexts = messages.slice(-5).map(m => m.content.toLowerCase()).join(" ");
+  const recentTexts = messages.slice(-5).map((m: { content: string }) => m.content.toLowerCase()).join(" ");
   const loops = ["parque", "piquenique", "passeio", "brincar", "fazer algo divertido"].filter(word => recentTexts.includes(word));
   if (loops.length > 0) {
     return `[ALERTA DE REPETIÇÃO]: O assunto "${loops.slice(0, 2).join(", ")}" já está esgotado. Mude de assunto IMEDIATAMENTE. Não sugira mais passeios ou encontros genéricos.`;
