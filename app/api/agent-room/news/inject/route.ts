@@ -5,16 +5,18 @@ import OpenAI from "openai";
 import { AGENT_PROFILES } from "@/lib/familyRouting";
 
 export const runtime = "nodejs";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   const workerKey = request.headers.get("x-worker-key");
   if (workerKey !== "pimpotasma-secret-worker-key") {
     return new Response("Unauthorized", { status: 401 });
   }
+
+  // Inicializa dentro da função para evitar erro no build (Missing API Key)
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
 
   try {
     // Busca o histórico para dar contexto à IA
