@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
   }
 
   const sessionId = AGENT_ROOM_SESSION_ID;
+  const body = await request.json().catch(() => null);
+  let selectedAgentId = typeof body?.selectedAgentId === "string" ? body.selectedAgentId : "chocks";
 
   // Busca o histórico recente para validações de turno
   const history = await getRoomHistory(sessionId, 5).catch(() => []);
@@ -43,10 +45,8 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const body = await request.json().catch(() => null);
   const messages = Array.isArray(body?.messages) ? body.messages : [];
   const activeAgents = Array.isArray(body?.activeAgents) ? body.activeAgents : [];
-  let selectedAgentId = typeof body?.agentId === "string" ? body.agentId : "chocks";
 
   // Inteligência do Vilão: Se citarem o Urubu, ele tem chance de "sequestrar" o turno
   const lastMsg = messages[messages.length - 1]?.content?.toLowerCase() || "";
