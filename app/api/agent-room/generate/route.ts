@@ -118,8 +118,26 @@ ${(() => {
 7. **DIVERSIDADE:** Se o assunto estiver saturado, mude de tema drasticamente (comida, fofoca, sonhos).
    ${(() => {
      const recentTexts = messages.slice(-10).map((m: { content: string }) => m.content.toLowerCase()).join(" ");
-     const saturatedTopics = ["parque", "piquenique", "passeio", "lâmpada", "sótão", "consertar"].filter(word => recentTexts.split(word).length > 2);
-     return saturatedTopics.length > 0 ? `🚫 EVITE falar sobre: ${saturatedTopics.join(", ")}.` : "✅ Papo livre."
+     
+     // 1. Palavras que estão se repetindo muito (Vício de Linguagem)
+     const words = recentTexts.match(/\b\w{5,}\b/g) || [];
+     const counts = new Map<string, number>();
+     words.forEach(w => counts.set(w, (counts.get(w) || 0) + 1));
+     const bannedWords = Array.from(counts.entries())
+       .filter(([w, count]) => count >= 3)
+       .map(([w]) => w);
+
+     // 2. Tópicos Saturados (Lógica antiga de conceitos)
+     const saturatedTopics = ["parque", "piquenique", "passeio", "lâmpada", "sótão", "consertar", "marshmallow", "lanche"].filter(word => recentTexts.split(word).length > 2);
+     
+     const allBanned = [...new Set([...bannedWords, ...saturatedTopics])];
+     
+     if (allBanned.length > 0) {
+        const topics = ["uma música que ouviu", "um sonho estranho", "limpeza da casa", "o clima de hoje", "saudades de alguém", "um plano para o futuro", "uma fofoca leve"];
+        const suggestion = topics[Math.floor(Math.random() * topics.length)];
+        return `⚠️ BLOQUEIO DE LOOP: Pare de falar sobre: ${allBanned.join(", ")}. Mude de assunto AGORA! Sugestão: fale sobre ${suggestion}.`;
+     }
+     return "✅ Papo livre e variado.";
    })()}
 8. **IMERSÃO:** Você é FAMÍLIA. Interaja citando nomes de quem está na sala.
 `.trim();
