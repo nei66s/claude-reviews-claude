@@ -1,0 +1,76 @@
+# Changelog
+
+## [0.2.0](https://github.com/nei66s/Pimpotasma/compare/chokito-next-v0.1.0...chokito-next-v0.2.0) (2026-04-24)
+
+
+### Features
+
+* add 06-bash-engine and 07-permission-pipeline (zh-CN + EN) ([0379b52](https://github.com/nei66s/Pimpotasma/commit/0379b52c3470c5c70c3e7776ebe3a69a02275556))
+* add 08-agent-swarms deep dive + Netflix-style README ([0868bab](https://github.com/nei66s/Pimpotasma/commit/0868bab6f9cf69447c675fe773e9dfb14b0dcebb))
+* add Chinese translations and bilingual language switch links ([b12d2fd](https://github.com/nei66s/Pimpotasma/commit/b12d2fd87b76961cd1a1e2e72680b98633621d1f))
+* add episode 09 — Session Persistence deep dive (EN + zh-CN) ([53ea3e5](https://github.com/nei66s/Pimpotasma/commit/53ea3e50649e3363de95248fd0ffdf7a76b52819))
+* add Next.js app with auth and CI ([7b68919](https://github.com/nei66s/Pimpotasma/commit/7b68919a24f3160973a2e7b84767234f8881d1d7))
+* add source code access guide to README (EN + zh-CN) ([412c0b0](https://github.com/nei66s/Pimpotasma/commit/412c0b0b0da037db73492e99b5eea88dc6c1144a))
+* add Star History chart to README ([dd14360](https://github.com/nei66s/Pimpotasma/commit/dd143603119dd84ace7729e6863100ce6671c17b))
+* adding native desktop installer to download folder ([c8f1346](https://github.com/nei66s/Pimpotasma/commit/c8f13467db72d3682c4dd38eb507781925f8fee4))
+* agent room shared narrative, creative news generation & build fixes ([2545444](https://github.com/nei66s/Pimpotasma/commit/2545444f3a51d27189f81ed8cc0fb16b75376a49))
+* enhance agent-room with economy mode, real news, and loop prevention ([e937048](https://github.com/nei66s/Pimpotasma/commit/e93704862a23ad543720f505e46a14a641d1f1a5))
+* implement Context Assembly (phase 10/10) ([c14ee79](https://github.com/nei66s/Pimpotasma/commit/c14ee79d831b337c574d4c97c1f553bd0f8dc621))
+* implement dynamic word frequency loop detector and topic pivoting ([d1c21e7](https://github.com/nei66s/Pimpotasma/commit/d1c21e76a76bf50f9a174fb9350ef5ca1a0c7b5c))
+* implement themed news rotation and reduce search cache TTL ([1c65610](https://github.com/nei66s/Pimpotasma/commit/1c656109e98e91f4916ee3a7578fd50e9ef29be6))
+* initial release - 5 deep architecture analyses of Claude Code v2.1.88 ([df63ee5](https://github.com/nei66s/Pimpotasma/commit/df63ee59cdd9309893e72407931877673f191c69))
+* refine sidebar interaction and mobile navigation ([56ed75f](https://github.com/nei66s/Pimpotasma/commit/56ed75f22b2c768dba87eef36ea71f331c06e51c))
+* set Chinese as default README, fix translation typo ([67a35d4](https://github.com/nei66s/Pimpotasma/commit/67a35d4630f8a64a9e5a6c0da8cf0376d2b7760a))
+* tauri desktop integration and native filesystem access ([bc90f8e](https://github.com/nei66s/Pimpotasma/commit/bc90f8e87b07a0da4999b27d6eda21d9cd57a630))
+* 新增 Bash 执行引擎与权限流水线深度分析 (06-07) ([dca6e82](https://github.com/nei66s/Pimpotasma/commit/dca6e8285c6c5b748cf1dcbc0153be43ba26f978))
+
+
+### Bug Fixes
+
+* add keyword-based loop detector to prevent repetitive agent topics ([eb6984e](https://github.com/nei66s/Pimpotasma/commit/eb6984eb71d69bac49e87bbbbfe44d500e3b47f8))
+* add missing getRoomHistory import to generate route ([0142f07](https://github.com/nei66s/Pimpotasma/commit/0142f0711df3c0380d629973bf39573ee68d666f))
+* agent room pacing, type safety, and build issues. implement organic interaction interval and natural thinking delays ([238a8ca](https://github.com/nei66s/Pimpotasma/commit/238a8ca617c285805f6d738d148024f4294f74cc))
+* build errors ([dc88345](https://github.com/nei66s/Pimpotasma/commit/dc88345230737dcb9293d527c752b7d59be1172c))
+* build issue with openai credentials and final cleanup ([1d5ecbf](https://github.com/nei66s/Pimpotasma/commit/1d5ecbf5e0196435c94ea92251b4da904c5f0db1))
+* correctly initialize activeAgents before use in generate route ([55177b6](https://github.com/nei66s/Pimpotasma/commit/55177b6a90c24bf1cbebe1f80dc4f276ad65555a))
+* deploy script and pm2 config for room-worker ([3a9df41](https://github.com/nei66s/Pimpotasma/commit/3a9df4156068cc6353374d12e733d3de2b537fa1))
+* enforce server-side turn-taking to prevent agent monologues ([dd5c4c2](https://github.com/nei66s/Pimpotasma/commit/dd5c4c2b2eb738af5973e55aaa710ed354d33b56))
+* explicit type for agent filter to resolve build error ([d194921](https://github.com/nei66s/Pimpotasma/commit/d194921f370e455fbea9251cd768170fdc3bef12))
+* explicit type for loop detector map to satisfy strict tsc ([e5143ea](https://github.com/nei66s/Pimpotasma/commit/e5143eab6046554b80fee1f445b7988e16729c9a))
+* explicit type for word count to resolve build error ([a74a96e](https://github.com/nei66s/Pimpotasma/commit/a74a96e9cd217a5b14c60234e2572da00ad45b3d))
+* ignore system messages in turn-taking logic to prevent agent hijacking ([90c4b1d](https://github.com/nei66s/Pimpotasma/commit/90c4b1d49ac067086dd179c3528f5206b041f1b1))
+* **lint:** resolve multiple lint errors including hoisting, explicit any, and unused variables ([6fb9ba6](https://github.com/nei66s/Pimpotasma/commit/6fb9ba63f5df6ca14af687110f59413b75260e71))
+* production build stabilization, type safety and linting resolution ([110504b](https://github.com/nei66s/Pimpotasma/commit/110504b888428c303a1d059f25a9b54ffaa60c56))
+* relation of agents on coordination created ([5ee3e8d](https://github.com/nei66s/Pimpotasma/commit/5ee3e8d5c217a1cb6463a366a5630855d391deaa))
+* remove global api and protect internal next routes ([91edeee](https://github.com/nei66s/Pimpotasma/commit/91edeeeec8a66fce3513b87619168fbb5b1afd4c))
+* remove global api and protect internal next routes ([8bfb605](https://github.com/nei66s/Pimpotasma/commit/8bfb605ed27e614f8eb7cd07bab0689f7a6460b6))
+* remove residual NEXT_PUBLIC_CHOKITO_API_ORIGIN reference from api error message ([1d04c9a](https://github.com/nei66s/Pimpotasma/commit/1d04c9acae6354431f42810044402cc7ab615ac4))
+* resolve agent-ts syntax error and implement PWA support ([f49ffbc](https://github.com/nei66s/Pimpotasma/commit/f49ffbc4c322f92d426a77ae16f03cd546008157))
+* resolve all build and lint errors for production readiness ([36c01eb](https://github.com/nei66s/Pimpotasma/commit/36c01eb36109e64f53e0ecf44e8ff367690d688f))
+* resolve build failures caused by missing DATABASE_URL during static analysis ([47503e9](https://github.com/nei66s/Pimpotasma/commit/47503e923599a32cbb098979f44e787e494a8e67))
+* resolve lint errors and stabilize production deployment ([28a44d5](https://github.com/nei66s/Pimpotasma/commit/28a44d54d2d682c7257cc35fc1507a9f354fe043))
+* resolve syntax error and consolidate system prompt rules ([ced1414](https://github.com/nei66s/Pimpotasma/commit/ced1414d05eca3bfb47bbc04389283453dda0763))
+* resolve type error in chat stream route to unblock build ([f97e7ec](https://github.com/nei66s/Pimpotasma/commit/f97e7ecefb5a1ddb268dca10940dfab33669a6cf))
+* resolve typescript build errors and tighten types ([b226398](https://github.com/nei66s/Pimpotasma/commit/b226398d3516003cdc8c52a25a8be9f1f890b0d2))
+* resolve typescript build errors and tighten types v.1 ([bcc4654](https://github.com/nei66s/Pimpotasma/commit/bcc4654ba3bbc4785ef1f6a60c42bbd1ea256a93))
+* resolve typescript build errors and tighten types v.2 ([6c1e1a2](https://github.com/nei66s/Pimpotasma/commit/6c1e1a2d8111fa0b8155f1bc7a6a65a03d9e19bf))
+* resolve variable declaration order and property name in generate route ([ea60d77](https://github.com/nei66s/Pimpotasma/commit/ea60d77de8bd176c17743b82cfbc1621f2a732f6))
+* restore async iterability for agent stream in llm.ts ([5a2850e](https://github.com/nei66s/Pimpotasma/commit/5a2850e49084156c4cb33baa656bf4899f5467f2))
+* restore cooperative sync and stabilize generate route logic ([5945d6c](https://github.com/nei66s/Pimpotasma/commit/5945d6c38ce9e62e018ee6ac8da684373b8d9e7f))
+* robust news parser handles accents, intros, and markdown urls ([d1b9c0a](https://github.com/nei66s/Pimpotasma/commit/d1b9c0aa0926e9b7b46e8bfb05b24911c3269785))
+* servers on again ([e28afec](https://github.com/nei66s/Pimpotasma/commit/e28afec8b3d0c9b8c8029e2b7677cfa574dd89bd))
+* servers on again ([c50c187](https://github.com/nei66s/Pimpotasma/commit/c50c1872cb1b4ea8e93765c19b9490ba3585c673))
+* typescript null check for rowCount in seed route ([d6eb518](https://github.com/nei66s/Pimpotasma/commit/d6eb51875222ec688931df336bb78db146a8976c))
+* use BACKEND_URL instead of request origin for internal calls ([a33041a](https://github.com/nei66s/Pimpotasma/commit/a33041acce672c4891df1e96eaa06fbc4980fc28))
+* use writable temp dir for local store on vercel ([dd7489d](https://github.com/nei66s/Pimpotasma/commit/dd7489d05ab88d01b29650d3587a146f81522286))
+
+
+### Performance Improvements
+
+* feedback button ([02f5753](https://github.com/nei66s/Pimpotasma/commit/02f5753d023cbc7f69d569cebfd4fc917f8fa0db))
+* improved layout of feedback ([d9c0b9a](https://github.com/nei66s/Pimpotasma/commit/d9c0b9a69a63ccb45f83f55749a14b40a3390197))
+* improviment on triage ([fa09cf6](https://github.com/nei66s/Pimpotasma/commit/fa09cf6a838693defd827ee0cf22039792bed962))
+* memory orchestrator ([b7b3664](https://github.com/nei66s/Pimpotasma/commit/b7b3664f9f107dddd9ff19840e626801a4e46b39))
+* memory orchestrator ([75315c5](https://github.com/nei66s/Pimpotasma/commit/75315c5a5492a726aa94319b5083f46b9cfa8bd9))
+* responsive layout ([de45ab1](https://github.com/nei66s/Pimpotasma/commit/de45ab18547f103a6b902b38d721ca4932127b06))
+* visual agents answering changed ([01986ec](https://github.com/nei66s/Pimpotasma/commit/01986ece1fe3f7a396efb881840ead81eb7a1134))
