@@ -36,6 +36,19 @@ module.exports = {
         NODE_ENV: "production",
         PORT: "3001",
       },
+    {
+      name: "room-worker",
+      cwd: __dirname,
+      script: "node",
+      args: "room-worker.mjs",
+      exec_mode: "fork",
+      autorestart: true,
+      env: {
+        NODE_ENV: "production",
+      },
+      env_production: {
+        NODE_ENV: "production",
+      },
     },
   ],
 };

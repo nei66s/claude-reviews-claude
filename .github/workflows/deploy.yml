@@ -38,7 +38,7 @@ jobs:
             npm ci --no-audit --no-fund
 
             echo "Installing agent-ts dependencies..."
-            (cd agent-ts && npm ci --no-audit --no-fund)
+            (cd agent-ts && npm install --no-audit --no-fund)
 
             echo "Building..."
             npm run build
