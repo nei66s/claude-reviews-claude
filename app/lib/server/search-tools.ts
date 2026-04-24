@@ -102,24 +102,38 @@ export async function searchWeb(
     messages: [
       {
         role: "user",
-        content: `Pesquise sobre: ${query}.${filterPrompt} Retorne uma lista de resultados relevantes com título, URL e um pequeno resumo. Se houver citações diretas, inclua-as.`,
+        content: `Pesquise sobre: ${query}.${filterPrompt}\n\nRetorne exatamente no formato abaixo para cada resultado:\n[TITULO]: Título aqui\n[URL]: URL aqui\n[SNIPPET]: Resumo aqui\n---`,
       },
     ],
   });
 
   const content = response.choices[0]?.message?.content || "";
-  const items = content.split(/\n(?=\d+\.\s+\*\*)/);
+  // Divide por separadores comuns, aceitando TÍTULO com ou sem acento
+  const rawBlocks = content.split(/---|\n(?=\[T[IÍ]TULO\]:)/i).filter(b => b.trim().length > 10);
   
-  const results = items.length <= 1 
-    ? [{ title: `Busca OpenAI: ${query}`, url: "https://openai.com/search", snippet: content }]
-    : items.map((item, index) => {
-        const titleMatch = item.match(/\d+\.\s+\*\*(.*?)\*\*/);
-        const title = titleMatch ? titleMatch[1] : `Resultado ${index + 1}`;
-        const urlMatch = item.match(/\]\((https?:\/\/.*?)\)/) || item.match(/(https?:\/\/[^\s\)]+)/);
-        const url = urlMatch ? urlMatch[1] : "https://openai.com/search";
-        const snippet = item.replace(/\d+\.\s+\*\*(.*?)\*\*/, "").trim();
-        return { title, url, snippet };
-      });
+  // Filtra blocos que não contêm dados reais (como introduções)
+  const blocks = rawBlocks.filter(b => b.toLowerCase().includes("url]:"));
+
+  const results = blocks.length === 0 
+    ? [{ title: `Notícia: ${query}`, url: "https://openai.com/search", snippet: content }]
+    : blocks.map((block) => {
+        const titleMatch = block.match(/\[T[IÍ]TULO\]:\s*(.*)/i);
+        const title = titleMatch?.[1]?.trim() || "Nova Notícia";
+        
+        const urlMatch = block.match(/\[URL\]:\s*(.*)/i);
+        // Limpa URLs que vêm com markdown [texto](url) ou (url)
+        let url = urlMatch?.[1]?.trim() || "https://openai.com/search";
+        url = url.replace(/^\(|\)$/g, "").match(/(https?:\/\/[^\s\)]+)/)?.[0] || url;
+
+        const snippetMatch = block.match(/\[SNIPPET\]:\s*([\s\S]*)/i);
+        const snippet = snippetMatch?.[1]?.trim() || block.replace(/\[.*?\]:.*\n/g, "").trim();
+        
+        return { 
+          title: title.replace(/^[\*\s]+|[\*\s]+$/g, ""), 
+          url, 
+          snippet: snippet.split("\n")[0].trim() 
+        };
+      }).slice(0, maxResults);
 
   writeToCache(cacheKey, results);
 
