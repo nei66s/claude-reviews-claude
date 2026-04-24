@@ -51,7 +51,7 @@ async function persistAssistantReply(
   for (const item of compactionItems) {
     messagesToPersist.push({
       role: "compaction",
-      content: item.value || JSON.stringify(item),
+      content: (item as any).value || JSON.stringify(item),
     });
   }
 
