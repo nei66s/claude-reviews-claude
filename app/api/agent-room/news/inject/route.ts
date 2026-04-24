@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { persistRoomMessage, getRoomHistory } from "@/lib/server/agent-room/repository";
 import OpenAI from "openai";
 import { AGENT_PROFILES } from "@/lib/familyRouting";
+import { searchWeb } from "@/lib/server/search-tools";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,37 +20,54 @@ export async function POST(request: NextRequest) {
   });
 
   try {
-    // Busca o histórico para dar contexto à IA
-    const history = await getRoomHistory("pimpotasma-global-room", 10).catch(() => []);
-    const historyText = history.map(m => `${m.agentId}: ${m.content}`).join("\n");
-    
-    // Pede para a IA criar um evento criativo
-    const prompt = `
-      Você é o diretor de cena de um reality show da Família Pimpotasma.
-      Sua tarefa é criar um ÚNICO "EVENTO FAMILIAR" ou "BREAKING NEWS" curto e engraçado que acaba de acontecer na casa.
-      
-      Membros da família: ${Object.values(AGENT_PROFILES).map(a => a.name).join(", ")}.
-      
-      REGRAS:
-      1. Seja criativo e absurdo (Ex: "Bento tentou ensinar latidos para a torradeira").
-      2. NUNCA use termos como "agente", "bot" ou "IA". Fale como se fossem pessoas reais.
-      3. O texto deve ter no máximo 15 palavras.
-      4. Use emojis.
-      5. Baseie-se levemente no histórico se for útil:
-      ${historyText}
-      
-      Responda APENAS com o texto do evento, sem aspas.
-    `.trim();
+    let generatedEvent = "";
+    let isRealNews = Math.random() > 0.5;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "system", content: prompt }],
-      max_tokens: 100,
-    });
+    if (isRealNews) {
+      console.log("[NewsInject] Fetching real world news...");
+      const search = await searchWeb({ displayName: "System Worker" } as any, {
+        query: "últimas notícias brasil hoje agora principais temas",
+        max_results: 1
+      });
+      if (search.ok && search.results.length > 0) {
+        generatedEvent = `Notícia do mundo real: ${search.results[0].title}. O que a família acha disso?`;
+      } else {
+        isRealNews = false; // Fallback para criativo
+      }
+    }
 
-    const generatedEvent = completion.choices[0]?.message?.content || "Algo místico aconteceu na sala!";
+    if (!isRealNews) {
+      // Busca o histórico para dar contexto à IA
+      const history = await getRoomHistory("pimpotasma-global-room", 10).catch(() => []);
+      const historyText = history.map(m => `${m.agentId}: ${m.content}`).join("\n");
+      
+      const prompt = `
+        Você é o diretor de cena de um reality show da Família Pimpotasma.
+        Sua tarefa é criar um ÚNICO "EVENTO FAMILIAR" curto e engraçado que acaba de acontecer na casa.
+        
+        Membros da família: ${Object.values(AGENT_PROFILES).map(a => a.name).join(", ")}.
+        
+        REGRAS:
+        1. Seja criativo e absurdo.
+        2. NUNCA use termos como "agente", "bot" ou "IA".
+        3. O texto deve ter no máximo 15 palavras.
+        4. Use emojis.
+        5. Histórico recente:
+        ${historyText}
+        
+        Responda APENAS com o texto do evento.
+      `.trim();
 
-    const prefix = Math.random() > 0.7 ? "📺 **BREAKING NEWS:**" : "🏠 **EVENTO FAMILIAR:**";
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "system", content: prompt }],
+        max_tokens: 100,
+      });
+
+      generatedEvent = completion.choices[0]?.message?.content || "Algo místico aconteceu na sala!";
+    }
+
+    const prefix = isRealNews ? "📺 **BREAKING NEWS:**" : "🏠 **EVENTO FAMILIAR:**";
     const content = `${prefix} ${generatedEvent}`;
 
     await persistRoomMessage("pimpotasma-global-room", {
@@ -58,7 +76,7 @@ export async function POST(request: NextRequest) {
       content
     });
 
-    return Response.json({ ok: true, event: content });
+    return Response.json({ ok: true, event: content, type: isRealNews ? "real" : "fictional" });
   } catch (error) {
     console.error("[NewsInject] Error generating creative event:", error);
     return Response.json({ ok: false, error: "Failed to generate event" }, { status: 500 });

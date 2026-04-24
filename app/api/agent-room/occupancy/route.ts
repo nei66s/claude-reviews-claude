@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
   let msg = "";
   let type = "";
 
-  // 50% chance de sair se houver muita gente, ou entrar se houver pouca
-  if (currentlyActive.length > 3 && (Math.random() > 0.5 || currentlyInactive.length === 0)) {
+  // 80% chance de rotação (mais agressivo para garantir que todos apareçam)
+  if (currentlyActive.length > 2 && (Math.random() > 0.3 || currentlyInactive.length === 0)) {
     // Alguém sai (exceto Chocks e Urubu que tem regras próprias)
     const candidates = currentlyActive.filter(id => id !== "chocks" && id !== "urubudopix");
     if (candidates.length > 0) {
@@ -45,7 +45,9 @@ export async function POST(request: NextRequest) {
       msg = `${name} saiu para resolver outros problemas.`;
       type = "leave";
     }
-  } else if (currentlyInactive.length > 0) {
+  } 
+  
+  if (!msg && currentlyInactive.length > 0) {
     // Alguém entra
     const toJoin = currentlyInactive[Math.floor(Math.random() * currentlyInactive.length)];
     const name = AGENT_PROFILES[toJoin as keyof typeof AGENT_PROFILES].name;

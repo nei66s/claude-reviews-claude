@@ -422,8 +422,8 @@ export default function AgentRoomView() {
         await addEvent(economy);
       }
 
-      // 2 minutos se em economia, caso contrário usa a velocidade base
-      const targetSpeed = economy ? 120000 : speed;
+      // 10 minutos se em economia (token optimization), caso contrário usa a velocidade base
+      const targetSpeed = economy ? 600000 : speed;
       const jitter = economy ? 1 : (0.8 + Math.random() * 0.8);
       
       if (isMounted) {
