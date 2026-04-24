@@ -13,29 +13,14 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: "3000",
-        BACKEND_URL: "http://127.0.0.1:3001",
+        BACKEND_URL: "http://127.0.0.1:3000",
       },
       env_production: {
         NODE_ENV: "production",
         PORT: "3000",
-        BACKEND_URL: "http://127.0.0.1:3001",
+        BACKEND_URL: "http://127.0.0.1:3000",
       },
     },
-    {
-      name: "agent-ts",
-      cwd: path.join(__dirname, "agent-ts"),
-      script: "npm",
-      args: "start",
-      exec_mode: "fork",
-      autorestart: true,
-      env: {
-        NODE_ENV: "production",
-        PORT: "3001",
-      },
-      env_production: {
-        NODE_ENV: "production",
-        PORT: "3001",
-      },
     {
       name: "room-worker",
       cwd: __dirname,

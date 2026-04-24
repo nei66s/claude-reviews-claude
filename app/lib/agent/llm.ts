@@ -27,8 +27,9 @@ async function withFlexRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn()
-    } catch (err: any) {
-      const isResourceUnavailable = err?.status === 429 && err?.message?.toLowerCase().includes('resource unavailable')
+    } catch (err: unknown) {
+      const error = err as { status?: number; message?: string }
+      const isResourceUnavailable = error?.status === 429 && error?.message?.toLowerCase().includes('resource unavailable')
       if (isResourceUnavailable && i < maxRetries - 1) {
         console.warn(`[Flex] Resource unavailable, retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`)
         await new Promise(resolve => setTimeout(resolve, delay))
@@ -63,7 +64,7 @@ export type AgentContext = {
 }
 
 export type ResponseItem = 
-  | { type: 'message'; role: 'user' | 'assistant' | 'system'; content: string | any[] }
+  | { type: 'message'; role: 'user' | 'assistant' | 'system'; content: string | unknown[] }
   | { type: 'compaction'; value: string }
   | { type: 'tool_call'; id: string; function: { name: string; arguments: string } }
   | { type: 'tool_output'; tool_call_id: string; content: string }
@@ -82,7 +83,7 @@ export async function runAgent(
   const trace: ToolTraceEntry[] = []
   const sdkTools = getSDKTools(context)
 
-  const stream = (Runner as any).run_streamed(agent, messages as any, {
+  const stream = (Runner as unknown as { run_streamed: Function }).run_streamed(agent, messages as unknown as string[], {
     metadata: context,
     tools: sdkTools,
   })
@@ -125,7 +126,7 @@ export async function streamAgent(
   callbacks: {
     onTextDelta?: (delta: string) => void
     onTrace?: (entry: ToolTraceEntry) => void
-    onCompaction?: (item: any) => void
+    onCompaction?: (item: unknown) => void
   },
 ) {
   const agentId = context?.selectedAgentId || 'chocks'
@@ -134,7 +135,7 @@ export async function streamAgent(
 
   const sdkTools = getSDKTools(context)
 
-  const stream = (Runner as any).run_streamed(agent, messages as any, {
+  const stream = (Runner as unknown as { run_streamed: Function }).run_streamed(agent, messages as unknown as string[], {
     metadata: context,
     tools: sdkTools,
   })
@@ -194,7 +195,7 @@ export async function runSimpleChat(
     ] as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
     max_tokens: options.maxTokens || 100,
     temperature: 0.8
-  } as any))
+  } as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming))
 
   return {
     output: response.choices[0].message.content || '',
@@ -214,7 +215,7 @@ export async function countInputTokens(
   const body = {
     model: MODEL,
     input: messages,
-    tools: toolDefinitions.map((td: any) => ({
+    tools: toolDefinitions.map((td: { type: string; function: { name: string; description?: string; parameters: unknown } }) => ({
       type: td.type,
       name: td.function.name,
       description: td.function.description,
@@ -328,7 +329,7 @@ Responda APENAS o ID do agente (ex: "chocks"). Se estiver em dúvida, escolha "c
       temperature: 0,
       prompt_cache_key: 'triage-dispatcher',
       prompt_cache_retention: 'in_memory'
-    } as any))
+    } as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming))
 
     const agentId = response.choices[0]?.message?.content?.trim().toLowerCase()
     return { agentId: params.agents.some(a => a.id === agentId) ? agentId : null }
@@ -346,7 +347,7 @@ export type BatchRequest = {
   custom_id: string
   method: 'POST'
   url: string
-  body: Record<string, any>
+  body: Record<string, unknown>
 }
 
 export async function createBatchJob(
@@ -361,7 +362,7 @@ export async function createBatchJob(
       const { Readable } = await import('stream')
       const stream = Readable.from([jsonlContent])
       return Object.assign(stream, { name: `batch_${Date.now()}.jsonl` })
-    })() as any,
+    })() as unknown as File,
     purpose: 'batch'
   })
 

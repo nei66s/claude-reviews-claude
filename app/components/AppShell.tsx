@@ -234,7 +234,7 @@ export default function AppShell({
     token,
     onPartialTranscript: (text) => setRealtimeLiveTranscript(text),
     onPartialAssistantText: (text) => setRealtimeLiveAssistant(text),
-    onTurnPersisted: ({ userTranscript, assistantText }) => {
+    onTurnPersisted: ({ userTranscript: _userTranscript, assistantText: _assistantText }) => {
       // Limpa legendas ao vivo após persistência oficial
       setRealtimeLiveTranscript("");
       setRealtimeLiveAssistant("");

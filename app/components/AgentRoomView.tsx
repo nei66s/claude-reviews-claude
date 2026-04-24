@@ -439,6 +439,7 @@ export default function AgentRoomView() {
       if (timeoutId) clearTimeout(timeoutId);
     };
     // Removido isThinking das dependências para evitar que a mudança de estado reinicie o timer precocemente
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, isUserPresent, speed, addEvent]);
 
   const urubuActive = activeAgentIds.has("urubudopix");

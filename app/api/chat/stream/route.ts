@@ -38,7 +38,7 @@ async function persistAssistantReply(
   agentId: string | null,
   agentName: string | null,
   attachments: ChatMessage["attachments"] = [],
-  compactionItems: any[] = []
+  compactionItems: unknown[] = []
 ) {
   if (!chatId) {
     return { userMessageId: null, assistantMessageId: null };
@@ -86,7 +86,7 @@ async function maybeAutoCaptureMemoryOrchestrator(params: {
   const profile = await getUserProfile(params.user.id).catch(() => null);
   const currentProfileSummary = profile?.summaryShort || "";
 
-  const { candidates, stats } = await extractMemoryCandidates({
+  const { candidates } = await extractMemoryCandidates({
     input: {
       sourceConversationId: params.chatId,
       sourceMessageId: params.sourceMessageId,
@@ -226,8 +226,8 @@ export async function POST(request: NextRequest) {
           content: m.content,
         }));
 
-        // Enable compaction if context is large (e.g. > 10 messages as a heuristic, or always with a high threshold)
-        const compactThreshold = 200000; // 200k tokens as per example
+        const compactThreshold = 200000;
+        const compactionItems: unknown[] = [];
 
         const result = await streamAgent(agentMessages, {
           chatId,
@@ -242,7 +242,8 @@ export async function POST(request: NextRequest) {
           compactThreshold
         }, {
           onTextDelta: (delta) => controller.enqueue(encodeEvent("text-delta", { delta })),
-          onTrace: (entry) => controller.enqueue(encodeEvent("trace", entry))
+          onTrace: (entry) => controller.enqueue(encodeEvent("trace", entry)),
+          onCompaction: (item) => compactionItems.push(item)
         });
 
         const persisted = await persistAssistantReply(
@@ -254,7 +255,7 @@ export async function POST(request: NextRequest) {
           selectedAgentId,
           selectedAgentName,
           attachments,
-          (result as any).compactionItems || []
+          compactionItems
         );
 
         const sourceMessageId = (() => {
