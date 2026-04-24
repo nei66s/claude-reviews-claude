@@ -20,11 +20,22 @@ export async function POST(request: NextRequest) {
     if (!user) return new Response("Unauthorized", { status: 401 });
   }
 
-  // ID de sessão isolado por ambiente
   const sessionId = AGENT_ROOM_SESSION_ID;
 
+  // Busca o histórico recente para validações de turno
+  const history = await getRoomHistory(sessionId, 5).catch(() => []);
+  const lastSpeaker = history.length > 0 ? history[history.length - 1].agentId : null;
+
+  // REGRAS DE TURNO: Não permite que o mesmo agente fale duas vezes seguidas
+  if (selectedAgentId === lastSpeaker) {
+    return Response.json({ 
+      skipped: true, 
+      reason: `Wait your turn, ${selectedAgentId}. Last speaker was also you.` 
+    });
+  }
+
   // Sincronização Cooperativa: Verifica se já houve uma mensagem recentemente no banco
-  const lastTimestamp = await getLastMessageTimestamp(sessionId);
+  const lastTimestamp = history.length > 0 ? history[history.length - 1].timestamp : null;
   if (lastTimestamp) {
     const secondsSinceLast = (Date.now() - new Date(lastTimestamp).getTime()) / 1000;
     if (secondsSinceLast < 15) { 
