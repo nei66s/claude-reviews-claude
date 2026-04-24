@@ -122,7 +122,7 @@ ${(() => {
      // 1. Palavras que estão se repetindo muito (Vício de Linguagem)
      const words = recentTexts.match(/\b\w{5,}\b/g) || [];
      const counts = new Map<string, number>();
-     words.forEach(w => counts.set(w, (counts.get(w) || 0) + 1));
+     words.forEach((w: string) => counts.set(w, (counts.get(w) || 0) + 1));
      const bannedWords = Array.from(counts.entries())
        .filter(([w, count]) => count >= 3)
        .map(([w]) => w);
