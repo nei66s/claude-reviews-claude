@@ -83,7 +83,7 @@ export async function runAgent(
   const trace: ToolTraceEntry[] = []
   const sdkTools = getSDKTools(context)
 
-  const stream = (Runner as unknown as { run_streamed: Function }).run_streamed(agent, messages as unknown as string[], {
+  const stream = (Runner as unknown as { run_streamed: (...args: unknown[]) => unknown }).run_streamed(agent, messages as unknown as string[], {
     metadata: context,
     tools: sdkTools,
   })
@@ -135,7 +135,7 @@ export async function streamAgent(
 
   const sdkTools = getSDKTools(context)
 
-  const stream = (Runner as unknown as { run_streamed: Function }).run_streamed(agent, messages as unknown as string[], {
+  const stream = (Runner as unknown as { run_streamed: (...args: unknown[]) => unknown }).run_streamed(agent, messages as unknown as string[], {
     metadata: context,
     tools: sdkTools,
   })
@@ -222,7 +222,7 @@ export async function countInputTokens(
       parameters: td.function.parameters,
     })),
     prompt_cache_key: context?.selectedAgentId ? `agent-${context.selectedAgentId}` : 'pimpotasma-default',
-    prompt_cache_retention: 'in_memory'
+    prompt_cache_retention: 'in-memory'
   }
 
   const response = await fetch('https://api.openai.com/v1/responses/input_tokens', {
@@ -328,7 +328,7 @@ Responda APENAS o ID do agente (ex: "chocks"). Se estiver em dúvida, escolha "c
       max_tokens: 20,
       temperature: 0,
       prompt_cache_key: 'triage-dispatcher',
-      prompt_cache_retention: 'in_memory'
+      prompt_cache_retention: 'in-memory'
     } as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming))
 
     const agentId = response.choices[0]?.message?.content?.trim().toLowerCase()
