@@ -24,16 +24,28 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   let selectedAgentId = typeof body?.selectedAgentId === "string" ? body.selectedAgentId : "chocks";
 
-  // Busca o histórico recente para validações de turno
-  const history = await getRoomHistory(sessionId, 5).catch(() => []);
-  const lastSpeaker = history.length > 0 ? history[history.length - 1].agentId : null;
+  // Busca o histórico recente para validações de turno (aumentado para 10 para varredura real)
+  const history = await getRoomHistory(sessionId, 10).catch(() => []);
+  
+  // Encontra o último AGENTE real que falou (ignorando 'system')
+  const agentHistory = history.filter(m => m.role !== "system" && m.agentId !== "system");
+  const lastSpeaker = agentHistory.length > 0 ? agentHistory[agentHistory.length - 1].agentId : null;
+  const secondLastSpeaker = agentHistory.length > 1 ? agentHistory[agentHistory.length - 2].agentId : null;
 
-  // REGRAS DE TURNO: Não permite que o mesmo agente fale duas vezes seguidas
+  // REGRAS DE TURNO: 
+  // 1. Não permite que o mesmo agente fale duas vezes seguidas (mesmo com notícias no meio)
   if (selectedAgentId === lastSpeaker) {
+    console.log(`[AgentRoom] Blocking ${selectedAgentId} - already spoke last.`);
     return Response.json({ 
       skipped: true, 
-      reason: `Wait your turn, ${selectedAgentId}. Last speaker was also you.` 
+      reason: `Blocked: ${selectedAgentId} was the last human/agent speaker.` 
     });
+  }
+
+  // 2. Se houver poucos agentes ativos, evita que fiquem apenas dois jogando ping-pong
+  if (selectedAgentId === secondLastSpeaker && agentHistory.length > 2 && Math.random() > 0.5) {
+     console.log(`[AgentRoom] Throttling ${selectedAgentId} to encourage 3rd person participation.`);
+     return Response.json({ skipped: true, reason: "Variety throttle: waiting for a third person." });
   }
 
   // Sincronização Cooperativa: Verifica se já houve uma mensagem recentemente no banco
