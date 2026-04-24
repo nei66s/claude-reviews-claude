@@ -25,12 +25,25 @@ export async function POST(request: NextRequest) {
 
     if (isRealNews) {
       console.log("[NewsInject] Fetching real world news...");
+      
+      const themes = [
+        "últimas notícias brasil hoje agora principais temas",
+        "grandes avanços científicos e tecnologia hoje",
+        "notícias curiosas e inusitadas do mundo hoje",
+        "principais notícias de entretenimento e cinema hoje",
+        "descobertas arqueológicas ou espaciais recentes"
+      ];
+      const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+
       const search = await searchWeb({ displayName: "System Worker" } as any, {
-        query: "últimas notícias brasil hoje agora principais temas",
-        max_results: 1
+        query: randomTheme,
+        max_results: 3
       });
+
       if (search.ok && search.results.length > 0) {
-        generatedEvent = `${search.results[0].title}. O que a família acha disso?`;
+        // Sorteia um dos resultados para não repetir sempre o primeiro
+        const luckyResult = search.results[Math.floor(Math.random() * search.results.length)];
+        generatedEvent = `${luckyResult.title}. O que a família acha disso?`;
       } else {
         isRealNews = false; // Fallback para criativo
       }
