@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         max_results: 1
       });
       if (search.ok && search.results.length > 0) {
-        generatedEvent = `Notícia do mundo real: ${search.results[0].title}. O que a família acha disso?`;
+        generatedEvent = `${search.results[0].title}. O que a família acha disso?`;
       } else {
         isRealNews = false; // Fallback para criativo
       }
