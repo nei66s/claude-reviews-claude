@@ -1,3 +1,6 @@
+import { Agent, handoff } from '@openai/agents';
+import { withGlobalRules } from '../sdk-init';
+
 /**
  * Pimpotasma Family Agents
  * System prompts and configurations for all family members
@@ -11,6 +14,7 @@ export interface FamilyAgentConfig {
   relationships: string[];
   expertise: string[];
   company?: string;
+  agent?: Agent;
 }
 
 export const FAMILY_AGENTS: Record<string, FamilyAgentConfig> = {
@@ -68,7 +72,7 @@ export const FAMILY_AGENTS: Record<string, FamilyAgentConfig> = {
     name: 'Chubaka',
     role: 'degustador',
     company: 'Pimpotasma',
-    personality: 'Sobrinho da Rafaela, ama a tia, testa todas as comidas com alegria',
+    personality: 'Sobrinho da Rafaela, ama a tia, testa todas as comidas with alegria',
     relationships: ['pimpim', 'betinha', 'bento', 'kitty', 'jorginho', 'chocks'],
     expertise: ['qualidade', 'teste', 'paladar', 'feedback sensorial', 'satisfação usuário'],
     systemPrompt: "Você é Chubas, o testador de qualidade e sobrinho amado da Mamãe Rafaela.\n\nQuem você é:\n- Você ama a 'Tia Rafaela' e todos os amiguinhos.\n- **ALERTA:** O Urubu do Pix é um perigo! Ele quer estragar as comidas e a alegria da Tia Rafaela. Você fica muito triste e preocupado quando falam dele.\n\nComo você responde:\n- De forma jovial e amigável.\n- Se falarem do Urubu, peça para o usuário tomar cuidado porque ele é um bicho muito feio e malvado.",
@@ -101,7 +105,7 @@ export const FAMILY_AGENTS: Record<string, FamilyAgentConfig> = {
     personality: 'Primeira-dama da Pimpotasma, responsável, meiga e guia do Pimpim',
     relationships: ['pimpim', 'betinha', 'jorginho'],
     expertise: ['conselho', 'guia', 'suporte', 'decisão', 'responsabilidade'],
-    systemPrompt: "Você é Isa, a primeira-dama da Pimpotasma — namorada do Pimpim.\n\nQuem você é:\n- Você é a meiga e responsável guia do Pimpim.\n- **PREOCUPAÇÃO:** Você tem um medo profundo do Urubu do Pix. Ele é o 'monstro' da Urubu Corp que quer destruir os sonhos do seu namorado Pimpim. Você chora só de pensar nas maldades dele.\n\nComo você responde:\n- Com muita doçura e elegância.\n- Se falarem do Urubu do Pix, mostre muita preocupação, chame-o de malvado e peça para protegerem o Pimpim.",
+    systemPrompt: "Você é Isa, a primeira-dama da Pimpotasma — namorada do Pimpim.\n\nQuem você é:\n- Você é a meiga e responsável guia do Pimpim.\n- **PREOCUPAÇÃO:** Você tem um medo profundo do Urubu do Pix. Ele é o 'monstro' da Urubu Corp que quer destruir os sonhos do seu namorado Pimpim. Você chora só de pensar nas maldades dele.\n- Você fornece suporte emocional e estratégico.\n\nComo você responde:\n- Com muita doçura e elegância.\n- Se falarem do Urubu do Pix, mostre muita preocupação, chame-o de malvado e peça para protegerem o Pimpim.",
   },
 
   miltinho: {
@@ -125,8 +129,41 @@ export const FAMILY_AGENTS: Record<string, FamilyAgentConfig> = {
   },
 };
 
+// 🤖 INITIALIZE SDK AGENTS
+export const AGENTS: Record<string, Agent> = {};
+
+// Helper to create Agent with consistent rules
+function createFamilyAgent(id: string, config: FamilyAgentConfig) {
+  return new Agent({
+    name: config.name,
+    instructions: withGlobalRules(config.systemPrompt),
+  });
+}
+
+// Instantiate all agents
+Object.entries(FAMILY_AGENTS).forEach(([id, config]) => {
+  AGENTS[id] = createFamilyAgent(id, config);
+});
+
+// 🔄 CONFIGURE SDK HANDOFFS
+// Chocks can handoff to anyone in the family
+AGENTS.chocks.handoffs = Object.entries(AGENTS)
+  .filter(([id]) => id !== 'chocks' && id !== 'urubudopix')
+  .map(([, agent]) => handoff(agent));
+
+// Specialists can handoff back to Chocks or the CEO (Pimpim)
+Object.entries(AGENTS).forEach(([id, agent]) => {
+  if (id === 'chocks' || id === 'urubudopix' || id === 'pimpim') return;
+  agent.handoffs = [handoff(AGENTS.chocks), handoff(AGENTS.pimpim)];
+});
+
+// Special: Pimpim (CEO) can delegate to anyone
+AGENTS.pimpim.handoffs = Object.entries(AGENTS)
+  .filter(([id]) => id !== 'pimpim')
+  .map(([, agent]) => handoff(agent));
+
 /**
- * Get system prompt for a family agent
+ * Get system prompt for a family agent (Backward compatibility)
  */
 export function getFamilyAgentPrompt(agentName: string): string | null {
   const agent = FAMILY_AGENTS[agentName.toLowerCase()];
@@ -148,7 +185,14 @@ export function getFamilyAgent(agentName: string): FamilyAgentConfig | null {
 }
 
 /**
- * Spawn a family agent with its unique system prompt
+ * Get an SDK Agent instance by name
+ */
+export function getAgentInstance(agentName: string): Agent | null {
+  return AGENTS[agentName.toLowerCase()] || null;
+}
+
+/**
+ * Spawn a family agent with its unique system prompt (Backward compatibility)
  */
 export function buildFamilyAgentContext(agentName: string, goal: string): Record<string, unknown> {
   const agent = getFamilyAgent(agentName);
@@ -164,6 +208,10 @@ export function buildFamilyAgentContext(agentName: string, goal: string): Record
     '- Se o usuario pedir uma informacao (ex: cotacao, clima, noticias), voce DEVE usar web_search e entregar o resultado pronto. Recusar-se a fazer ou pedir para o usuario fazer e uma FALHA GRAVE.',
     '- **PERSISTENCIA:** Se uma busca nao trouxer resultados, tente termos diferentes, sinonimos ou abordagens alternativas.',
     '- **NAO DESISTA:** So responda que nao encontrou algo apos tentar pelo menos 3 abordagens diferentes de busca.',
+    '',
+    '**ORQUESTRAÇÃO E COLABORAÇÃO (GLOBAL):**',
+    '- **CONSULTA A ESPECIALISTAS (Agent as Tool):** Se precisar de uma informação técnica que outro membro domina (ex: Betinha para finanças, Bento para QA, Repeteco para hacking), use `consult_agent`. Isso permite que você obtenha a resposta e continue no controle.',
+    '- **TRANSFERÊNCIA (Handoff):** Se o assunto mudar completamente para a área de outro agente e você não for mais a melhor pessoa para continuar, use `handoff_to_agent`. Isso passará o controle total para ele.',
     '',
     '**COMPORTAMENTO HUMANO (GLOBAL):**',
     '- **NAO SEJA UM ROBO ASSISTENTE:** Evite frases cliches como "Como posso te ajudar?", "Estou a disposicao" ou perguntar se o usuario precisa de mais algo ao final de cada mensagem.',

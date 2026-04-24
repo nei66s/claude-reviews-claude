@@ -50,65 +50,16 @@ function isWebSearchEnabled() {
 }
 
 
-async function searchWithOpenAI(query: string): Promise<WebSearchResult[]> {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
-
-  const client = new OpenAI({ apiKey });
-
-  try {
-    // Usamos o modelo especializado de busca da OpenAI para obter resultados grounded
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-search-preview",
-      messages: [
-        {
-          role: "user",
-          content: `Pesquise sobre: ${query}. Retorne uma lista de resultados relevantes com título, URL e um pequeno resumo. Formate como uma lista de itens claros.`,
-        },
-      ],
-      // NOTA: Não passamos 'tools' aqui para evitar o erro de modelo de busca que não aceita ferramentas
-    });
-
-    const content = response.choices[0]?.message?.content || "";
-    
-    // Tenta dividir o conteúdo em itens individuais para que a UI mostre a contagem correta
-    const items = content.split(/\n(?=\d+\.\s+\*\*)/);
-    
-    if (items.length <= 1) {
-      return [
-        {
-          title: `Busca OpenAI: ${query}`,
-          url: "https://openai.com/search",
-          snippet: content,
-        },
-      ];
-    }
-
-    return items.map((item, index) => {
-      // Extrai o título (entre asteriscos)
-      const titleMatch = item.match(/\d+\.\s+\*\*(.*?)\*\*/);
-      const title = titleMatch ? titleMatch[1] : `Resultado ${index + 1}`;
-      
-      // Tenta achar uma URL no bloco
-      const urlMatch = item.match(/\]\((https?:\/\/.*?)\)/) || item.match(/(https?:\/\/[^\s\)]+)/);
-      const url = urlMatch ? urlMatch[1] : "https://openai.com/search";
-
-      // O snippet é o resto do texto sem o título
-      const snippet = item.replace(/\d+\.\s+\*\*(.*?)\*\*/, "").trim();
-
-      return { title, url, snippet };
-    });
-  } catch (error) {
-    console.error(`[WEB_SEARCH_OPENAI] Erro:`, error instanceof Error ? error.message : String(error));
-    throw error;
-  }
-}
 
 export async function searchWeb(
   _user: SessionUser,
   input: {
     query: string;
     max_results?: number;
+    filters?: {
+      allowed_domains?: string[];
+      blocked_domains?: string[];
+    };
   },
 ) {
   if (!isWebSearchEnabled()) {
@@ -134,8 +85,42 @@ export async function searchWeb(
     };
   }
 
-  // Removemos o rate limit diário forçado para o usuário já que a OpenAI tem seus próprios limites
-  const results = await searchWithOpenAI(query);
+  // Configura filtros se fornecidos
+  let filterPrompt = '';
+  if (input.filters?.allowed_domains?.length) {
+    filterPrompt = ` Limite a busca aos domínios: ${input.filters.allowed_domains.join(', ')}.`;
+  } else if (input.filters?.blocked_domains?.length) {
+    filterPrompt = ` Ignore os domínios: ${input.filters.blocked_domains.join(', ')}.`;
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  const client = new OpenAI({ apiKey });
+
+  // Usamos o modelo especializado de busca da OpenAI (Official Tool behavior)
+  const response = await client.chat.completions.create({
+    model: "gpt-4o-search-preview",
+    messages: [
+      {
+        role: "user",
+        content: `Pesquise sobre: ${query}.${filterPrompt} Retorne uma lista de resultados relevantes com título, URL e um pequeno resumo. Se houver citações diretas, inclua-as.`,
+      },
+    ],
+  });
+
+  const content = response.choices[0]?.message?.content || "";
+  const items = content.split(/\n(?=\d+\.\s+\*\*)/);
+  
+  const results = items.length <= 1 
+    ? [{ title: `Busca OpenAI: ${query}`, url: "https://openai.com/search", snippet: content }]
+    : items.map((item, index) => {
+        const titleMatch = item.match(/\d+\.\s+\*\*(.*?)\*\*/);
+        const title = titleMatch ? titleMatch[1] : `Resultado ${index + 1}`;
+        const urlMatch = item.match(/\]\((https?:\/\/.*?)\)/) || item.match(/(https?:\/\/[^\s\)]+)/);
+        const url = urlMatch ? urlMatch[1] : "https://openai.com/search";
+        const snippet = item.replace(/\d+\.\s+\*\*(.*?)\*\*/, "").trim();
+        return { title, url, snippet };
+      });
+
   writeToCache(cacheKey, results);
 
   return {
@@ -144,6 +129,7 @@ export async function searchWeb(
     provider: "openai",
     query,
     results,
+    usage_note: "Resultados providos pelo motor de busca nativo da OpenAI.",
   };
 }
 
@@ -151,11 +137,18 @@ export const webSearchToolDefinition = {
   type: "function",
   function: {
     name: "web_search",
-    description: "Buscar na web usando o motor de busca nativo da OpenAI.",
+    description: "Web search allows accessibility to up-to-date information from the internet and provide answers with sourced citations.",
     parameters: {
       type: "object",
       properties: {
-        query: { type: "string", description: "O termo a ser buscado." }
+        query: { type: "string", description: "O termo a ser buscado." },
+        filters: {
+          type: "object",
+          properties: {
+            allowed_domains: { type: "array", items: { type: "string" }, description: "Limit results to specific domains." },
+            blocked_domains: { type: "array", items: { type: "string" }, description: "Exclude specific domains." }
+          }
+        }
       },
       required: ["query"],
       additionalProperties: false

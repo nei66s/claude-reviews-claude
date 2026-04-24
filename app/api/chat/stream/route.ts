@@ -38,28 +38,34 @@ async function persistAssistantReply(
   agentId: string | null,
   agentName: string | null,
   attachments: ChatMessage["attachments"] = [],
+  compactionItems: any[] = []
 ) {
   if (!chatId) {
     return { userMessageId: null, assistantMessageId: null };
   }
 
-  const userReply: ChatMessage = {
-    role: "user",
-    content: prompt,
-    attachments,
-  };
+  const messagesToPersist: ChatMessage[] = [
+    { role: "user", content: prompt, attachments }
+  ];
 
-  const assistantReply: ChatMessage = {
+  for (const item of compactionItems) {
+    messagesToPersist.push({
+      role: "compaction",
+      content: item.value || JSON.stringify(item),
+    });
+  }
+
+  messagesToPersist.push({
     role: "agent",
     content: assistantOutput,
     agentId: agentId || undefined,
-  };
+  });
 
-  const { insertedMessageIds } = await appendConversationMessages(user, chatId, prompt, [userReply, assistantReply], agentId);
+  const { insertedMessageIds } = await appendConversationMessages(user, chatId, prompt, messagesToPersist, agentId);
 
   return {
     userMessageId: insertedMessageIds?.[0] || null,
-    assistantMessageId: insertedMessageIds?.[1] || null,
+    assistantMessageId: insertedMessageIds?.[insertedMessageIds.length - 1] || null,
   };
 }
 
@@ -216,9 +222,12 @@ export async function POST(request: NextRequest) {
         ]);
 
         const agentMessages = messages.map((m) => ({
-          role: m.role === "agent" ? "assistant" : (m.role as "user" | "assistant" | "system" | "tool"),
+          role: m.role === "agent" ? "assistant" : (m.role as "user" | "assistant" | "system" | "tool" | "compaction"),
           content: m.content,
         }));
+
+        // Enable compaction if context is large (e.g. > 10 messages as a heuristic, or always with a high threshold)
+        const compactThreshold = 200000; // 200k tokens as per example
 
         const result = await streamAgent(agentMessages, {
           chatId,
@@ -229,7 +238,8 @@ export async function POST(request: NextRequest) {
           latestUserMessage: prompt,
           selectedAgentId,
           memoryContext,
-          psychProfile
+          psychProfile,
+          compactThreshold
         }, {
           onTextDelta: (delta) => controller.enqueue(encodeEvent("text-delta", { delta })),
           onTrace: (entry) => controller.enqueue(encodeEvent("trace", entry))
@@ -243,7 +253,8 @@ export async function POST(request: NextRequest) {
           result.response.output_text,
           selectedAgentId,
           selectedAgentName,
-          attachments
+          attachments,
+          (result as any).compactionItems || []
         );
 
         const sourceMessageId = (() => {

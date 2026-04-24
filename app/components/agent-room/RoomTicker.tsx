@@ -4,15 +4,16 @@
 import React from "react";
 
 interface RoomTickerProps {
-  currentTopic: string;
+  currentTopic: string | null;
   isUrubuActive: boolean;
+  isFetching?: boolean;
 }
 
-export default function RoomTicker({ currentTopic, isUrubuActive }: RoomTickerProps) {
+export default function RoomTicker({ currentTopic, isUrubuActive, isFetching }: RoomTickerProps) {
   const newsPrefix = isUrubuActive ? "🚨 URUBUTÓPIA NEWS" : "📺 PIMPOTASMA LIVE NEWS";
   
   return (
-    <footer className={`room-footer-ticker ${isUrubuActive ? "is-chaos" : ""}`}>
+    <footer className={`room-footer-ticker ${isUrubuActive ? "is-chaos" : ""} ${isFetching ? "is-fetching" : ""}`}>
       <div className="ticker-label">
         <div className="pulse-icon" />
         <span>{newsPrefix}</span>
@@ -85,7 +86,7 @@ export default function RoomTicker({ currentTopic, isUrubuActive }: RoomTickerPr
         .ticker-track {
           display: flex;
           white-space: nowrap;
-          animation: ticker-loop 50s linear infinite;
+          animation: ticker-loop 30s linear infinite;
         }
 
         .ticker-track span {
@@ -101,6 +102,21 @@ export default function RoomTicker({ currentTopic, isUrubuActive }: RoomTickerPr
 
         .is-chaos .ticker-track span {
           color: #ef4444;
+        }
+
+        .is-fetching .ticker-label {
+          background: #fbbf24;
+          color: #000;
+        }
+
+        .is-fetching .ticker-track span {
+          color: #fbbf24;
+          animation: text-pulse 1s infinite alternate;
+        }
+
+        @keyframes text-pulse {
+          from { opacity: 1; }
+          to { opacity: 0.5; }
         }
 
         @keyframes ticker-loop {

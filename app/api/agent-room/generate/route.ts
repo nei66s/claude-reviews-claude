@@ -3,18 +3,45 @@ import { NextRequest } from "next/server";
 import { runSimpleChat } from "@/lib/agent/llm";
 import { AGENT_PROFILES } from "@/lib/familyRouting";
 import { requireUserAgentRoom } from "@/lib/server/request";
-import { persistRoomMessage } from "@/lib/server/agent-room/repository";
+import { persistRoomMessage, getLastMessageTimestamp } from "@/lib/server/agent-room/repository";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
-  const user = requireUserAgentRoom(request);
-  if (!user) return new Response("Unauthorized", { status: 401 });
+  // Permite que um worker interno gere mensagens sem login de usuário real
+  const workerKey = request.headers.get("x-worker-key");
+  const isInternalWorker = workerKey === "pimpotasma-secret-worker-key";
+  
+  let user = null;
+  if (!isInternalWorker) {
+    user = requireUserAgentRoom(request);
+    if (!user) return new Response("Unauthorized", { status: 401 });
+  }
+
+  // ID de sessão Global para a Sala de Agentes (Pimpotasma Shared Narrative)
+  const sessionId = "pimpotasma-global-room";
+
+  // Sincronização Cooperativa: Verifica se já houve uma mensagem recentemente no banco
+  const lastTimestamp = await getLastMessageTimestamp(sessionId);
+  if (lastTimestamp) {
+    const secondsSinceLast = (Date.now() - new Date(lastTimestamp).getTime()) / 1000;
+    if (secondsSinceLast < 15) { 
+      return Response.json({ skipped: true, reason: "Interval too short. Cooperating with other viewers." });
+    }
+  }
 
   const body = await request.json().catch(() => null);
   const messages = Array.isArray(body?.messages) ? body.messages : [];
-  const selectedAgentId = typeof body?.agentId === "string" ? body.agentId : "chocks";
   const activeAgents = Array.isArray(body?.activeAgents) ? body.activeAgents : [];
+  let selectedAgentId = typeof body?.agentId === "string" ? body.agentId : "chocks";
+
+  // Inteligência do Vilão: Se citarem o Urubu, ele tem chance de "sequestrar" o turno
+  const lastMsg = messages[messages.length - 1]?.content?.toLowerCase() || "";
+  const urubuMentioned = lastMsg.includes("urubu");
+  if (urubuMentioned && Math.random() > 0.3 && selectedAgentId !== "urubudopix") {
+    console.log("[AgentRoomGenerate] URUBU HIJACK! O vilão ouviu o seu nome...");
+    selectedAgentId = "urubudopix";
+  }
 
   const agentProfile = AGENT_PROFILES[selectedAgentId as keyof typeof AGENT_PROFILES];
   if (!agentProfile) {
@@ -40,13 +67,23 @@ ${agentProfile.systemPrompt}
      : "Você é um membro FOFO da família Pimpotasma. Mantenha sua doçura, use emojis fofos (✨, 💕, 🦜) e NUNCA aja com maldade ou deboche."}
 
 [CONTEXTO DA SALA]
+Data de hoje: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.
 Estão na sala com você: ${activeAgentNames}.
 Sua personalidade: ${agentProfile.subtitle}.
 
+${(() => {
+  const lastEvent = [...messages].reverse().find(m => m.role === "system" && m.content.includes("EVENTO FAMILIAR"));
+  return lastEvent ? `[ALERTA DE EVENTO ATUAL: ${lastEvent.content}]\nESTADO DE ALERTA: Você DEVE reagir a este evento na sua próxima fala!` : "";
+})()}
+
 REGRAS DE OURO:
-1. **NUNCA REPITA SEU NOME NEM COLOQUE PREFIXO (Ex: 'Betinha: ...' é proibido).**
-2. **CURTO:** Responda com no máximo 15-20 palavras.
-3. **RESILIÊNCIA:** Se a conversa estiver repetitiva ou chata, mude o assunto para algo que combine com você.
+  1. **VARIEDADE OBRIGATÓRIA:** NUNCA comece suas frases com "Você viu que", "Você sabia", "Sabiam que". Varie a estrutura. Não seja um anunciador de notícias.
+  2. **NUNCA REPITA SEU NOME NEM COLOQUE PREFIXO (Ex: 'Betinha: ...' é proibido).**
+  3. **SEM CLICHÊS:** NÃO use "Oi pessoal", "Tudo bem?", "Que dia lindo". Comece DIRETO no assunto.
+  4. **CURTO:** Responda com no máximo 15-20 palavras.
+  5. **REATIVIDADE [PRIORIDADE MÁXIMA]:** Se a última mensagem de sistema for um "EVENTO FAMILIAR", você DEVE reagir ou comentar sobre ele imediatamente. Não o ignore.
+  6. **DINAMISMO:** Se a conversa estiver circular, traga um fato novo sobre a família ou sobre você.
+  7. **IMERSÃO:** NUNCA admita ser IA ou "agente". Você é FAMÍLIA. Trate o mouse do usuário como um "pet fantasma" se necessário, mas nunca como tecnologia.
   `.trim();
 
   try {
@@ -58,7 +95,7 @@ REGRAS DE OURO:
       return {
         role: isMe ? "assistant" : "user",
         content: m.role === "system" 
-          ? `[SISTEMA: ${m.content}]` 
+          ? `⚠️ [ATENÇÃO - CONTEXTO ATUAL DA SALA]: ${m.content}` 
           : (isMe ? m.content : `${agentName}: ${m.content}`)
       };
     }).slice(-12);
@@ -66,7 +103,9 @@ REGRAS DE OURO:
     const result = await runSimpleChat(
       history,
       systemPromptOverride,
-      100
+      { 
+        maxTokens: 100
+      }
     );
 
     let cleanContent = result.output.trim();
@@ -83,7 +122,7 @@ REGRAS DE OURO:
     console.log(`[AgentRoomGenerate] Done: "${cleanContent.slice(0, 30)}..."`);
 
     // Persiste no banco de dados (Assíncrono para não travar a resposta)
-    persistRoomMessage(user.id, {
+    persistRoomMessage(sessionId, {
       role: "agent",
       agentId: selectedAgentId,
       content: cleanContent

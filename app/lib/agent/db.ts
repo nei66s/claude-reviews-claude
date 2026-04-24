@@ -139,7 +139,7 @@ export async function initDatabase() {
       id BIGSERIAL PRIMARY KEY,
       conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
       sort_order INTEGER NOT NULL,
-      role TEXT NOT NULL CHECK (role IN ('user', 'agent')),
+      role TEXT NOT NULL CHECK (role IN ('user', 'agent', 'system', 'compaction')),
       content TEXT NOT NULL DEFAULT '',
       trace_json JSONB,
       streaming BOOLEAN NOT NULL DEFAULT FALSE,
@@ -150,6 +150,9 @@ export async function initDatabase() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE (conversation_id, sort_order)
     );
+
+    ALTER TABLE IF EXISTS messages DROP CONSTRAINT IF EXISTS messages_role_check;
+    ALTER TABLE IF EXISTS messages ADD CONSTRAINT messages_role_check CHECK (role IN ('user', 'agent', 'system', 'compaction'));
 
     ALTER TABLE IF EXISTS messages
       ADD COLUMN IF NOT EXISTS agent_id TEXT;

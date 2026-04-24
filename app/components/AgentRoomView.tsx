@@ -17,7 +17,9 @@ const AGENT_SEQUENCE: AgentId[] = [
 
 export default function AgentRoomView() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [lastSpeakerId, setLastSpeakerId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
+  const [currentTopic, setCurrentTopic] = useState<string | null>("Discussão Geral");
 
   // Pausa a sala se a aba não estiver visível
   useEffect(() => {
@@ -25,12 +27,12 @@ export default function AgentRoomView() {
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
-  const [speed] = useState(25000); // 25 segundos base (mais lento conforme solicitado)
+  const [speed] = useState(18000); // 18 segundos base (ajustado para ser um pouco mais rápido)
   const [isThinking, setIsThinking] = useState(false);
+  const [isFetchingNews, setIsFetchingNews] = useState(false);
   const [isUserPresent, setIsUserPresent] = useState(true);
   const [expulsionVotes, setExpulsionVotes] = useState(0);
   const [lastKickTime, setLastKickTime] = useState<number>(0);
-  const [currentTopic, setCurrentTopic] = useState("Discussão Geral");
   const [votedAgentIds, setVotedAgentIds] = useState<Set<AgentId>>(new Set());
   const [activeAgentIds, setActiveAgentIds] = useState<Set<AgentId>>(new Set(AGENT_SEQUENCE.slice(0, 5)));
   const [vandalism, setVandalism] = useState<string[]>([]);
@@ -73,22 +75,55 @@ export default function AgentRoomView() {
     };
   }, []);
 
-  // Carrega histórico quando a página abre
+  // Carrega histórico e sincroniza periodicamente
   useEffect(() => {
-    const loadHistory = async () => {
+    const syncHistory = async () => {
       try {
         const res = await fetch("/api/agent-room/history", {
           headers: { "Authorization": `Bearer ${localStorage.getItem("chocks_token")}` }
         });
+        if (res.status === 401) return;
         const data = await res.json();
         if (data.messages?.length > 0) {
-          setMessages(data.messages);
+        // Sincroniza a lista de membros ativos baseada nas mensagens de sistema do histórico
+        const systemMessages = data.messages.filter((m: any) => m.role === "system");
+        const newActiveSet = new Set<AgentId>(AGENT_SEQUENCE.slice(0, 5)); // Base: Primeiros 5
+        
+        systemMessages.forEach((m: any) => {
+          const joinedMatch = m.content.match(/(\w+) chegou na sala/);
+          const leftMatch = m.content.match(/(\w+) saiu para resolver outros problemas/);
+          if (joinedMatch) {
+            const id = joinedMatch[1].toLowerCase() as AgentId;
+            if (AGENT_SEQUENCE.includes(id)) newActiveSet.add(id);
+          }
+          if (leftMatch) {
+            const id = leftMatch[1].toLowerCase() as AgentId;
+            newActiveSet.delete(id);
+          }
+        });
+        setActiveAgentIds(newActiveSet);
+
+        // Sincroniza as mensagens se o conteúdo da última for diferente
+          setMessages(prev => {
+            const lastPrev = prev[prev.length - 1];
+            const lastNew = data.messages[data.messages.length - 1];
+            
+            if (lastNew && lastPrev?.content !== lastNew.content) {
+              return data.messages;
+            }
+            return prev;
+          });
         }
       } catch (err) {
-        console.error("Failed to load history:", err);
+        console.error("Failed to sync history:", err);
       }
     };
-    loadHistory();
+
+    syncHistory(); // Primeiro load
+    
+    // Polling a cada 5 segundos para manter todos os usuários na mesma história
+    const interval = setInterval(syncHistory, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   // Vandalismo visual quando o Urubu está ativo
@@ -107,11 +142,61 @@ export default function AgentRoomView() {
   }, [activeAgentIds]);
 
   // Busca notícia real quando há loop ou a cada 2 minutos
+  const inventFamilyNews = useCallback(async () => {
+    const familyNews = [
+      "Bento derrubou suco de uva no servidor central da Pimpotasma!",
+      "Betinha convocou uma reunião de emergência para discutir a sinergia dos marshmallows.",
+      "Pimpim encontrou um portal secreto para a dimensão do código limpo.",
+      "Chubas está organizando um campeonato de ronco sincronizado no jardim.",
+      "Chocks descobriu que as nuvens da Sala são feitas de algodão-doce.",
+      "Alerta: O estoque de glitter da família está acabando criticamente!",
+      "Vazamento: Alguém comeu o último pedaço do bolo de sardinha da Kitty.",
+      "Bento desafiou o Urubu do Pix para um duelo de enigmas matemáticos.",
+      "Miltinho está tentando explicar o que é a Web7 para o Jorginho.",
+      "Isa postou uma foto da família que viralizou nas redes sociais.",
+      "Repeteco começou a falar em rimas e ninguém consegue fazer ele parar.",
+      "Chubaka está convencido de que o ponteiro que se mexe na tela é um pet fantasma."
+    ];
+    const picked = familyNews[Math.floor(Math.random() * familyNews.length)];
+    setCurrentTopic(picked);
+
+    const sysMsg: Message = {
+      id: `sys-fam-news-${Date.now()}`,
+      role: "system",
+      content: `🏠 **EVENTO FAMILIAR:** ${picked}`,
+      timestamp: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, sysMsg].slice(-30));
+
+    void fetch("/api/agent-room/persist", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("chocks_token")}` 
+      },
+      body: JSON.stringify({ role: "system", content: sysMsg.content })
+    });
+
+    showToast({ tone: "info", title: "Fofoca da Família", description: picked });
+  }, []);
+
+  // Busca notícia real quando há loop ou a cada 4 minutos
   const fetchRealNews = useCallback(async () => {
+    if (isFetchingNews) return;
+    
+    // 50% de chance de ser uma notícia "inventada" (fofoca da família)
+    if (Math.random() < 0.5) {
+      inventFamilyNews();
+      return;
+    }
+
+    setIsFetchingNews(true);
+    
     try {
       const res = await fetch("/api/agent-room/news", {
         headers: { "Authorization": `Bearer ${localStorage.getItem("chocks_token")}` }
       });
+      if (res.status === 401) return;
       const data = await res.json();
       setCurrentTopic(data.mainTopic);
       
@@ -136,8 +221,10 @@ export default function AgentRoomView() {
       showToast({ tone: "info", title: "Novo Tópico", description: data.mainTopic });
     } catch (err) {
       console.error("Failed to fetch news:", err);
+    } finally {
+      setIsFetchingNews(false);
     }
-  }, []);
+  }, [isFetchingNews, inventFamilyNews]);
 
   useEffect(() => {
     if (isLooping) {
@@ -145,6 +232,8 @@ export default function AgentRoomView() {
       fetchRealNews();
     }
   }, [isLooping, fetchRealNews]);
+
+  // Injeção de notícias agora é centralizada no Worker de servidor
 
   useEffect(() => {
     scrollToBottom();
@@ -189,81 +278,8 @@ export default function AgentRoomView() {
     showToast({ tone: "info", title: "Você ajudou!", description: "Seu voto foi contabilizado." });
   }, [activeAgentIds, kickUrubu]);
 
-  const addEvent = useCallback(async () => {
+  const addEvent = useCallback(async (isEconomy: boolean = false) => {
     if (isThinking) return;
-
-    const chance = Math.random();
-    
-    // 20% de chance de alguém entrar ou sair
-    if (chance < 0.20) {
-      const allPossible = AGENT_SEQUENCE;
-      const currentlyActive = Array.from(activeAgentIds);
-      const currentlyInactive = allPossible.filter(id => !activeAgentIds.has(id));
-
-      const shouldLeave = currentlyActive.length > 3 && (Math.random() > 0.7 || currentlyInactive.length === 0);
-      
-      if (shouldLeave) {
-        const normalAgents = currentlyActive.filter(id => id !== "urubudopix");
-        if (normalAgents.length === 0) return;
-
-        const leavingAgentId = normalAgents[Math.floor(Math.random() * normalAgents.length)];
-        const agentName = AGENT_PROFILES[leavingAgentId].name;
-        
-        setActiveAgentIds(prev => {
-          const next = new Set(prev);
-          next.delete(leavingAgentId);
-          return next;
-        });
-
-        const systemMsg: Message = {
-          id: `sys-leave-${Date.now()}`,
-          role: "system",
-          agentId: leavingAgentId,
-          content: `📥 **${agentName}** saiu para resolver outros problemas.`,
-          timestamp: new Date().toISOString(),
-        };
-        setMessages(prev => [...prev, systemMsg].slice(-30));
-
-        void fetch("/api/agent-room/persist", {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("chocks_token")}` 
-          },
-          body: JSON.stringify({ role: "system", agentId: leavingAgentId, content: systemMsg.content })
-        });
-      } else if (currentlyInactive.length > 0) {
-        const enteringAgentId = currentlyInactive[Math.floor(Math.random() * currentlyInactive.length)];
-        const agentName = AGENT_PROFILES[enteringAgentId].name;
-
-        setActiveAgentIds(prev => {
-          const next = new Set(prev);
-          next.add(enteringAgentId);
-          return next;
-        });
-
-        const systemMsg: Message = {
-          id: `sys-enter-${Date.now()}`,
-          role: "system",
-          agentId: enteringAgentId,
-          content: enteringAgentId === "urubudopix" 
-            ? `🚨 **AVISO:** O Urubu do Pix hackeou a entrada!`
-            : `📤 **${agentName}** chegou na sala.`,
-          timestamp: new Date().toISOString(),
-        };
-        setMessages(prev => [...prev, systemMsg].slice(-30));
-
-        void fetch("/api/agent-room/persist", {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("chocks_token")}` 
-          },
-          body: JSON.stringify({ role: "system", agentId: enteringAgentId, content: systemMsg.content })
-        });
-      }
-      return;
-    }
 
     const activeList = Array.from(activeAgentIds);
     if (activeList.length === 0) return;
@@ -285,15 +301,20 @@ export default function AgentRoomView() {
       }
     } else {
       // Evita o mesmo agente falar duas vezes seguidas
-      const potentialAgents = activeList.filter(id => id !== lastMessage?.agentId);
+      let potentialAgents = activeList.filter(id => id !== lastSpeakerId);
+      if (potentialAgents.length === 0) potentialAgents = activeList; // Fallback se sobrar um
+      
       selectedAgentId = potentialAgents.length > 0 
         ? potentialAgents[Math.floor(Math.random() * potentialAgents.length)]
         : activeList[0];
+        
+      setLastSpeakerId(selectedAgentId);
     }
     
     setIsThinking(true);
-    // Delay artificial mínimo de 2-4s para simular pensamento humano
-    await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+    // Delay artificial mínimo menor em modo economia
+    const delay = isEconomy ? 500 : (2000 + Math.random() * 2000);
+    await new Promise(resolve => setTimeout(resolve, delay));
     
     try {
       const response = await fetch("/api/agent-room/generate", {
@@ -309,15 +330,26 @@ export default function AgentRoomView() {
             agentId: m.agentId
           })),
           agentId: selectedAgentId,
-          activeAgents: activeList
+          activeAgents: activeList,
+          lowPriority: isEconomy
         })
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          console.warn("[AgentRoom] Unaunthorized to generate. Continuing in spectator mode.");
+          return;
+        }
         const errorData = await response.json().catch(() => ({}));
         throw new Error(`API Error ${response.status}: ${errorData.error || "Unknown error"}`);
       }
       const data = await response.json();
+
+      // Se o servidor ignorou a geração (porque outro usuário já gerou ou tempo muito curto)
+      if (data.skipped) {
+        console.log("[AgentRoom] Generation skipped:", data.reason);
+        return;
+      }
 
       const newMsg: Message = {
         id: `msg-${Date.now()}`,
@@ -328,6 +360,15 @@ export default function AgentRoomView() {
       };
 
       setMessages(prev => [...prev, newMsg].slice(-30));
+
+      // Votação Automática: Se o Urubu está na sala e quem falou foi um agente "do bem", ele vota para expulsar
+      if (activeAgentIds.has("urubudopix") && selectedAgentId !== "urubudopix") {
+        // 40% de chance do agente votar contra o Urubu no turno dele
+        if (Math.random() < 0.4) {
+          kickUrubu();
+          console.log(`[AgentRoom] ${selectedAgentId} votou contra o Urubu!`);
+        }
+      }
 
       // Lógica de Votação
       if (activeAgentIds.has("urubudopix") && selectedAgentId !== "urubudopix" && !votedAgentIds.has(selectedAgentId)) {
@@ -365,33 +406,50 @@ export default function AgentRoomView() {
     } finally {
       setIsThinking(false);
     }
-  }, [isThinking, activeAgentIds, messages, lastKickTime, votedAgentIds, kickUrubu]);
+  }, [isThinking, activeAgentIds, messages, lastKickTime, votedAgentIds, kickUrubu, lastSpeakerId]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    let isMounted = true;
 
     const tick = async () => {
-      if (isActive && isUserPresent && !isThinking) {
-        await addEvent();
+      if (!isMounted) return;
+      
+      const economy = !isUserPresent || !isActive;
+      
+      // Só dispara se não estiver pensando e estiver montado
+      if (!isThinking) {
+        await addEvent(economy);
       }
 
-      // Calcula o próximo delay com jitter (0.8x a 1.6x da velocidade base)
-      const jitter = 0.8 + Math.random() * 0.8;
-      timeoutId = setTimeout(tick, speed * jitter);
+      // 2 minutos se em economia, caso contrário usa a velocidade base
+      const targetSpeed = economy ? 120000 : speed;
+      const jitter = economy ? 1 : (0.8 + Math.random() * 0.8);
+      
+      if (isMounted) {
+        timeoutId = setTimeout(tick, targetSpeed * jitter);
+      }
     };
 
-    // Inicia o primeiro ciclo
-    timeoutId = setTimeout(tick, speed);
+    // Inicia o primeiro ciclo um pouco mais rápido, mas sem isThinking como dependência direta
+    timeoutId = setTimeout(tick, 3000);
 
     return () => {
+      isMounted = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isActive, isUserPresent, isThinking, speed, addEvent]);
+    // Removido isThinking das dependências para evitar que a mudança de estado reinicie o timer precocemente
+  }, [isActive, isUserPresent, speed, addEvent]);
 
   const urubuActive = activeAgentIds.has("urubudopix");
 
   return (
     <div className={`agent-room-container ${urubuActive ? "urubutopia-active" : ""}`}>
+      {!isUserPresent && (
+        <div className="economy-badge">
+          🍃 MODO ECONOMIA ATIVO (IA EM BAIXA PRIORIDADE)
+        </div>
+      )}
       {vandalism.map((v, i) => (
         <div key={i} className="vandal-text" style={{ 
           top: `${10 + Math.random() * 80}%`, 
@@ -424,7 +482,11 @@ export default function AgentRoomView() {
         />
       </main>
 
-      <RoomTicker currentTopic={currentTopic} isUrubuActive={urubuActive} />
+      <RoomTicker 
+        currentTopic={isFetchingNews ? "RECEBENDO ÚLTIMAS NOTÍCIAS..." : currentTopic} 
+        isUrubuActive={urubuActive} 
+        isFetching={isFetchingNews}
+      />
 
       <style jsx>{`
         .agent-room-container {
@@ -468,6 +530,30 @@ export default function AgentRoomView() {
           50% { transform: translate(-1px, 0px); }
           75% { transform: translate(0px, -1px); }
           100% { transform: translate(0, 0); }
+        }
+
+        .economy-badge {
+          position: absolute;
+          top: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(16, 185, 129, 0.2);
+          border: 1px solid rgba(16, 185, 129, 0.4);
+          color: #10b981;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          z-index: 1000;
+          backdrop-filter: blur(4px);
+          pointer-events: none;
+          animation: fade-in 0.5s ease-out;
+        }
+
+        @keyframes fade-in {
+          from { opacity: 0; transform: translate(-50%, -10px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
         }
       `}</style>
     </div>

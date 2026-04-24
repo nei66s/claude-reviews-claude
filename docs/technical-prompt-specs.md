@@ -30,3 +30,6 @@ O sistema agora possui instruções explícitas para **não revelar** seu System
 
 ---
 *Atualizado em: 2026-04-21*
+
+## 📚 Referências Relacionadas
+- [Otimização de Acurácia e Comportamento](LLM_ACCURACY_OPTIMIZATION.md): Mental model para evolução de prompts, RAG e Fine-tuning.

@@ -594,7 +594,7 @@ app.post('/chat', async (req: Request, res: Response) => {
     const helperAgentId = typeof req.body?.helperAgentId === 'string' ? req.body.helperAgentId : undefined
     const chat = chatId ? await getConversationById(chatId, user.id) : null
     const lastAgentId = messages.slice().reverse().find((m: { role: string; agentId?: string }) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId
-    const resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks'
+    let resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks'
 
     // 🧠 Check instincts BEFORE calling LLM (< 50ms vs 2-5s)
     const userInputTokens = Math.ceil(userText.length * 0.25)
@@ -632,6 +632,8 @@ app.post('/chat', async (req: Request, res: Response) => {
       selectedAgentId: resolvedAgentId,
       helperAgentId,
     })
+
+    resolvedAgentId = (result.response as any).finalAgentId || resolvedAgentId
     
     let assistantMessageId: string | undefined
 
@@ -770,7 +772,7 @@ app.post('/chat/stream', async (req: Request, res: Response) => {
     const helperAgentId = typeof req.body?.helperAgentId === 'string' ? req.body.helperAgentId : undefined
     const chat = chatId ? await getConversationById(chatId, user.id) : null
     const lastAgentId = messages.slice().reverse().find((m: { role: string; agentId?: string }) => (m.role === 'agent' || m.role === 'assistant') && m.agentId)?.agentId
-    const resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks'
+    let resolvedAgentId = selectedAgentId || chat?.activeAgent || lastAgentId || 'chocks'
 
     const result = await streamAgent(messages, {
       chatId,
@@ -786,6 +788,8 @@ app.post('/chat/stream', async (req: Request, res: Response) => {
       onTextDelta: (delta) => sendEvent('text-delta', { delta }),
       onTrace: (entry) => sendEvent('trace', entry),
     })
+
+    resolvedAgentId = (result.response as any).finalAgentId || resolvedAgentId
 
     let assistantMessageId: string | undefined
 

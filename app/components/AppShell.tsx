@@ -27,6 +27,7 @@ import Downbar from "./Downbar";
 import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
 import UrubuChaosEngine from "./UrubuChaosEngine";
 import AgentRoomView from "./AgentRoomView";
+import TokenCounter from "./TokenCounter";
 import type { Artifact } from "../lib/artifactDetection";
 import { detectArtifacts } from "../lib/artifactDetection";
 import { Attachment, Message, requestJson } from "../lib/api";
@@ -739,6 +740,13 @@ export default function AppShell({
                       agentId={latestAgentMessageWithTrace?.agentId}
                     />
                     <div className="chat-composer">
+                      <TokenCounter 
+                        prompt={prompt} 
+                        attachments={attachments} 
+                        history={activeChat?.messages} 
+                        selectedAgentId={currentActiveAgentId || "chocks"}
+                        chatId={activeChat?.id}
+                      />
                       {/* Legendas ao vivo V2 Realtime */}
                       {realtimeMode && (realtimeLiveTranscript || realtimeLiveAssistant) && (
                         <div className="realtime-live-captions">

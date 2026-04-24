@@ -5,7 +5,7 @@ import React from "react";
 import { Sparkles } from "lucide-react";
 
 interface RoomHeaderProps {
-  currentTopic: string;
+  currentTopic: string | null;
   synergy: number;
   expulsionVotes: number;
   isUrubuActive?: boolean;

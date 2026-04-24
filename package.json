@@ -4,15 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000",
-    "dev:desktop": "concurrently -n web,tauri -c \"cyan,yellow\" \"npm run dev\" \"npx tauri dev\"",
+    "dev:desktop": "concurrently -n web,tauri,worker -c \"cyan,yellow,green\" \"npm run dev\" \"npx tauri dev\" \"node room-worker.mjs\"",
     "predev": "powershell -Command \"try { Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue } } catch {}; exit 0\"",
-
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "eslint"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
+    "@openai/agents": "^0.8.5",
     "@tauri-apps/plugin-fs": "^2.5.0",
     "@tauri-apps/plugin-shell": "^2.3.5",
     "@types/express": "^5.0.6",
@@ -30,7 +30,8 @@
     "react-dom": "19.2.4",
     "react-force-graph-2d": "^1.29.1",
     "react-markdown": "^10.1.0",
-    "react-syntax-highlighter": "^16.1.1"
+    "react-syntax-highlighter": "^16.1.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",

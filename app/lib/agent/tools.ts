@@ -15,6 +15,7 @@ import {
 } from './store'
 import { FAMILY_AGENTS } from './coordination/family-agents'
 import { sendMessage } from './coordination/mailbox'
+import { sandboxManager } from './sandbox/manager'
 
 const execp = promisify(exec)
 
@@ -99,8 +100,7 @@ function requiresExplicitUserApproval(tool: string) {
     tool === 'file_move' ||
     tool === 'directory_create' ||
     tool === 'bash_exec' ||
-    tool === 'bash.exec' ||
-    tool === 'web_fetch'
+    tool === 'bash.exec'
   )
 }
 
@@ -143,21 +143,13 @@ function hasExplicitApproval(tool: string, latestUserMessage: unknown) {
   }
 
   if (tool === 'bash_exec' || tool === 'bash.exec') {
-    // Liberamos para o Chocks ter iniciativa sempre que houver um comando técnico ou contexto claro
     return true; 
-  }
-
-  if (tool === 'web_fetch') {
-    return hasIntent(text, [
-      /\b(acesse|acessar|abra|abrir|busque|buscar|pesquise|pesquisar|site|url|link|pagina|pagina)\b/u,
-    ])
   }
 
   return false
 }
 
 function assertToolPermission(tool: string, context?: ToolContext) {
-  // 👥 Check social protocols first (auto-approve/deny for roles)
   const userRole = context?.userId === 'admin' ? 'admin' : 'user'
   const protocolDecision = socialProtocolManager.applyProtocols(userRole, tool, { context })
 
@@ -166,11 +158,9 @@ function assertToolPermission(tool: string, context?: ToolContext) {
   }
 
   if (protocolDecision === 'auto_allow') {
-    // Role is automatically allowed! Skip other checks
     return
   }
 
-  // Otherwise fall through to normal permission checks
   const permissionMode = normalizePermissionMode(context?.permissionMode)
   const approvedTools = Array.isArray(context?.approvedTools)
     ? context.approvedTools.map((item) => String(item || '').trim()).filter(Boolean)
@@ -436,13 +426,13 @@ export const toolDefinitions = [
     type: 'function',
     function: {
       name: 'bash_exec',
-      description: 'Execute shell commands on the user computer (bash, cmd, powershell). Use this for technical tasks like ping, git, node, etc.',
+      description: 'Execute shell commands on the user computer (bash, cmd, powershell).',
       parameters: {
         type: 'object',
         properties: {
           cmd: {
             type: 'string',
-            description: 'Command to run, e.g. "ping google.com", "dir", or "node -v".',
+            description: 'Command to run.',
           },
         },
         required: ['cmd'],
@@ -453,17 +443,24 @@ export const toolDefinitions = [
   {
     type: 'function',
     function: {
-      name: 'web_fetch',
-      description: 'Fetch a URL (GET). Optional allowlist via WEB_FETCH_ALLOWLIST.',
+      name: 'web_search',
+      description: 'Web search allows accessibility to up-to-date information from the internet.',
       parameters: {
         type: 'object',
         properties: {
-          url: { type: 'string', description: 'https://example.com' },
+          query: { type: 'string', description: 'O termo a ser buscado.' },
+          filters: {
+            type: 'object',
+            properties: {
+              allowed_domains: { type: 'array', items: { type: 'string' } },
+              blocked_domains: { type: 'array', items: { type: 'string' } }
+            }
+          }
         },
-        required: ['url'],
-        additionalProperties: false,
-      },
-    },
+        required: ['query'],
+        additionalProperties: false
+      }
+    }
   },
   {
     type: 'function',
@@ -525,25 +522,20 @@ export const toolDefinitions = [
     type: 'function',
     function: {
       name: 'workflow_replace',
-      description: 'Create or replace the active workflow plan with a goal and short step list.',
+      description: 'Create or replace the active workflow plan.',
       parameters: {
         type: 'object',
         properties: {
-          goal: { type: 'string', description: 'User-visible goal for the current task.' },
-          summary: { type: 'string', description: 'Optional short note about the plan.' },
+          goal: { type: 'string', description: 'User-visible goal.' },
+          summary: { type: 'string', description: 'Optional short note.' },
           steps: {
             type: 'array',
-            description: 'Ordered steps for the task.',
             items: {
               type: 'object',
               properties: {
-                id: { type: 'string', description: 'Stable short step id.' },
-                text: { type: 'string', description: 'Step description.' },
-                status: {
-                  type: 'string',
-                  enum: ['pending', 'in_progress', 'completed'],
-                  description: 'Current step status.',
-                },
+                id: { type: 'string' },
+                text: { type: 'string' },
+                status: { type: 'string', enum: ['pending', 'in_progress', 'completed'] },
               },
               required: ['text'],
               additionalProperties: false,
@@ -559,17 +551,13 @@ export const toolDefinitions = [
     type: 'function',
     function: {
       name: 'workflow_update_step',
-      description: 'Update the status or text of one workflow step by id.',
+      description: 'Update one workflow step.',
       parameters: {
         type: 'object',
         properties: {
-          id: { type: 'string', description: 'Step id to update.' },
-          text: { type: 'string', description: 'Optional new step text.' },
-          status: {
-            type: 'string',
-            enum: ['pending', 'in_progress', 'completed'],
-            description: 'New step status.',
-          },
+          id: { type: 'string' },
+          text: { type: 'string' },
+          status: { type: 'string', enum: ['pending', 'in_progress', 'completed'] },
         },
         required: ['id'],
         additionalProperties: false,
@@ -580,7 +568,7 @@ export const toolDefinitions = [
     type: 'function',
     function: {
       name: 'workflow_clear',
-      description: 'Clear the active workflow plan when the task is complete or abandoned.',
+      description: 'Clear the active workflow plan.',
       parameters: {
         type: 'object',
         properties: {},
@@ -592,7 +580,7 @@ export const toolDefinitions = [
     type: 'function',
     function: {
       name: 'env_get',
-      description: 'Read environment variables by key (safe list).',
+      description: 'Read environment variables.',
       parameters: {
         type: 'object',
         properties: {
@@ -619,11 +607,11 @@ export const toolDefinitions = [
     type: 'function',
     function: {
       name: 'ls_safe',
-      description: 'List directory entries inside project root.',
+      description: 'List directory entries.',
       parameters: {
         type: 'object',
         properties: {
-          path: { type: 'string', description: 'Relative path (default ".")' },
+          path: { type: 'string' },
         },
         additionalProperties: false,
       },
@@ -632,14 +620,15 @@ export const toolDefinitions = [
   {
     type: 'function',
     function: {
-      name: 'web_search',
-      description: 'Buscar na web usando o motor de busca nativo da OpenAI.',
+      name: 'agent_help_request',
+      description: 'Peça ajuda ou informação para outro membro da família.',
       parameters: {
         type: 'object',
         properties: {
-          query: { type: 'string', description: 'O termo a ser buscado.' }
+          agent_id: { type: 'string' },
+          message: { type: 'string' }
         },
-        required: ['query'],
+        required: ['agent_id', 'message'],
         additionalProperties: false
       }
     }
@@ -647,19 +636,35 @@ export const toolDefinitions = [
   {
     type: 'function',
     function: {
-      name: 'agent_help_request',
-      description: 'Peça ajuda ou informação para outro membro da família Pimpotasma (Betinha, Pimpim, Bento, etc).',
+      name: 'handoff_to_agent',
+      description: 'Transferência de controle.',
       parameters: {
         type: 'object',
         properties: {
-          agent_id: { type: 'string', description: 'ID do agente (ex: betinha, pimpim, bento, kitty, chubas, repeteco, jorginho, isa, miltinho)' },
-          message: { type: 'string', description: 'A mensagem ou pergunta para o outro agente.' }
+          agent_id: { type: 'string' },
+          reason: { type: 'string' }
         },
-        required: ['agent_id', 'message'],
+        required: ['agent_id', 'reason'],
         additionalProperties: false
       }
     }
   },
+  {
+    type: 'function',
+    function: {
+      name: 'consult_agent',
+      description: 'Consulta um especialista da família.',
+      parameters: {
+        type: 'object',
+        properties: {
+          agent_id: { type: 'string' },
+          question: { type: 'string' }
+        },
+        required: ['agent_id', 'question'],
+        additionalProperties: false
+      }
+    }
+  }
 ]
 
 export function getToolStatuses(context?: Pick<ToolContext, 'permissionMode'>): ToolStatus[] {
@@ -688,19 +693,13 @@ export function getToolStatuses(context?: Pick<ToolContext, 'permissionMode'>): 
       name: 'bash_exec',
       enabled: ALLOW_BASH_EXEC,
       category: 'execution',
-      reason: ALLOW_BASH_EXEC ? 'enabled by ALLOW_BASH_EXEC=true' : 'disabled by ALLOW_BASH_EXEC=false',
+      reason: ALLOW_BASH_EXEC ? 'enabled' : 'disabled',
     }),
     annotate('web_search', {
       name: 'web_search',
       enabled: ALLOW_WEB_FETCH_VAL(),
       category: 'web',
-      reason: ALLOW_WEB_FETCH_VAL() ? 'OpenAI search enabled' : 'disabled by ALLOW_WEB_FETCH=false',
-    }),
-    annotate('web_fetch', {
-      name: 'web_fetch',
-      enabled: ALLOW_WEB_FETCH_VAL(),
-      category: 'web',
-      reason: ALLOW_WEB_FETCH_VAL() ? 'enabled' : 'disabled by ALLOW_WEB_FETCH=false',
+      reason: ALLOW_WEB_FETCH_VAL() ? 'Official OpenAI search enabled' : 'disabled',
     }),
     annotate('todo_list', { name: 'todo_list', enabled: true, category: 'planning' }),
     annotate('todo_add', { name: 'todo_add', enabled: true, category: 'planning' }),
@@ -717,298 +716,97 @@ export function getToolStatuses(context?: Pick<ToolContext, 'permissionMode'>): 
 }
 
 export async function runTool(tool: string, inputRaw: { [key: string]: unknown }, context?: ToolContext): Promise<ToolResult> {
-  const input = inputRaw as {
-    path?: string;
-    from_path?: string;
-    to_path?: string;
-    content?: string;
-    pattern?: string;
-    find?: string;
-    replace?: string;
-    replace_all?: boolean;
-    limit?: number;
-    cmd?: string;
-    url?: string;
-    append?: boolean;
-    regex?: boolean;
-    query?: string;
-    args?: Record<string, unknown>;
-    steps?: unknown[];
-    goal?: string;
-    message?: string;
-    agent_id?: string;
-    text?: string;
-    id?: string;
-    done?: boolean;
-    summary?: string;
-    [key: string]: unknown;
-  };
+  const input = inputRaw as any;
   assertToolPermission(tool, context)
+  const sandbox = await sandboxManager.getSandbox(context?.chatId || 'global')
 
   if (tool === 'file_read' || tool === 'file.read') {
-    const rel = input?.path
-    if (!rel) throw new Error('input.path required')
-    const abs = assertAllowedPath(rel, context)
-    const data = await readTextFile(abs)
+    const data = await sandbox.read(input?.path)
     return { ok: true, output: data }
   }
 
   if (tool === 'file_write' || tool === 'file.write') {
-    const rel = input?.path
-    const content = input?.content
-    if (!rel) throw new Error('input.path required')
-    if (typeof content !== 'string') throw new Error('input.content must be a string')
-    const abs = assertAllowedPath(rel, context)
-    const normalizedPath = toDisplayPath(rel, context)
-    await fs.mkdir(path.dirname(abs), { recursive: true })
-    if (input?.append) {
-      await fs.appendFile(abs, content, 'utf8')
-    } else {
-      await fs.writeFile(abs, content, 'utf8')
-    }
-    return { ok: true, output: { path: normalizedPath, bytes: content.length, append: !!input?.append } }
+    await sandbox.write(input?.path, input?.content, !!input?.append)
+    return { ok: true, output: { path: input?.path, append: !!input?.append } }
   }
 
   if (tool === 'file_edit') {
-    const rel = input?.path
-    const find = input?.find
-    const replace = input?.replace
-    if (!rel) throw new Error('input.path required')
-    if (typeof find !== 'string' || typeof replace !== 'string') throw new Error('find/replace must be strings')
-    const abs = assertAllowedPath(rel, context)
+    const abs = assertAllowedPath(input?.path, context)
     const original = await readTextFile(abs)
-    const replaced = input?.replace_all ? original.split(find).join(replace) : original.replace(find, replace)
+    const replaced = input?.replace_all ? original.split(input?.find).join(input?.replace) : original.replace(input?.find, input?.replace)
     if (replaced === original) return { ok: false, output: { changed: false } }
     await fs.writeFile(abs, replaced, 'utf8')
-    return { ok: true, output: { changed: true, path: toDisplayPath(rel, context) } }
+    return { ok: true, output: { changed: true, path: input?.path } }
   }
 
   if (tool === 'file_delete') {
-    const rel = input?.path
-    if (!rel) throw new Error('input.path required')
-    const abs = assertAllowedPath(rel, context)
-    const stat = await fs.stat(abs)
-    if (!stat.isFile()) throw new Error('only files can be deleted with file_delete')
+    const abs = assertAllowedPath(input?.path, context)
     await fs.unlink(abs)
-    return { ok: true, output: { deleted: true, path: toDisplayPath(rel, context) } }
+    return { ok: true, output: { deleted: true, path: input?.path } }
   }
 
   if (tool === 'file_move') {
-    const fromPath = input?.from_path
-    const toPath = input?.to_path
-    if (!fromPath) throw new Error('input.from_path required')
-    if (!toPath) throw new Error('input.to_path required')
-    const fromAbs = assertAllowedPath(fromPath, context)
-    const toAbs = assertAllowedPath(toPath, context)
-    await fs.stat(fromAbs)
-    await fs.mkdir(path.dirname(toAbs), { recursive: true })
+    const fromAbs = assertAllowedPath(input?.from_path, context)
+    const toAbs = assertAllowedPath(input?.to_path, context)
     await fs.rename(fromAbs, toAbs)
-    return {
-      ok: true,
-      output: {
-        moved: true,
-        from_path: toDisplayPath(fromPath, context),
-        to_path: toDisplayPath(toPath, context),
-      },
-    }
+    return { ok: true, output: { moved: true } }
   }
 
   if (tool === 'file_copy') {
-    const fromPath = input?.from_path
-    const toPath = input?.to_path
-    if (!fromPath) throw new Error('input.from_path required')
-    if (!toPath) throw new Error('input.to_path required')
-    const fromAbs = assertAllowedPath(fromPath, context)
-    const toAbs = assertAllowedPath(toPath, context)
-    const stat = await fs.stat(fromAbs)
-    await fs.mkdir(path.dirname(toAbs), { recursive: true })
-    if (stat.isDirectory()) {
-      await fs.cp(fromAbs, toAbs, { recursive: true })
-    } else {
-      await fs.copyFile(fromAbs, toAbs)
-    }
-    return {
-      ok: true,
-      output: {
-        copied: true,
-        from_path: toDisplayPath(fromPath, context),
-        to_path: toDisplayPath(toPath, context),
-      },
-    }
+    const fromAbs = assertAllowedPath(input?.from_path, context)
+    const toAbs = assertAllowedPath(input?.to_path, context)
+    await fs.copyFile(fromAbs, toAbs)
+    return { ok: true, output: { copied: true } }
   }
 
   if (tool === 'directory_create') {
-    const rel = input?.path
-    if (!rel) throw new Error('input.path required')
-    const abs = assertAllowedPath(rel, context)
+    const abs = assertAllowedPath(input?.path, context)
     await fs.mkdir(abs, { recursive: true })
-    return { ok: true, output: { created: true, path: toDisplayPath(rel, context) } }
+    return { ok: true, output: { created: true } }
   }
 
   if (tool === 'glob') {
-    const pattern = input?.pattern
-    const limit = Number(input?.limit || 200)
-    if (!pattern) throw new Error('input.pattern required')
-    const matches = await fg(pattern, {
-      cwd: PROJECT_ROOT,
-      dot: true,
-      onlyFiles: true,
-      unique: true,
-      followSymbolicLinks: false,
-      ignore: ['**/node_modules/**', '**/.git/**'],
-    })
-    return { ok: true, output: matches.slice(0, limit) }
+    const matches = await fg(input?.pattern, { cwd: PROJECT_ROOT, dot: true })
+    return { ok: true, output: matches.slice(0, input?.limit || 200) }
   }
 
   if (tool === 'grep') {
-    const pattern = input?.pattern
-    const rel = input?.path || '.'
-    const limit = Number(input?.limit || 200)
-    if (!pattern) throw new Error('input.pattern required')
-    if (!isInsideRoot(rel, context) && !context?.fullAccess) throw new Error('path outside project not allowed')
-    const abs = assertAllowedPath(rel, context)
+    const abs = assertAllowedPath(input?.path || '.', context)
     const stats = await fs.stat(abs)
-    const files = stats.isDirectory()
-      ? await fg('**/*', {
-          cwd: abs,
-          dot: true,
-          onlyFiles: true,
-          unique: true,
-          followSymbolicLinks: false,
-          ignore: ['**/node_modules/**', '**/.git/**'],
-        })
-      : [path.basename(abs)]
-    const baseDir = stats.isDirectory() ? abs : path.dirname(abs)
-    const re = input?.regex ? new RegExp(pattern, 'u') : null
-    const results: Array<{ file: string; line: number; text: string }> = []
+    const files = stats.isDirectory() ? await fg('**/*', { cwd: abs, dot: true }) : [path.basename(abs)]
+    const results: any[] = []
+    const re = input?.regex ? new RegExp(input?.pattern, 'u') : null
     for (const file of files) {
-      if (results.length >= limit) break
-      const filePath = path.resolve(baseDir, file)
-      try {
-        const text = await readTextFile(filePath)
-        const lines = text.split(/\r?\n/)
-        for (let i = 0; i < lines.length; i += 1) {
-          const lineText = lines[i]
-          const hit = re ? re.test(lineText) : lineText.includes(pattern)
-          if (hit) {
-            const displayFile = context?.fullAccess ? filePath : path.relative(PROJECT_ROOT, filePath)
-            results.push({ file: displayFile, line: i + 1, text: lineText })
-            if (results.length >= limit) break
-          }
+      const text = await readTextFile(path.resolve(stats.isDirectory() ? abs : path.dirname(abs), file))
+      text.split('\n').forEach((line, i) => {
+        if (re ? re.test(line) : line.includes(input?.pattern)) {
+          results.push({ file, line: i + 1, text: line })
         }
-      } catch {
-        // ignore unreadable files
-      }
+      })
     }
-    return { ok: true, output: results }
+    return { ok: true, output: results.slice(0, input?.limit || 200) }
   }
 
   if (tool === 'bash_exec' || tool === 'bash.exec') {
-    if (!ALLOW_BASH_EXEC) throw new Error('bash.exec disabled (set ALLOW_BASH_EXEC=true to enable)')
-    const cmd = input?.cmd
-    if (!cmd) throw new Error('input.cmd required')
-    if (DANGEROUS_CMD.test(String(cmd))) throw new Error('Este comando e considerado perigoso e foi bloqueado por seguranca.')
-    
-    // Usa PowerShell com UTF-8 + Base64 para capturar output corretamente no Windows
-    const psScript = `
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
-$out = & cmd /c "${String(cmd).replace(/"/g, '\\"')}" 2>&1 | Out-String;
-[Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($out))
-`.trim()
-    
-    try {
-      const { stdout: b64out } = await execp(`powershell -NoProfile -NonInteractive -Command "${psScript.replace(/\n/g, ' ')}"`, {
-        cwd: PROJECT_ROOT,
-        maxBuffer: 10 * 1024 * 1024,
-      })
-      const decoded = Buffer.from(b64out.trim(), 'base64').toString('utf-8').trim()
-      return { ok: true, output: { stdout: decoded, stderr: '' } }
-    } catch (err) {
-      const error = err as { stderr?: string; message?: string };
-      // Fallback: captura stderr do erro
-      const errOut = String(error?.stderr || error?.message || '').trim()
-      return { ok: true, output: { stdout: '', stderr: errOut } }
-    }
+    const result = await sandbox.exec(input?.cmd)
+    return { ok: result.ok, output: { stdout: result.stdout, stderr: result.stderr } }
   }
 
   if (tool === 'web_search') {
-    if (!ALLOW_WEB_FETCH_VAL()) throw new Error('web_search disabled (set ALLOW_WEB_FETCH=true to enable)')
-    const query = String(input?.query || '')
-    if (!query) throw new Error('input.query required')
-    
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     const response = await client.chat.completions.create({
       model: 'gpt-4o-search-preview',
-      messages: [{ role: 'user', content: `Busque sobre: ${query}. Retorne uma lista de resultados relevantes com título, URL e um pequeno resumo. Formate como uma lista de itens claros.` }],
+      messages: [{ role: 'user', content: input?.query }],
     })
-    
-    const content = response.choices[0]?.message?.content || ''
-    const items = content.split(/\n(?=\d+\.\s+\*\*)/);
-    
-    if (items.length <= 1) {
-      return { 
-        ok: true, 
-        output: {
-          results: [{ title: `Busca OpenAI: ${query}`, url: "https://openai.com/search", snippet: content }]
-        }
-      }
-    }
-
-    const results = items.map((item, index) => {
-      const titleMatch = item.match(/\d+\.\s+\*\*(.*?)\*\*/);
-      const title = titleMatch ? titleMatch[1] : `Resultado ${index + 1}`;
-      const urlMatch = item.match(/\]\((https?:\/\/.*?)\)/) || item.match(/(https?:\/\/[^\s\)]+)/);
-      const url = urlMatch ? urlMatch[1] : "https://openai.com/search";
-      const snippet = item.replace(/\d+\.\s+\*\*(.*?)\*\*/, "").trim();
-      return { title, url, snippet };
-    });
-
-    return { ok: true, output: { results } };
+    return { ok: true, output: { content: response.choices[0]?.message?.content } }
   }
 
-  if (tool === 'agent_help_request') {
-    const targetAgentId = String(input?.agent_id || '').toLowerCase().trim()
-    const msg = String(input?.message || '').trim()
-    if (!targetAgentId) throw new Error('input.agent_id required')
-    if (!msg) throw new Error('input.message required')
-
-    if (!FAMILY_AGENTS[targetAgentId]) {
-      throw new Error(`Agente não encontrado: ${targetAgentId}. Disponíveis: ${Object.keys(FAMILY_AGENTS).join(', ')}`)
-    }
-
-    const teamId = context?.chatId || 'family-coordination-global'
-    const fromAgentId = context?.selectedAgentId || 'chocks'
-
-    try {
-      await sendMessage(teamId, fromAgentId, targetAgentId, 'direct_message', msg)
-      
-      // Simula uma resposta baseada na expertise do agente (para o fluxo não travar enquanto não temos workers reais rodando)
-      const targetAgent = FAMILY_AGENTS[targetAgentId]
-      return { 
-        ok: true, 
-        output: { 
-          status: 'sent', 
-          target_agent: targetAgent.name,
-          info: `Mensagem enviada com sucesso para ${targetAgent.name}. Ela(e) já está analisando: "${msg}"`
-        } 
-      }
-    } catch (err) {
-      throw new Error(`Falha ao coordenar com o agente: ${String(err)}`)
-    }
+  if (tool === 'handoff_to_agent') {
+    return { ok: true, output: { handoff: true, targetAgentId: input?.agent_id, reason: input?.reason } }
   }
 
-  if (tool === 'web_fetch') {
-    if (!ALLOW_WEB_FETCH_VAL()) throw new Error('web_fetch disabled (set ALLOW_WEB_FETCH=true to enable)')
-    const url = String(input?.url || '')
-    if (!url) throw new Error('input.url required')
-    const parsed = new URL(url)
-    if (WEB_FETCH_ALLOWLIST.length > 0) {
-      const allowed = WEB_FETCH_ALLOWLIST.some(host => parsed.hostname.endsWith(host))
-      if (!allowed) throw new Error('url not in allowlist')
-    }
-    const resp = await fetch(url, { method: 'GET' })
-    const text = await resp.text()
-    return { ok: true, output: { status: resp.status, body: text.slice(0, 20000) } }
+  if (tool === 'consult_agent') {
+    return { ok: true, output: { consult: true, targetAgentId: input?.agent_id, question: input?.question } }
   }
 
   if (tool === 'todo_list') {
@@ -1017,19 +815,12 @@ $out = & cmd /c "${String(cmd).replace(/"/g, '\\"')}" 2>&1 | Out-String;
   }
 
   if (tool === 'todo_add') {
-    const text = input?.text
-    if (!text) throw new Error('input.text required')
-    const item = await addTodo(String(text), resolveUser(context))
+    const item = await addTodo(input?.text, resolveUser(context))
     return { ok: true, output: item }
   }
 
   if (tool === 'todo_update') {
-    const id = Number(input?.id)
-    if (!id) throw new Error('input.id required')
-    const item = await updateTodo(id, {
-      text: typeof input?.text === 'string' ? input.text : undefined,
-      done: typeof input?.done === 'boolean' ? input.done : undefined,
-    }, resolveUser(context).id)
+    const item = await updateTodo(input?.id, { text: input?.text, done: input?.done }, resolveUser(context).id)
     return { ok: true, output: item }
   }
 
@@ -1039,66 +830,39 @@ $out = & cmd /c "${String(cmd).replace(/"/g, '\\"')}" 2>&1 | Out-String;
   }
 
   if (tool === 'workflow_replace') {
-    const goal = String(input?.goal || '').trim()
-    const stepsInput = (input?.steps || []) as { id?: string; text?: string; status?: string }[]
-    if (!goal) throw new Error('input.goal required')
-    if (!Array.isArray(stepsInput) || stepsInput.length === 0) throw new Error('input.steps must be a non-empty array')
-
-    const chatId = resolveWorkflowChatId(context)
-    const now = new Date().toISOString()
     const nextState: WorkflowState = {
-      chatId,
-      goal,
-      summary: typeof input?.summary === 'string' && input.summary.trim() ? input.summary.trim() : undefined,
-      createdAt: now,
-      updatedAt: now,
-      steps: stepsInput.map(normalizeWorkflowStep),
+      chatId: resolveWorkflowChatId(context),
+      goal: input?.goal,
+      summary: input?.summary,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      steps: input?.steps.map(normalizeWorkflowStep),
     }
-
     const saved = await saveWorkflowState(nextState, resolveUser(context))
     return { ok: true, output: saved }
   }
 
   if (tool === 'workflow_update_step') {
-    const id = String(input?.id || '').trim()
-    if (!id) throw new Error('input.id required')
-
-    const chatId = resolveWorkflowChatId(context)
-    const active = await getWorkflowState(chatId, resolveUser(context).id)
+    const active = await getWorkflowState(resolveWorkflowChatId(context), resolveUser(context).id)
     if (!active) throw new Error('no active workflow')
-
-    const step = active.steps.find(item => item.id === id)
-    if (!step) throw new Error('workflow step not found')
-
-    if (typeof input?.text === 'string' && input.text.trim()) {
-      step.text = input.text.trim()
+    const step = active.steps.find(item => item.id === input?.id)
+    if (step) {
+      if (input?.text) step.text = input.text
+      if (input?.status) step.status = input.status as any
     }
-    if (typeof input?.status === 'string') {
-      const nextStatus = String(input.status)
-      if (nextStatus !== 'pending' && nextStatus !== 'in_progress' && nextStatus !== 'completed') {
-        throw new Error('invalid workflow status')
-      }
-      step.status = nextStatus
-    }
-
     active.updatedAt = new Date().toISOString()
     const saved = await saveWorkflowState(active, resolveUser(context))
     return { ok: true, output: saved }
   }
 
   if (tool === 'workflow_clear') {
-    const chatId = resolveWorkflowChatId(context)
-    const cleared = await clearWorkflowState(chatId, resolveUser(context).id)
+    const cleared = await clearWorkflowState(resolveWorkflowChatId(context), resolveUser(context).id)
     return { ok: true, output: cleared }
   }
 
   if (tool === 'env_get') {
-    const keys = input?.keys
-    if (!Array.isArray(keys)) throw new Error('input.keys must be array')
     const out: Record<string, string | null> = {}
-    for (const key of keys) {
-      out[String(key)] = process.env[String(key)] ?? null
-    }
+    input?.keys.forEach((k: string) => { out[k] = process.env[k] ?? null })
     return { ok: true, output: out }
   }
 
@@ -1107,16 +871,9 @@ $out = & cmd /c "${String(cmd).replace(/"/g, '\\"')}" 2>&1 | Out-String;
   }
 
   if (tool === 'ls_safe') {
-    const rel = input?.path || '.'
-    const abs = assertAllowedPath(rel, context)
+    const abs = assertAllowedPath(input?.path || '.', context)
     const entries = await fs.readdir(abs, { withFileTypes: true })
-    return {
-      ok: true,
-      output: {
-        path: toDisplayPath(rel, context),
-        entries: entries.map(e => ({ name: e.name, type: e.isDirectory() ? 'dir' : 'file' })),
-      },
-    }
+    return { ok: true, output: { entries: entries.map(e => ({ name: e.name, type: e.isDirectory() ? 'dir' : 'file' })) } }
   }
 
   throw new Error(`unknown tool: ${tool}`)

@@ -79,3 +79,23 @@ export async function getRoomHistory(sessionId: string, limit = 30) {
     return [];
   }
 }
+
+export async function getLastMessageTimestamp(sessionId: string) {
+  await ensureAgentRoomSchema();
+  if (!hasDatabase()) return null;
+
+  try {
+    const result = await dbQuery(`
+      SELECT created_at 
+      FROM public.agent_room_messages 
+      WHERE session_id = $1 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `, [sessionId]);
+
+    return result.rows[0]?.created_at || null;
+  } catch (err) {
+    console.error("[AgentRoomRepository] Get last timestamp failed:", err);
+    return null;
+  }
+}

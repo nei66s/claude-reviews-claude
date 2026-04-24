@@ -46,7 +46,7 @@ export async function invalidateConversationCacheForUser(user: SessionUser) {
 
 export type ChatMessage = {
   id?: string;
-  role: "user" | "agent" | "system";
+  role: "user" | "agent" | "system" | "compaction";
   content: string;
   streaming?: boolean;
   agentId?: string | null;
@@ -358,7 +358,7 @@ const defaultTools = (): ToolRecord[] => [
   { name: "memory_upsert", enabled: false, category: "memory", reason: "Modo seguro local" },
   { name: "memory_append", enabled: false, category: "memory", reason: "Modo seguro local" },
   { name: "grep", enabled: true, category: "search" },
-  { name: "web_fetch", enabled: true, category: "network" },
+  { name: "web_search", enabled: true, category: "network" },
 ];
 
 function defaultState(): UserState {

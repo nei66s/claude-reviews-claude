@@ -8,6 +8,7 @@ import { Attachment } from "../lib/api";
 import ChocksIdentityCard from "./ChocksIdentityCard";
 import PimpotasmaTeamCard from "./PimpotasmaTeamCard";
 import { isTauri } from "../lib/desktop";
+import TokenCounter from "./TokenCounter";
 
 interface WelcomeScreenProps {
   prompt: string;
@@ -183,6 +184,10 @@ export default function WelcomeScreen({
         {/* Composer */}
         <div className="welcome-v2-composer">
           <div className="welcome-v2-composer-inner">
+            <TokenCounter 
+              prompt={prompt} 
+              attachments={attachments} 
+            />
             <textarea
               ref={textareaRef}
               value={prompt}

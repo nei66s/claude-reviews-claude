@@ -1397,6 +1397,7 @@ export async function runChatTool(
   if (toolName === "web_search") {
     return searchWeb(user, {
       query: String(input.query || ""),
+      filters: typeof input.filters === "object" && input.filters ? (input.filters as any) : undefined,
     });
   }
 

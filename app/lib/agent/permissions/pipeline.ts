@@ -119,7 +119,7 @@ class PermissionPipeline {
   // Step 5: Requires interaction
   async step5_RequiresInteraction(tool: string, context: PermissionContext): Promise<PermissionCheckResult> {
     // Certain tools absolutely require user interaction (no auto-execute)
-    const requiresInteraction = ['file_delete', 'bash_exec', 'web_fetch']
+    const requiresInteraction = ['file_delete', 'bash_exec']
 
     if (requiresInteraction.includes(tool) && context.permissionMode === 'ask') {
       // In ask mode, always require explicit approval

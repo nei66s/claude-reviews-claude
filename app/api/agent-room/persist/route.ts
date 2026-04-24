@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     return new Response("Missing role or content", { status: 400 });
   }
 
-  await persistRoomMessage(user.id, {
+  await persistRoomMessage("pimpotasma-global-room", {
     role,
     agentId,
     content

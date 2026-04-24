@@ -48,6 +48,14 @@ const PRICING = {
     input: 0.0005,
     output: 0.0015,
   },
+  'gpt-4o': {
+    input: 0.005, // $5.00 per 1M tokens
+    output: 0.015, // $15.00 per 1M tokens
+  },
+  'gpt-4o-mini': {
+    input: 0.00015, // $0.15 per 1M tokens
+    output: 0.0006, // $0.60 per 1M tokens
+  }
 } as Record<string, { input: number; output: number }>
 
 export async function initCostTracker() {
@@ -95,10 +103,19 @@ export function calculateCost(
   model: string,
   inputTokens: number,
   outputTokens: number,
+  options?: { isBatch?: boolean; serviceTier?: string }
 ): number {
-  const pricing = PRICING[model] || PRICING['gpt-4']
-  const inputCost = (inputTokens / 1000) * pricing.input
-  const outputCost = (outputTokens / 1000) * pricing.output
+  const pricing = PRICING[model] || PRICING['gpt-4o']
+  let inputCost = (inputTokens / 1000) * pricing.input
+  let outputCost = (outputTokens / 1000) * pricing.output
+  
+  // 50% discount for Batch API or Flex processing tier
+  const isDiscounted = options?.isBatch || options?.serviceTier === 'flex'
+  if (isDiscounted) {
+    inputCost *= 0.5
+    outputCost *= 0.5
+  }
+  
   return inputCost + outputCost
 }
 

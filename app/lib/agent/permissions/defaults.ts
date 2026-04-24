@@ -31,15 +31,6 @@ export const DEFAULT_ASK_RULES: AskRule[] = [
     message: 'Confirm bash command execution',
   },
   {
-    id: 'ask_web_fetch',
-    tool: 'web_fetch',
-    condition: (ctx) => {
-      // Ask only if not in approved allowlist
-      return !(ctx.approvedTools || []).includes('web_fetch')
-    },
-    message: 'Confirm external web request',
-  },
-  {
     id: 'ask_file_write_outside_project',
     tool: ['file_write', 'file_edit'],
     condition: (ctx) => {
