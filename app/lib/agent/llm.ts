@@ -83,7 +83,9 @@ export async function runAgent(
   const trace: ToolTraceEntry[] = []
   const sdkTools = getSDKTools(context)
 
-  const stream = (Runner as unknown as { run_streamed: (...args: unknown[]) => unknown }).run_streamed(agent, messages as unknown as string[], {
+  const stream = (Runner as unknown as { 
+    run_streamed: (...args: any[]) => AsyncIterable<any> & { final_result: () => Promise<any> } 
+  }).run_streamed(agent, messages as unknown as string[], {
     metadata: context,
     tools: sdkTools,
   })
@@ -135,7 +137,9 @@ export async function streamAgent(
 
   const sdkTools = getSDKTools(context)
 
-  const stream = (Runner as unknown as { run_streamed: (...args: unknown[]) => unknown }).run_streamed(agent, messages as unknown as string[], {
+  const stream = (Runner as unknown as { 
+    run_streamed: (...args: any[]) => AsyncIterable<any> & { final_result: () => Promise<any> } 
+  }).run_streamed(agent, messages as unknown as string[], {
     metadata: context,
     tools: sdkTools,
   })
