@@ -2,6 +2,7 @@
 import { NextRequest } from "next/server";
 import { persistRoomMessage, getRoomHistory } from "@/lib/server/agent-room/repository";
 import { AGENT_PROFILES, AGENT_SEQUENCE } from "@/lib/familyRouting";
+import { AGENT_ROOM_SESSION_ID } from "@/lib/server/agent-room/constants";
 
 export const runtime = "nodejs";
 
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Descobre quem está ativo lendo o histórico recente
-  const history = await getRoomHistory("pimpotasma-global-room", 50);
+  const history = await getRoomHistory(AGENT_ROOM_SESSION_ID, 50);
   const systemMessages = history.filter(m => m.role === "system");
   const activeSet = new Set(AGENT_SEQUENCE.slice(0, 5)); // Base
 
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (msg) {
-    await persistRoomMessage("pimpotasma-global-room", {
+    await persistRoomMessage(AGENT_ROOM_SESSION_ID, {
       role: "system",
       agentId: "system",
       content: msg

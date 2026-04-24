@@ -5,6 +5,8 @@ import { AGENT_PROFILES } from "@/lib/familyRouting";
 import { requireUserAgentRoom } from "@/lib/server/request";
 import { persistRoomMessage, getLastMessageTimestamp } from "@/lib/server/agent-room/repository";
 
+import { AGENT_ROOM_SESSION_ID } from "@/lib/server/agent-room/constants";
+
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
@@ -18,8 +20,8 @@ export async function POST(request: NextRequest) {
     if (!user) return new Response("Unauthorized", { status: 401 });
   }
 
-  // ID de sessão Global para a Sala de Agentes (Pimpotasma Shared Narrative)
-  const sessionId = "pimpotasma-global-room";
+  // ID de sessão isolado por ambiente
+  const sessionId = AGENT_ROOM_SESSION_ID;
 
   // Sincronização Cooperativa: Verifica se já houve uma mensagem recentemente no banco
   const lastTimestamp = await getLastMessageTimestamp(sessionId);

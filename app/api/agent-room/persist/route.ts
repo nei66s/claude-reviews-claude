@@ -2,6 +2,7 @@
 import { NextRequest } from "next/server";
 import { requireUserAgentRoom } from "@/lib/server/request";
 import { persistRoomMessage } from "@/lib/server/agent-room/repository";
+import { AGENT_ROOM_SESSION_ID } from "@/lib/server/agent-room/constants";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
     return new Response("Missing role or content", { status: 400 });
   }
 
-  await persistRoomMessage("pimpotasma-global-room", {
+  await persistRoomMessage(AGENT_ROOM_SESSION_ID, {
     role,
     agentId,
     content

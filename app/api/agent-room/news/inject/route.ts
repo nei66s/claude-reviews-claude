@@ -4,9 +4,9 @@ import { persistRoomMessage, getRoomHistory } from "@/lib/server/agent-room/repo
 import OpenAI from "openai";
 import { AGENT_PROFILES } from "@/lib/familyRouting";
 import { searchWeb } from "@/lib/server/search-tools";
+import { AGENT_ROOM_SESSION_ID } from "@/lib/server/agent-room/constants";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   const workerKey = request.headers.get("x-worker-key");
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     if (!isRealNews) {
       // Busca o histórico para dar contexto à IA
-      const history = await getRoomHistory("pimpotasma-global-room", 10).catch(() => []);
+      const history = await getRoomHistory(AGENT_ROOM_SESSION_ID, 10).catch(() => []);
       const historyText = history.map(m => `${m.agentId}: ${m.content}`).join("\n");
       
       const prompt = `
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const prefix = isRealNews ? "📺 **BREAKING NEWS:**" : "🏠 **EVENTO FAMILIAR:**";
     const content = `${prefix} ${generatedEvent}`;
 
-    await persistRoomMessage("pimpotasma-global-room", {
+    await persistRoomMessage(AGENT_ROOM_SESSION_ID, {
       role: "system",
       agentId: "system",
       content
