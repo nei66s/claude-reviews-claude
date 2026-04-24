@@ -60,6 +60,12 @@ export async function POST(request: NextRequest) {
 
   // Sincronização Cooperativa: Verifica se já houve uma mensagem recentemente no banco
   const lastTimestamp = history.length > 0 ? history[history.length - 1].timestamp : null;
+  if (lastTimestamp) {
+    const secondsSinceLast = (Date.now() - new Date(lastTimestamp).getTime()) / 1000;
+    if (secondsSinceLast < 15) { 
+      return Response.json({ skipped: true, reason: "Interval too short. Cooperating with other viewers." });
+    }
+  }
 
   // Inteligência do Vilão: Se citarem o Urubu, ele tem chance de "sequestrar" o turno
   const lastMsg = messages[messages.length - 1]?.content?.toLowerCase() || "";
