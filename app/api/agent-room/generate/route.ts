@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     console.log(`[AgentRoom] Selected agent ${selectedAgentId} already spoke last. Rerouting...`);
     
     // Tenta encontrar outro agente disponível na lista de ativos
-    const others = activeAgents.filter(id => typeof id === "string" && id !== lastSpeaker);
+    const others = activeAgents.filter((id: string) => typeof id === "string" && id !== lastSpeaker);
     if (others.length > 0) {
        selectedAgentId = others[Math.floor(Math.random() * others.length)];
        console.log(`[AgentRoom] Rerouted speaker to: ${selectedAgentId}`);
