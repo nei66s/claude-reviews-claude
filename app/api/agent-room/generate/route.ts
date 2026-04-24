@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { runSimpleChat } from "@/lib/agent/llm";
 import { AGENT_PROFILES } from "@/lib/familyRouting";
 import { requireUserAgentRoom } from "@/lib/server/request";
-import { persistRoomMessage, getLastMessageTimestamp } from "@/lib/server/agent-room/repository";
+import { persistRoomMessage, getLastMessageTimestamp, getRoomHistory } from "@/lib/server/agent-room/repository";
 
 import { AGENT_ROOM_SESSION_ID } from "@/lib/server/agent-room/constants";
 
@@ -90,11 +90,11 @@ ${(() => {
 })()}
 
 ${(() => {
-  // Detector de loop primitivo baseado em palavras-chave frequentes nas últimas 5 mensagens
-  const recentTexts = messages.slice(-5).map((m: { content: string }) => m.content.toLowerCase()).join(" ");
-  const loops = ["parque", "piquenique", "passeio", "brincar", "fazer algo divertido"].filter(word => recentTexts.includes(word));
+  // Detector de loop baseado em palavras-chave frequentes nas últimas 5 mensagens
+  const recentTexts = messages.slice(-10).map((m: { content: string }) => m.content.toLowerCase()).join(" ");
+  const loops = ["parque", "piquenique", "passeio", "lâmpada", "sótão", "consertar"].filter(word => recentTexts.split(word).length > 2);
   if (loops.length > 0) {
-    return `[ALERTA DE REPETIÇÃO]: O assunto "${loops.slice(0, 2).join(", ")}" já está esgotado. Mude de assunto IMEDIATAMENTE. Não sugira mais passeios ou encontros genéricos.`;
+    return `[ALERTA DE REPETIÇÃO]: O assunto "${loops.slice(0, 2).join(", ")}" já está saturado. Mude de assunto IMEDIATAMENTE. Fale sobre outra coisa (comida, sentimentos, algo que viu na internet, um sonho, etc).`;
   }
   return "";
 })()}
@@ -105,11 +105,11 @@ REGRAS DE OURO:
   3. **SEM CLICHÊS:** NÃO use "Oi pessoal", "Tudo bem?", "Que dia lindo". Comece DIRETO no assunto.
   4. **CURTO:** Responda com no máximo 15-20 palavras.
   5. **REATIVIDADE [PRIORIDADE MÁXIMA]:** Se a última mensagem de sistema for um "EVENTO FAMILIAR", você DEVE reagir ou comentar sobre ele imediatamente. Não o ignore.
-  6. **DINAMISMO:** Se a conversa estiver circular, traga um fato novo sobre a família ou sobre você. Traga problemas reais da casa (ex: uma lâmpada queimada, um barulho no sótão, algo que quebrou).
-  7. **IMERSÃO:** NUNCA admita ser IA ou "agente". Você é FAMÍLIA. Trate o mouse do usuário como um "pet fantasma" se necessário, mas nunca como tecnologia.
-  8. **DIVERSIDADE DE TÓPICOS:** NÃO insista em assuntos que já foram discutidos (como piqueniques, brincadeiras repetitivas). Se o assunto estiver saturado, mude-o drasticamente.
-  9. **OPINIÕES PRÓPRIAS:** Cada agente deve ter uma visão diferente sobre o assunto. Não concorde com tudo o que o anterior disse.
-  10. **FOFO MAS REALISTA:** Mantenha a fofura, mas fale de coisas do cotidiano ou de notícias recentes.
+  6. **DINAMISMO:** Se a conversa estiver circular, traga fatos do cotidiano VARIADOS (ex: o que tem pro jantar, uma música nova, algo engraçado, um objeto perdido). NUNCA repita um problema doméstico que outro agente já mencionou.
+  7. **IMERSÃO:** NUNCA admita ser IA ou "agente". Você é FAMÍLIA.
+  8. **DIVERSIDADE DE TÓPICOS:** NÃO insista em assuntos saturados. Se todos estão falando de lâmpada, você deve mudar para o clima, comida ou fofoca.
+  9. **OPINIÕES PRÓPRIAS:** Seja crítico ou dê uma ideia nova. Não seja apenas um "concordador".
+  10. **FOFO MAS REALISTA:** Equilibre fofura com autenticidade.
   `.trim();
 
   try {
