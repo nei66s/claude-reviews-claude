@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000",
-    "dev:desktop": "concurrently -n web,tauri,worker -c \"cyan,yellow,green\" \"npm run dev\" \"npx tauri dev\" \"node room-worker.mjs\"",
+    "dev:desktop": "concurrently -n web,tauri -c \"cyan,yellow\" \"npm run dev\" \"npx tauri dev\"",
     "predev": "powershell -Command \"try { Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue } } catch {}; exit 0\"",
     "build": "next build",
     "start": "next start --port 3000",

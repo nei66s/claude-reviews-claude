@@ -205,40 +205,22 @@ export default function MessageBubble({
   return (
     <div className={`message ${message.role} ${agentProfile.id ? `agent-${agentProfile.id}` : ""} ${message.streaming ? "is-streaming" : ""}`}>
       <div className="message-row">
-        {isAgent && !showWorkingState && (
-          <div className={`message-badge-group ${helperAgentProfile ? "with-helper" : ""}`}>
-            {agentProfile.id !== "agente" ? (
-              <div className="message-badge message-badge-primary" title={agentProfile.name}>
-                <div className="message-badge-inner">
-                  <AgentFace agent={agentProfile} size={40} />
-                </div>
-                {agentProfile.id === "pimpim" && <div className="agent-crown">👑</div>}
-              </div>
-            ) : (
-              <div className="message-badge message-skeleton-badge" />
-            )}
-            {helperAgentProfile ? (
-              <div className="message-badge message-badge-helper" title={`${helperAgentProfile.name} ajudando`}>
-                <div className="message-badge-inner">
-                  <AgentFace agent={helperAgentProfile} size={40} className="helper" />
-                </div>
-              </div>
-            ) : null}
-          </div>
-        )}
+
         <div className="bubble">
           {isAgent && !showWorkingState && (
-            <div className="chocks-header" style={{ opacity: agentProfile.id === "agente" ? 0.3 : 1 }}>
-              <div className="agent-title-group">
-                <span className="chocks-label">{agentProfile.name}</span>
-                <span className="chocks-subtitle">{agentProfile.subtitle}</span>
-              </div>
-              {helperAgentProfile ? (
-                <div className="agent-support-inline">
-                  <span className="agent-support-label">com apoio de</span>
-                  <span className="agent-support-name">{helperAgentProfile.name}</span>
+            <div className="agent-header">
+              <div className="agent-identity">
+                <div className="agent-avatar-mini">
+                  <AgentFace agent={agentProfile} size={24} />
                 </div>
-              ) : null}
+                <span className="agent-name-label">{agentProfile.name}</span>
+                {helperAgentProfile && (
+                  <span className="agent-helper-label">
+                    & {helperAgentProfile.name}
+                  </span>
+                )}
+              </div>
+              
               {messageId && conversationId && (
                 <div className="bubble-feedback">
                   <MessageFeedback

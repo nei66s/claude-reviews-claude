@@ -45,9 +45,6 @@ export default function Downbar({
     { id: "memory-graph", label: "Grafo", color: "#3b82f6", icon: (
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M9 9l6 6"></path><path d="M15 9l-6 6"></path></svg>
     )},
-    { id: "agent-room", label: "Sala", color: "#f43f5e", icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-    )},
   ];
 
   return (

@@ -129,10 +129,6 @@ export default function Topbar({
       </div>
       
       <div className="topbar-actions">
-        <div className="seed-wallet" title="Carteira de Sementes Pimpotasma">
-          <span className="seed-wallet-icon">🌾</span>
-          <span className="seed-wallet-value">1.420,00</span>
-        </div>
         <PingMonitor />
         <button
           className="topbar-new-chat-btn"

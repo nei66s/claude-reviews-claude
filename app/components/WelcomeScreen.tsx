@@ -132,35 +132,10 @@ export default function WelcomeScreen({
     <div className="view welcome-view-v2">
       <div className="welcome-v2-shell">
         {/* Hero Section */}
-        <div className="welcome-v2-hero">
-          <div className="welcome-v2-avatar-wrap">
-            <div className="welcome-v2-avatar">
-              <Image
-                src="/chocks-v3.png"
-                alt="Chocks by Pimpotasma"
-                width={80}
-                height={80}
-                priority
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
-            <StatusDot online={agentOnline} />
-          </div>
+        <div className="welcome-v2-hero" style={{ justifyContent: 'center', textAlign: 'center', marginBottom: '32px' }}>
           <div className="welcome-v2-hero-text">
-            {/* Graffiti de invasão se o Urubu foi o último a falar */}
-            {typeof window !== "undefined" && document.body.classList.contains("urubutopia-active") && (
-              <>
-                <div className="welcome-graffiti">HACKED BY URUBU</div>
-                <div className="welcome-graffiti-small">CADE O MEU PIX?</div>
-              </>
-            )}
-            <div className="welcome-v2-greeting">
-              <span className="welcome-v2-greeting-emoji">{greeting.emoji}</span>
-              {greeting.text}
-            </div>
-            <h1 className="welcome-v2-title">
-              Como posso ajudar<br />
-              <span className="welcome-v2-title-accent">hoje?</span>
+            <h1 className="welcome-v2-title" style={{ fontSize: '32px', fontWeight: '600' }}>
+              Como posso ajudar <span className="welcome-v2-title-accent">hoje?</span>
             </h1>
           </div>
         </div>
@@ -287,57 +262,6 @@ export default function WelcomeScreen({
           </div>
         </div>
 
-        {/* Agent Personality Card (Now below composer to save space) */}
-        <div className="welcome-v2-agent-personality" style={{ marginBottom: "20px" }}>
-          <ChocksIdentityCard />
-          <PimpotasmaTeamCard />
-        </div>
-
-        {/* Download Section (Visible only in Browser) */}
-        {!isTauri() && (
-          <div className="welcome-v2-section download-section">
-            <div className="welcome-v2-section-label">Acesso Nativo</div>
-            <a
-              href="https://pimpotasma.com.br/download/pimpotasma.exe"
-              className="welcome-v2-download-btn"
-              title="Baixar versão nativa para Windows"
-            >
-              <div className="download-btn-content">
-                <div className="download-btn-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                </div>
-                <div className="download-btn-text">
-                  <span className="download-btn-title">Baixar App Desktop</span>
-                  <span className="download-btn-subtitle">Para Windows (Acesso nativo a arquivos e CMD)</span>
-                </div>
-              </div>
-            </a>
-          </div>
-        )}
-
-        {/* Workspace Explore */}
-        <div className="welcome-v2-section">
-          <div className="welcome-v2-section-label">Explorar</div>
-          <div className="welcome-v2-explore-grid">
-            {workspaceCards.map((ws) => (
-              <button
-                key={ws.ws}
-                className="welcome-v2-explore-card"
-                onClick={() => onNavigate(ws.ws)}
-                type="button"
-                style={{ "--card-accent": ws.color } as React.CSSProperties}
-              >
-                <span className="welcome-v2-explore-icon">{ws.icon}</span>
-                <span className="welcome-v2-explore-label">{ws.label}</span>
-                <span className="welcome-v2-explore-desc">{ws.desc}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

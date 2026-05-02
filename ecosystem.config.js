@@ -21,19 +21,5 @@ module.exports = {
         BACKEND_URL: "http://127.0.0.1:3000",
       },
     },
-    {
-      name: "room-worker",
-      cwd: __dirname,
-      script: "node",
-      args: "room-worker.mjs",
-      exec_mode: "fork",
-      autorestart: true,
-      env: {
-        NODE_ENV: "production",
-      },
-      env_production: {
-        NODE_ENV: "production",
-      },
-    },
   ],
 };

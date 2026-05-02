@@ -26,7 +26,6 @@ import EasterEggManager from "./EasterEggManager";
 import Downbar from "./Downbar";
 import { CommandAutocomplete, useSlashCommands } from "./CommandAutocomplete";
 import UrubuChaosEngine from "./UrubuChaosEngine";
-import AgentRoomView from "./AgentRoomView";
 import TokenCounter from "./TokenCounter";
 import type { Artifact } from "../lib/artifactDetection";
 import { detectArtifacts } from "../lib/artifactDetection";
@@ -143,31 +142,24 @@ export default function AppShell({
 
 
 
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
 
   useEffect(() => {
-    // Apenas para desktop (dispositivos com mouse)
-    const isDesktop = window.matchMedia('(pointer: fine)').matches;
-    if (!isDesktop) return;
-
-    let timeout: NodeJS.Timeout;
-    if (isHoveringSidebar) {
-      setCollapsed(false);
-      // Se estiver em modo mobile/tablet (barra oculta por left: -280px), abre o menu mobile
-      if (window.innerWidth <= 1024) {
-        setIsMobileMenuOpen(true);
-      }
-    } else {
-      timeout = setTimeout(() => {
+    const handleResize = () => {
+      // No desktop (acima de 1024px), a sidebar deve ficar sempre aberta
+      if (window.innerWidth > 1024) {
+        setCollapsed(false);
+      } else {
+        // Em mobile, ela começa colapsada/fechada
         setCollapsed(true);
-        if (window.innerWidth <= 1024) {
-          setIsMobileMenuOpen(false);
-        }
-      }, 300);
-    }
-    return () => clearTimeout(timeout);
-  }, [isHoveringSidebar]);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -318,7 +310,6 @@ export default function AppShell({
       { id: "workspace:skills", label: "Manual de Habilidades", description: "Veja as habilidades nativas e ferramentas.", category: "Navigation", icon: "⚡" },
       { id: "workspace:memory", label: "Ir para Memória", description: "Veja e gerencie memórias extraídas.", category: "Navigation", icon: "🧠" },
       { id: "workspace:memory-graph", label: "Ir para Grafo de Memória", description: "Visão em grafo do conhecimento.", category: "Navigation", icon: "🕸️" },
-      { id: "workspace:agent-room", label: "Sala de Convivência", description: "Veja os agentes conversando entre si.", category: "Navigation", icon: "🎭" },
     ],
     [allCommands],
   );
@@ -619,18 +610,6 @@ export default function AppShell({
         }}
       />
 
-      <Downbar
-        activeWorkspace={activeWorkspace}
-        onSelectWorkspace={(ws) => {
-          navigateToWorkspace(ws);
-          setIsMobileMenuOpen(false);
-        }}
-        onNewChat={() => {
-          void createNewChat();
-          navigateToWorkspace("conversations");
-          setIsMobileMenuOpen(false);
-        }}
-      />
 
       <main className="main">
         <Topbar
@@ -673,236 +652,253 @@ export default function AppShell({
           {activeWorkspace === "skills" && <SkillsView />}
           { activeWorkspace === "memory" && <MemoryAdminView /> }
           { activeWorkspace === "memory-graph" && <MemoryGraphView /> }
-          { activeWorkspace === "agent-room" && <AgentRoomView /> }
 
-          { activeWorkspace === "conversations" &&
-            (!hasMessages ? (
-              <WelcomeScreen
-                prompt={prompt}
-                onPromptChange={handlePromptChange}
-                onKeyDown={handleKeyDown}
-                onSend={handleSend}
-                onOpenFilePicker={openFilePicker}
-                onNavigate={navigateToWorkspace}
-                onSetPrompt={setPrompt}
-                isThinking={isThinking}
-                attachments={attachments}
-                onRemoveAttachment={removeAttachment}
-                attachmentFeedback={attachmentFeedback}
-                attachmentError={attachmentError}
-                textareaRef={textareaRef}
-                onPaste={handlePaste}
-                commandMenu={
-                  <CommandAutocomplete
-                    isOpen={showCommandMenu}
-                    selectedIndex={commandSelectedIndex}
-                    filteredCommands={filteredCommands}
-                    onSelectCommand={handleCommandSelect}
-                  />
-                }
-                isRecording={isRecording}
-                isProcessingAudio={isProcessingAudio}
-                onStartRecord={isAudioInputEnabled() ? handleStartRecording : undefined}
-                onStopRecord={stopRecording}
-                onCancelRecord={cancelRecording}
-                isPlayingTTS={isPlayingTTS}
-                onStopTTS={stopTTS}
-              />
-            ) : (
-              <div className={`view chat-view chat-layout ${selectedArtifacts.length > 0 ? "with-artifact" : ""}`}>
-                <div className="messages">
-                  <div className="messages-inner">
-                    {activeChat?.messages?.map((msg, idx) => (
-                      <MessageBubble
-                        key={idx}
-                        message={msg}
-                        conversationId={activeChat.id}
-                        onOpenArtifact={(artifact) => {
-                          const allArtifacts = detectArtifacts(msg.content, msg.trace);
-                          setSelectedArtifacts(allArtifacts.length > 0 ? allArtifacts : [artifact]);
-                        }}
-                        onPlayAudio={msg.role === "agent" && isAudioReplyTtsEnabled() ? () => playTTS(msg.content, activeChat.id) : undefined}
-                      />
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </div>
-
-                {selectedArtifacts.length > 0 ? (
-                  <ArtifactPanel artifact={selectedArtifacts} onClose={() => setSelectedArtifacts([])} />
-                ) : null}
-
-                <div className="chat-composer-wrap">
-                  <div className="chat-composer-inner">
-                    <TaskProgressPanel
-                      trace={latestAgentMessageWithTrace?.trace}
-                      streaming={Boolean(latestAgentMessageWithTrace?.streaming || isThinking)}
-                      agentId={latestAgentMessageWithTrace?.agentId}
+          { (activeWorkspace === "conversations" &&
+              (!hasMessages ? (
+                <WelcomeScreen
+                  prompt={prompt}
+                  onPromptChange={handlePromptChange}
+                  onKeyDown={handleKeyDown}
+                  onSend={handleSend}
+                  onOpenFilePicker={openFilePicker}
+                  onNavigate={navigateToWorkspace}
+                  onSetPrompt={setPrompt}
+                  isThinking={isThinking}
+                  attachments={attachments}
+                  onRemoveAttachment={removeAttachment}
+                  attachmentFeedback={attachmentFeedback}
+                  attachmentError={attachmentError}
+                  textareaRef={textareaRef}
+                  onPaste={handlePaste}
+                  commandMenu={
+                    <CommandAutocomplete
+                      isOpen={showCommandMenu}
+                      selectedIndex={commandSelectedIndex}
+                      filteredCommands={filteredCommands}
+                      onSelectCommand={handleCommandSelect}
                     />
-                    <div className="chat-composer">
-                      <TokenCounter 
-                        prompt={prompt} 
-                        attachments={attachments} 
-                        history={activeChat?.messages} 
-                        selectedAgentId={currentActiveAgentId || "chocks"}
-                        chatId={activeChat?.id}
-                      />
-                      {/* Legendas ao vivo V2 Realtime */}
-                      {realtimeMode && (realtimeLiveTranscript || realtimeLiveAssistant) && (
-                        <div className="realtime-live-captions">
-                          {realtimeLiveTranscript && (
-                            <div className="realtime-caption-bubble user-caption">
-                              {realtimeLiveTranscript}
-                            </div>
-                          )}
-                          {realtimeLiveAssistant && (
-                            <div className="realtime-caption-bubble assistant-caption">
-                              {realtimeLiveAssistant}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      <textarea
-                        ref={textareaRef}
-                        value={prompt}
-                        onChange={handlePromptChange}
-                        placeholder="Responder..."
-                        onKeyDown={handleKeyDown}
-                        onPaste={handlePaste}
-                      />
-                      <CommandAutocomplete
-                        isOpen={showCommandMenu}
-                        selectedIndex={commandSelectedIndex}
-                        filteredCommands={filteredCommands}
-                        onSelectCommand={handleCommandSelect}
-                      />
-                      <AttachmentList attachments={attachments} onRemove={removeAttachment} />
-                      {attachmentFeedback && (
-                        <div className={`attachment-feedback ${attachmentError ? "error" : ""}`}>{attachmentFeedback}</div>
-                      )}
-                      <div className="chat-toolbar">
-                        <div className="chat-toolbar-left">
-                          <button className="toolbar-plus" type="button" onClick={openFilePicker}>
-                            +
-                          </button>
-                          
-                          {isAudioInputEnabled() && !v1AudioDisabledByV2 && (
-                            <div className="audio-controls-wrap" style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "8px" }}>
-                              {isRecording ? (
-                                <>
-                                  <button className="toolbar-plus" type="button" onClick={stopRecording} style={{ color: "red" }} title="Parar gravação">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
-                                  </button>
-                                  <button className="toolbar-plus" type="button" onClick={cancelRecording} title="Cancelar gravação">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                                  </button>
-                                  <span className="status">Gravando...</span>
-                                </>
-                              ) : (
-                                <button className="toolbar-plus" type="button" onClick={handleStartRecording} title="Gravar áudio" disabled={isProcessingAudio}>
-                                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                                    <line x1="12" y1="19" x2="12" y2="23"></line>
-                                    <line x1="8" y1="23" x2="16" y2="23"></line>
-                                  </svg>
-                                </button>
+                  }
+                  isRecording={isRecording}
+                  isProcessingAudio={isProcessingAudio}
+                  onStartRecord={isAudioInputEnabled() ? handleStartRecording : undefined}
+                  onStopRecord={stopRecording}
+                  onCancelRecord={cancelRecording}
+                  isPlayingTTS={isPlayingTTS}
+                  onStopTTS={stopTTS}
+                />
+              ) : (
+                <div className={`view chat-view chat-layout ${selectedArtifacts.length > 0 ? "with-artifact" : ""}`}>
+                  <div className="messages">
+                    <div className="messages-container">
+                      <div className="messages-inner">
+                        {activeChat?.messages?.map((msg, idx) => (
+                          <MessageBubble
+                            key={idx}
+                            message={msg}
+                            conversationId={activeChat.id}
+                            onOpenArtifact={(artifact) => {
+                              const allArtifacts = detectArtifacts(msg.content, msg.trace);
+                              setSelectedArtifacts(allArtifacts.length > 0 ? allArtifacts : [artifact]);
+                            }}
+                            onPlayAudio={msg.role === "agent" && isAudioReplyTtsEnabled() ? () => playTTS(msg.content, activeChat.id) : undefined}
+                          />
+                        ))}
+                        <div ref={messagesEndRef} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {selectedArtifacts.length > 0 ? (
+                    <ArtifactPanel artifact={selectedArtifacts} onClose={() => setSelectedArtifacts([])} />
+                  ) : null}
+
+                  <div className="chat-composer-wrap">
+                    <div className="chat-composer-container">
+                      <div className="chat-composer-inner">
+                        <TaskProgressPanel
+                          trace={latestAgentMessageWithTrace?.trace}
+                          streaming={Boolean(latestAgentMessageWithTrace?.streaming || isThinking)}
+                          agentId={latestAgentMessageWithTrace?.agentId}
+                        />
+                        <div className="chat-composer">
+                          <TokenCounter 
+                            prompt={prompt} 
+                            attachments={attachments} 
+                            history={activeChat?.messages} 
+                            selectedAgentId={currentActiveAgentId || "chocks"}
+                            chatId={activeChat?.id}
+                          />
+                          {/* Legendas ao vivo V2 Realtime */}
+                          {realtimeMode && (realtimeLiveTranscript || realtimeLiveAssistant) && (
+                            <div className="realtime-live-captions">
+                              {realtimeLiveTranscript && (
+                                <div className="realtime-caption-bubble user-caption">
+                                  {realtimeLiveTranscript}
+                                </div>
+                              )}
+                              {realtimeLiveAssistant && (
+                                <div className="realtime-caption-bubble assistant-caption">
+                                  {realtimeLiveAssistant}
+                                </div>
                               )}
                             </div>
                           )}
-
-                          {/* Botão V2 Realtime — aparece somente se a flag estiver ativa */}
-                          {isRealtimeVoiceEnabled() && (
-                            <div style={{ display: "flex", gap: "6px", alignItems: "center", marginLeft: "8px" }}>
-                              <button
-                                id="btn-realtime-voice-toggle"
-                                className="toolbar-plus"
-                                type="button"
-                                onClick={handleToggleRealtimeMode}
-                                title={realtimeMode ? "Desativar voz em tempo real" : "Ativar voz em tempo real (V2)"}
-                                style={{
-                                  color: realtimeMode ? "#10b981" : undefined,
-                                  outline: realtimeMode ? "1px solid #10b981" : undefined,
-                                  borderRadius: "4px",
-                                }}
-                              >
-                                {/* Onda de rádio = voz ao vivo */}
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M2 10c0-4.4 3.6-8 8-8" />
-                                  <path d="M22 10c0-4.4-3.6-8-8-8" />
-                                  <path d="M5 13c0-2.8 2.2-5 5-5h4c2.8 0 5 2.2 5 5" />
-                                  <circle cx="12" cy="17" r="2" />
-                                  <line x1="12" y1="19" x2="12" y2="22" />
-                                </svg>
+                          <textarea
+                            ref={textareaRef}
+                            value={prompt}
+                            onChange={handlePromptChange}
+                            placeholder="Responder..."
+                            onKeyDown={handleKeyDown}
+                            onPaste={handlePaste}
+                          />
+                          <CommandAutocomplete
+                            isOpen={showCommandMenu}
+                            selectedIndex={commandSelectedIndex}
+                            filteredCommands={filteredCommands}
+                            onSelectCommand={handleCommandSelect}
+                          />
+                          <AttachmentList attachments={attachments} onRemove={removeAttachment} />
+                          {attachmentFeedback && (
+                            <div className={`attachment-feedback ${attachmentError ? "error" : ""}`}>{attachmentFeedback}</div>
+                          )}
+                          <div className="chat-toolbar">
+                            <div className="chat-toolbar-left">
+                              <button className="toolbar-plus" type="button" onClick={openFilePicker}>
+                                +
                               </button>
-                              {/* Indicador de estado V2 */}
-                              {realtimeMode && (
-                                <span className={`status-indicator ${realtimeSession.connectionState}`}>
-                                  {realtimeSession.connectionState === "listening" && (
-                                    <div className="realtime-visualizer">
-                                      <div className="realtime-bar realtime-bar-1" />
-                                      <div className="realtime-bar realtime-bar-2" />
-                                      <div className="realtime-bar realtime-bar-3" />
-                                    </div>
+                              
+                              {isAudioInputEnabled() && !v1AudioDisabledByV2 && (
+                                <div className="audio-controls-wrap" style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "8px" }}>
+                                  {isRecording ? (
+                                    <>
+                                      <button className="toolbar-plus" type="button" onClick={stopRecording} style={{ color: "red" }} title="Parar gravação">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                                      </button>
+                                      <button className="toolbar-plus" type="button" onClick={cancelRecording} title="Cancelar gravação">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                      </button>
+                                      <span className="status">Gravando...</span>
+                                    </>
+                                  ) : (
+                                    <button className="toolbar-plus" type="button" onClick={handleStartRecording} title="Gravar áudio" disabled={isProcessingAudio}>
+                                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                                      </svg>
+                                    </button>
                                   )}
-                                  {realtimeSession.connectionState === "connecting" && "Conectando..."}
-                                  {realtimeSession.connectionState === "connected" && "Pronto"}
-                                  {realtimeSession.connectionState === "listening" && "Ouvindo"}
-                                  {realtimeSession.connectionState === "speaking" && "Falando..."}
-                                  {realtimeSession.connectionState === "error" && "Erro"}
-                                  {realtimeSession.connectionState === "fallback" && "V1 Ativo"}
-                                </span>
+                                </div>
                               )}
-                              {/* Barge-in: interromper assistant */}
-                              {realtimeMode && realtimeSession.connectionState === "speaking" && (
-                                <button
-                                  className="toolbar-plus"
-                                  type="button"
-                                  onClick={realtimeSession.interrupt}
-                                  title="Interromper assistant"
-                                  style={{ color: "#f59e0b" }}
-                                >
-                                  ⏹
+
+                              {/* Botão V2 Realtime — aparece somente se a flag estiver ativa */}
+                              {isRealtimeVoiceEnabled() && (
+                                <div style={{ display: "flex", gap: "6px", alignItems: "center", marginLeft: "8px" }}>
+                                  <button
+                                    id="btn-realtime-voice-toggle"
+                                    className="toolbar-plus"
+                                    type="button"
+                                    onClick={handleToggleRealtimeMode}
+                                    title={realtimeMode ? "Desativar voz em tempo real" : "Ativar voz em tempo real (V2)"}
+                                    style={{
+                                      color: realtimeMode ? "#10b981" : undefined,
+                                      outline: realtimeMode ? "1px solid #10b981" : undefined,
+                                      borderRadius: "4px",
+                                    }}
+                                  >
+                                    {/* Onda de rádio = voz ao vivo */}
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M2 10c0-4.4 3.6-8 8-8" />
+                                      <path d="M22 10c0-4.4-3.6-8-8-8" />
+                                      <path d="M5 13c0-2.8 2.2-5 5-5h4c2.8 0 5 2.2 5 5" />
+                                      <circle cx="12" cy="17" r="2" />
+                                      <line x1="12" y1="19" x2="12" y2="22" />
+                                    </svg>
+                                  </button>
+                                  {/* Indicador de estado V2 */}
+                                  {realtimeMode && (
+                                    <span className={`status-indicator ${realtimeSession.connectionState}`}>
+                                      {realtimeSession.connectionState === "listening" && (
+                                        <div className="realtime-visualizer">
+                                          <div className="realtime-bar realtime-bar-1" />
+                                          <div className="realtime-bar realtime-bar-2" />
+                                          <div className="realtime-bar realtime-bar-3" />
+                                        </div>
+                                      )}
+                                      {realtimeSession.connectionState === "connecting" && "Conectando..."}
+                                      {realtimeSession.connectionState === "connected" && "Pronto"}
+                                      {realtimeSession.connectionState === "listening" && "Ouvindo"}
+                                      {realtimeSession.connectionState === "speaking" && "Falando..."}
+                                      {realtimeSession.connectionState === "error" && "Erro"}
+                                      {realtimeSession.connectionState === "fallback" && "V1 Ativo"}
+                                    </span>
+                                  )}
+                                  {/* Barge-in: interromper assistant */}
+                                  {realtimeMode && realtimeSession.connectionState === "speaking" && (
+                                    <button
+                                      className="toolbar-plus"
+                                      type="button"
+                                      onClick={realtimeSession.interrupt}
+                                      title="Interromper assistant"
+                                      style={{ color: "#f59e0b" }}
+                                    >
+                                      ⏹
+                                    </button>
+                                  )}
+                                  {/* Mute/unmute microfone */}
+                                  {realtimeMode && realtimeSession.isActive && (
+                                    <button
+                                      className="toolbar-plus"
+                                      type="button"
+                                      onClick={realtimeSession.toggleMute}
+                                      title={realtimeSession.isMuted ? "Desmutar" : "Mutar microfone"}
+                                      style={{ color: realtimeSession.isMuted ? "#ef4444" : undefined }}
+                                    >
+                                      {realtimeSession.isMuted ? "🔇" : "🎤"}
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+
+                              {isPlayingTTS && !v1AudioDisabledByV2 && (
+                                <button className="toolbar-plus" type="button" onClick={stopTTS} style={{ color: "#3b82f6", marginLeft: "8px" }} title="Parar áudio">
+                                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
                                 </button>
                               )}
-                              {/* Mute/unmute microfone */}
-                              {realtimeMode && realtimeSession.isActive && (
-                                <button
-                                  className="toolbar-plus"
-                                  type="button"
-                                  onClick={realtimeSession.toggleMute}
-                                  title={realtimeSession.isMuted ? "Desmutar" : "Mutar microfone"}
-                                  style={{ color: realtimeSession.isMuted ? "#ef4444" : undefined }}
-                                >
-                                  {realtimeSession.isMuted ? "🔇" : "🎤"}
-                                </button>
-                              )}
+
+                              {isProcessingAudio && !v1AudioDisabledByV2 && <div className="status">Transcrevendo áudio...</div>}
+                              {isThinking && !isProcessingAudio && !v1AudioDisabledByV2 && <div className="status">Executando etapas...</div>}
                             </div>
-                          )}
+                            <div className="chat-toolbar-right">
 
-                          {isPlayingTTS && !v1AudioDisabledByV2 && (
-                            <button className="toolbar-plus" type="button" onClick={stopTTS} style={{ color: "#3b82f6", marginLeft: "8px" }} title="Parar áudio">
-                              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
-                            </button>
-                          )}
-
-                          {isProcessingAudio && !v1AudioDisabledByV2 && <div className="status">Transcrevendo áudio...</div>}
-                          {isThinking && !isProcessingAudio && !v1AudioDisabledByV2 && <div className="status">Executando etapas...</div>}
-                        </div>
-                        <div className="chat-toolbar-right">
-
-                          <button className={`toolbar-send ${isThinking ? "cancel" : ""}`} onClick={handleSend}>
-                            {isThinking ? "x" : "^"}
-                          </button>
+                              <button className={`toolbar-send ${isThinking ? "cancel" : ""}`} onClick={handleSend}>
+                                {isThinking ? "x" : "^"}
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )
             ))}
-        </div>
+          </div>
       </main>
+
+      <Downbar
+        activeWorkspace={activeWorkspace}
+        onSelectWorkspace={(ws) => {
+          navigateToWorkspace(ws);
+          setIsMobileMenuOpen(false);
+        }}
+        onNewChat={() => {
+          void createNewChat();
+          navigateToWorkspace("conversations");
+          setIsMobileMenuOpen(false);
+        }}
+      />
 
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <CommandPalette
